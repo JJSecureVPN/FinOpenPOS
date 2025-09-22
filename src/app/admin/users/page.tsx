@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useAlert } from "@/components/ui/alert-modal";
 import { 
   UserPlus, 
   Users, 
@@ -51,6 +52,7 @@ export default function UsersManagement() {
     confirmPassword: '',
     role: 'cajero'
   });
+  const { showAlert, AlertModal } = useAlert();
 
   const fetchCurrentUser = async () => {
     try {
@@ -91,12 +93,12 @@ export default function UsersManagement() {
 
   const handleCreateUser = async () => {
     if (newUser.password !== newUser.confirmPassword) {
-      alert('Las contraseñas no coinciden');
+      showAlert('Las contraseñas no coinciden', { variant: 'error' });
       return;
     }
 
     if (newUser.password.length < 6) {
-      alert('La contraseña debe tener al menos 6 caracteres');
+      showAlert('La contraseña debe tener al menos 6 caracteres', { variant: 'error' });
       return;
     }
 
@@ -118,13 +120,14 @@ export default function UsersManagement() {
         setUsers([...users, createdUser]);
         setIsCreateDialogOpen(false);
         setNewUser({ email: '', password: '', confirmPassword: '', role: 'cajero' });
+        showAlert('Usuario creado exitosamente', { variant: 'success' });
       } else {
         const error = await response.json();
-        alert('Error al crear usuario: ' + error.error);
+        showAlert('Error al crear usuario: ' + error.error, { variant: 'error' });
       }
     } catch (error) {
       console.error('Error creating user:', error);
-      alert('Error al crear usuario');
+      showAlert('Error al crear usuario', { variant: 'error' });
     }
   };
 
@@ -145,13 +148,14 @@ export default function UsersManagement() {
         setUsers(users.map(u => u.id === updatedUser.id ? { ...u, role: updatedUser.role } : u));
         setIsEditDialogOpen(false);
         setUserToEdit(null);
+        showAlert('Rol actualizado exitosamente', { variant: 'success' });
       } else {
         const error = await response.json();
-        alert('Error al actualizar rol: ' + error.error);
+        showAlert('Error al actualizar rol: ' + error.error, { variant: 'error' });
       }
     } catch (error) {
       console.error('Error updating user role:', error);
-      alert('Error al actualizar rol');
+      showAlert('Error al actualizar rol', { variant: 'error' });
     }
   };
 
@@ -167,13 +171,14 @@ export default function UsersManagement() {
         setUsers(users.filter(u => u.id !== userToDelete.id));
         setIsDeleteDialogOpen(false);
         setUserToDelete(null);
+        showAlert('Usuario eliminado exitosamente', { variant: 'success' });
       } else {
         const error = await response.json();
-        alert('Error al eliminar usuario: ' + error.error);
+        showAlert('Error al eliminar usuario: ' + error.error, { variant: 'error' });
       }
     } catch (error) {
       console.error('Error deleting user:', error);
-      alert('Error al eliminar usuario');
+      showAlert('Error al eliminar usuario', { variant: 'error' });
     }
   };
 
@@ -427,6 +432,8 @@ export default function UsersManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      <AlertModal />
     </div>
   );
 }

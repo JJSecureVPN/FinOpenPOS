@@ -28,9 +28,12 @@ import {
   UsersIcon,
   CreditCardIcon,
   Users2Icon,
+  LogOutIcon,
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { createClient } from "@/lib/supabase/client";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
+import { useAlert } from "@/components/ui/alert-modal";
 
 const pageNames: { [key: string]: string } = {
   "/admin": "Panel Principal",
@@ -47,6 +50,7 @@ const pageNames: { [key: string]: string } = {
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { isAdmin, loading } = useUserRole();
+  const { showAlert, AlertModal } = useAlert();
 
   const navigationItems = [
     { href: "/admin", icon: LayoutDashboardIcon, label: "Panel Principal" },
@@ -72,28 +76,26 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   };
 
   const handleLogout = async () => {
-    if (confirm("¿Estás seguro de que deseas cerrar sesión?")) {
-      try {
-        // Hacer logout en Supabase
-        const supabase = createClient();
-        const { error } = await supabase.auth.signOut();
-        
-        if (error) {
-          console.error('Error al cerrar sesión:', error);
-          alert('Error al cerrar sesión. Inténtalo de nuevo.');
-          return;
-        }
-        
-        // Limpiar storage local si existe
-        localStorage.removeItem('supabase.auth.token');
-        sessionStorage.clear();
-        
-        // Redirigir a login con refresh completo
-        window.location.replace("/login");
-      } catch (error) {
+    try {
+      // Hacer logout en Supabase
+      const supabase = createClient();
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
         console.error('Error al cerrar sesión:', error);
-        alert('Error al cerrar sesión. Inténtalo de nuevo.');
+        showAlert('Error al cerrar sesión. Inténtalo de nuevo.', { variant: 'error' });
+        return;
       }
+      
+      // Limpiar storage local si existe
+      localStorage.removeItem('supabase.auth.token');
+      sessionStorage.clear();
+      
+      // Redirigir a login con refresh completo
+      window.location.replace("/login");
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      showAlert('Error al cerrar sesión. Inténtalo de nuevo.', { variant: 'error' });
     }
   };
 
@@ -142,9 +144,23 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               Soporte
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-              Cerrar Sesión
-            </DropdownMenuItem>
+            <ConfirmationModal
+              title="Cerrar Sesión"
+              description="¿Estás seguro de que deseas cerrar sesión? Serás redirigido a la página de login."
+              confirmText="Cerrar Sesión"
+              cancelText="Cancelar"
+              onConfirm={handleLogout}
+              variant="destructive"
+              icon={<LogOutIcon className="w-4 h-4" />}
+            >
+              <DropdownMenuItem 
+                onSelect={(e) => e.preventDefault()} 
+                className="cursor-pointer text-red-600 focus:text-red-600"
+              >
+                <LogOutIcon className="w-4 h-4 mr-2" />
+                Cerrar Sesión
+              </DropdownMenuItem>
+            </ConfirmationModal>
           </DropdownMenuContent>
         </DropdownMenu>
       </header>
@@ -179,6 +195,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </aside>
         <main className="flex-1 p-4 px-6 py-0">{children}</main>
       </div>
+      <AlertModal />
     </div>
   );
 }
