@@ -9,15 +9,21 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Verificar si el usuario actual es admin usando la función SQL
-  const { data: isAdminResult, error: roleError } = await supabase
-    .rpc('is_admin');
-  
-  if (roleError || !isAdminResult) {
-    return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
-  }
-
+  // Verificar si el usuario es admin usando auth.admin.getUserById
   try {
+    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(user.id);
+    
+    if (userError) {
+      console.error('Error getting user data:', userError);
+      return NextResponse.json({ error: 'Unable to verify user' }, { status: 500 });
+    }
+
+    const userRole = userData?.user?.user_metadata?.role || 'cajero';
+    
+    if (userRole !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
+    }
+
     // Obtener todos los usuarios (solo admins pueden ver esto)
     const { data: users, error } = await supabase.auth.admin.listUsers();
     
@@ -51,15 +57,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Verificar si el usuario actual es admin usando la función SQL
-  const { data: isAdminResult, error: roleError } = await supabase
-    .rpc('is_admin');
-  
-  if (roleError || !isAdminResult) {
-    return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
-  }
-
+  // Verificar si el usuario es admin usando auth.admin.getUserById
   try {
+    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(user.id);
+    
+    if (userError) {
+      console.error('Error getting user data:', userError);
+      return NextResponse.json({ error: 'Unable to verify user' }, { status: 500 });
+    }
+
+    const userRole = userData?.user?.user_metadata?.role || 'cajero';
+    
+    if (userRole !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
+    }
+
     const { email, password, role = 'cajero' } = await request.json();
 
     if (!email || !password) {
