@@ -60,23 +60,24 @@ export default function Page() {
           fetch('/api/admin/profit/margin')
         ]);
 
-        const revenue = await revenueRes.json();
-        const expenses = await expensesRes.json();
-        const profit = await profitRes.json();
-        const creditSales = await creditSalesRes.json();
-        const cashFlowData = await cashFlowRes.json();
-        const revenueByCategoryData = await revenueByCategoryRes.json();
-        const expensesByCategoryData = await expensesByCategoryRes.json();
-        const profitMarginData = await profitMarginRes.json();
+        const revenue = revenueRes.ok ? await revenueRes.json() : {};
+        const expenses = expensesRes.ok ? await expensesRes.json() : {};
+        const profit = profitRes.ok ? await profitRes.json() : {};
+        const creditSales = creditSalesRes.ok ? await creditSalesRes.json() : {};
+        const cashFlowData = cashFlowRes.ok ? await cashFlowRes.json() : {};
+        const revenueByCategoryData = revenueByCategoryRes.ok ? await revenueByCategoryRes.json() : {};
+        const expensesByCategoryData = expensesByCategoryRes.ok ? await expensesByCategoryRes.json() : {};
+        const profitMarginData = profitMarginRes.ok ? await profitMarginRes.json() : {};
 
-        setTotalRevenue(revenue.totalRevenue);
-        setTotalExpenses(expenses.totalExpenses);
-        setTotalProfit(profit.totalProfit);
-        setTotalCreditSales(creditSales.totalCreditSales || 0);
-        setCashFlow(Object.entries(cashFlowData.cashFlow).map(([date, amount]) => ({ date, amount })));
-        setRevenueByCategory(revenueByCategoryData.revenueByCategory);
-        setExpensesByCategory(expensesByCategoryData.expensesByCategory);
-        setProfitMargin(profitMarginData.profitMargin);
+        setTotalRevenue(Number(revenue.totalRevenue) || 0);
+        setTotalExpenses(Number(expenses.totalExpenses) || 0);
+        setTotalProfit(Number(profit.totalProfit) || 0);
+        setTotalCreditSales(Number(creditSales.totalCreditSales) || 0);
+        const cf = cashFlowData && cashFlowData.cashFlow ? cashFlowData.cashFlow : {};
+        setCashFlow(Object.entries(cf).map(([date, amount]) => ({ date, amount })));
+        setRevenueByCategory(revenueByCategoryData.revenueByCategory || {});
+        setExpensesByCategory(expensesByCategoryData.expensesByCategory || {});
+        setProfitMargin(Array.isArray(profitMarginData.profitMargin) ? profitMarginData.profitMargin : []);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
