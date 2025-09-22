@@ -12,7 +12,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await supabase
     .from('customers')
-    .select('id, name')
+    .select('id, name, email, phone, status, debt')
     .eq('user_uid', user.id)
 
   if (error) {

@@ -1,89 +1,93 @@
-# POS and Inventory Management System
+# FinOpenPOS - Sistema de Punto de Venta
 
-This is a Point of Sale (POS) and Inventory Management System built with Next.js, React, and Supabase. It provides a comprehensive solution for managing products, customers, orders, and transactions in a retail or small business setting.
+Sistema de punto de venta desarrollado con Next.js, TypeScript, y Supabase.
 
-As a developer with extensive experience in creating similar applications, this project represents the culmination of years of expertise in building POS systems. Of course, in the beginning the project seem a little raw, but with time and hopefully with the help of the community, it will become a robust and feature-rich solution for businesses of all sizes.
+## 🚀 Despliegue en Netlify
 
-This particular iteration embraces the spirit of open-source development, making it freely available for the community to use, modify, and improve upon.
+### Prerrequisitos
+- Cuenta en [Netlify](https://netlify.com)
+- Cuenta en [Supabase](https://supabase.com)
+- Repositorio en GitHub/GitLab
 
-## Features
+### Pasos para desplegar:
 
-- **Dashboard**: Overview of key metrics and charts
-- **Products Management**: Add, edit, delete, and view products
-- **Customer Management**: Manage customer information and status
-- **Order Management**: Create and manage orders
-- **Point of Sale (POS)**: Quick and easy sales processing
-- **User Authentication**: Secure login system
+1. **Conectar repositorio a Netlify:**
+   - Ve a [netlify.com](https://netlify.com) y crea una cuenta
+   - Haz clic en "New site from Git"
+   - Conecta tu repositorio de GitHub/GitLab
+   - Selecciona este repositorio
 
-## Tech Stack
-
-- **Frontend**: Next.js, React, Tailwind CSS
-- **Backend**: Supabase (PostgreSQL database)
-- **State Management**: React Hooks
-- **UI Components**: Custom components and Shadcn UI
-- **Charts**: Recharts
-
-## Getting Started
-
-1. Clone the repository
-2. Install dependencies:
+2. **Configurar variables de entorno:**
+   En Netlify, ve a `Site settings > Environment variables` y agrega:
    ```
-   npm install
+   NEXT_PUBLIC_SUPABASE_URL=tu_url_de_supabase
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_clave_anonima_de_supabase
    ```
-3. Set up your Supabase project and add the necessary environment variables:
-   - Create a `.env.local` file in the root of your project
-   - Add the following lines to the file:
-     ```
-     NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-     ```
-   - Replace `your_supabase_project_url` and `your_supabase_anon_key` with your actual Supabase project URL and anon key
-4. Run the development server:
-   ```
-   npm run dev
-   ```
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## Project Structure
+3. **Configuración de build:**
+   Netlify detectará automáticamente la configuración desde `netlify.toml`:
+   - Build command: `npm run build`
+   - Publish directory: `out`
+   - Node version: `18`
 
-- `src/app/`: Next.js app router pages
-- `src/components/`: Reusable React components
-- `src/lib/`: Utility functions and Supabase client
-- `schema.sql`: Database schema
+4. **Deploy:**
+   - Haz clic en "Deploy site"
+   - Netlify compilará y desplegará automáticamente
 
-## Key Pages
+### 🔧 Desarrollo Local
 
-- `/admin`: Main dashboard
-- `/admin/products`: Product management
-- `/admin/customers`: Customer management
-- `/admin/orders`: Order management
-- `/admin/pos`: Point of Sale interface
+```bash
+# Instalar dependencias
+npm install
 
-## Database Schema
+# Copiar variables de entorno
+cp .env.example .env.local
+# Editar .env.local con tus credenciales de Supabase
 
-The project uses a PostgreSQL database with the following main tables:
+# Ejecutar en desarrollo
+npm run dev
+```
 
-- `products`: Store product information
-- `customers`: Customer details
-- `orders`: Order information
-- `order_items`: Items within each order
-- `transactions`: Financial transactions
-- `payment_methods`: Available payment methods
+### 📦 Build Local
 
-For the complete schema, refer to `schema.sql`.
+```bash
+# Compilar para producción
+npm run build
+```
 
-## Authentication
+## 🏗️ Estructura del Proyecto
 
-User authentication is handled through Supabase. The login page is available at `/login`.
+- `src/app/` - Páginas de la aplicación (App Router)
+- `src/components/` - Componentes reutilizables
+- `src/lib/` - Utilidades y configuraciones
+- `public/` - Archivos estáticos
 
-## Error Handling
+## 📱 Funcionalidades
 
-A basic error page is implemented at `/error` to handle and display any errors that occur during runtime.
+- ✅ Panel de administración
+- ✅ Gestión de productos
+- ✅ Punto de venta (POS)
+- ✅ Gestión de clientes
+- ✅ Ventas al crédito
+- ✅ Caja registradora
+- ✅ Configuración del sistema
+- ✅ Soporte técnico
 
-## Contributing
+## 🛠️ Tecnologías
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+- **Frontend:** Next.js 14, React 18, TypeScript
+- **Styling:** TailwindCSS, Shadcn/ui
+- **Backend:** Supabase (Database + Auth)
+- **Despliegue:** Netlify (Estático)
 
-## License
+## 🔐 Autenticación
 
-This project is open source and available under the [MIT License](LICENSE).
+El proyecto usa Supabase para autenticación. Asegúrate de configurar:
+- Políticas de seguridad en Supabase
+- URLs permitidas en la configuración de autenticación
+
+## 📝 Notas de Despliegue
+
+- El proyecto está configurado para exportación estática
+- Las imágenes están configuradas como no optimizadas para compatibilidad
+- Las rutas incluyen trailing slash para mejor compatibilidad con hosting estático

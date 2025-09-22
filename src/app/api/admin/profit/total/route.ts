@@ -20,7 +20,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Failed to fetch transactions' }, { status: 500 });
   }
 
-  const sellingTransactions = transactionsData?.filter(transaction => transaction.category === 'selling');
+  const sellingTransactions = transactionsData?.filter(transaction => 
+    transaction.category === 'selling' || transaction.category === 'Pago de Deuda'
+  );
   const expenseTransactions = transactionsData?.filter(transaction => transaction.type === 'expense');
 
   if (!sellingTransactions || !expenseTransactions) {

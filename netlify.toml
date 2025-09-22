@@ -1,0 +1,33 @@
+[build]
+  command = "npm run build"
+  publish = "out"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# Configuración para Next.js estático
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Configuración para Next.js
+[functions]
+  external_node_modules = ["sharp"]
+
+# Variables de entorno para producción
+[context.production.environment]
+  NODE_ENV = "production"
+
+# Configuración para deploy previews
+[context.deploy-preview.environment]
+  NODE_ENV = "production"
+
+# Headers de seguridad
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"

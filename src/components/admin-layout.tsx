@@ -26,37 +26,64 @@ import {
   PackageIcon,
   ShoppingCartIcon,
   UsersIcon,
-  ShoppingBagIcon,
+  CreditCardIcon,
 } from "lucide-react";
 
 const pageNames: { [key: string]: string } = {
-  "/admin": "Dashboard",
-  "/admin/customers": "Customers",
-  "/admin/products": "Products",
-  "/admin/orders": "Orders",
-  "/admin/pos": "Point of Sale",
-  "/admin/cashier": "Cashier",
+  "/admin": "Panel Principal",
+  "/admin/customers": "Clientes",
+  "/admin/products": "Productos",
+  "/admin/pos": "Punto de Venta",
+  "/admin/cashier": "Cajero",
+  "/admin/credit-sales": "Ventas al Fiado",
+  "/admin/settings": "Configuración",
+  "/admin/support": "Soporte Técnico",
 };
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
+  const navigationItems = [
+    { href: "/admin", icon: LayoutDashboardIcon, label: "Panel Principal" },
+    { href: "/admin/cashier", icon: DollarSignIcon, label: "Cajero" },
+    { href: "/admin/products", icon: PackageIcon, label: "Productos" },
+    { href: "/admin/customers", icon: UsersIcon, label: "Clientes" },
+    { href: "/admin/credit-sales", icon: CreditCardIcon, label: "Ventas al Fiado" },
+    { href: "/admin/pos", icon: ShoppingCartIcon, label: "Punto de Venta" },
+  ];
+
+  const handleConfiguration = () => {
+    window.location.href = "/admin/settings";
+  };
+
+  const handleSupport = () => {
+    window.location.href = "/admin/support";
+  };
+
+  const handleLogout = () => {
+    if (confirm("¿Estás seguro de que deseas cerrar sesión?")) {
+      // Aquí puedes agregar la lógica de logout
+      alert("👋 Sesión cerrada exitosamente");
+      // window.location.href = "/login"; // Descomentar cuando exista la página de login
+    }
+  };
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4">
+      <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 pl-14">
         <Link
           href="/admin"
           className="flex items-center gap-2 text-lg font-semibold"
         >
           <Package2Icon className="h-6 w-6" />
-          <span className="sr-only">Admin Panel</span>
+          <span className="sr-only">Panel de Administración</span>
         </Link>
         <h1 className="text-xl font-bold">{pageNames[pathname]}</h1>
         <div className="relative ml-auto flex-1 md:grow-0">
           <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search..."
+            placeholder="Buscar..."
             className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
           />
         </div>
@@ -77,119 +104,47 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Support</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleConfiguration} className="cursor-pointer">
+              Configuración
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleSupport} className="cursor-pointer">
+              Soporte
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+              Cerrar Sesión
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </header>
-      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-        <aside className="fixed mt-[56px] inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-          <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
+      <div className="flex flex-col gap-4 py-4 pl-14">
+        <aside className="fixed mt-[56px] inset-y-0 left-0 z-10 w-14 flex-col border-r bg-background flex">
+          <nav className="flex flex-col items-center gap-4 px-2 py-5">
             <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    href="/admin"
-                    className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                      pathname === "/admin"
-                        ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground"
-                    } transition-colors hover:text-foreground md:h-8 md:w-8`}
-                  >
-                    <LayoutDashboardIcon className="h-5 w-5" />
-                    <span className="sr-only">Dashboard</span>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right">Dashboard</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    href="/admin/cashier"
-                    className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                      pathname === "/admin/cashier"
-                        ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground"
-                    } transition-colors hover:text-foreground md:h-8 md:w-8`}
-                  >
-                    <DollarSignIcon className="h-5 w-5" />
-                    <span className="sr-only">Cashier</span>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right">Cashier</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    href="/admin/products"
-                    className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                      pathname === "/admin/products"
-                        ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground"
-                    } transition-colors hover:text-foreground md:h-8 md:w-8`}
-                  >
-                    <PackageIcon className="h-5 w-5" />
-                    <span className="sr-only">Products</span>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right">Products</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    href="/admin/customers"
-                    className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                      pathname === "/admin/customers"
-                        ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground"
-                    } transition-colors hover:text-foreground md:h-8 md:w-8`}
-                  >
-                    <UsersIcon className="h-5 w-5" />
-                    <span className="sr-only">Customers</span>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right">Customers</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    href="/admin/orders"
-                    className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                      pathname === "/admin/orders"
-                        ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground"
-                    } transition-colors hover:text-foreground md:h-8 md:w-8`}
-                  >
-                    <ShoppingBagIcon className="h-5 w-5" />
-                    <span className="sr-only">Orders</span>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right">Orders</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    href="/admin/pos"
-                    className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                      pathname === "/admin/pos"
-                        ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground"
-                    } transition-colors hover:text-foreground md:h-8 md:w-8`}
-                  >
-                    <ShoppingCartIcon className="h-5 w-5" />
-                    <span className="sr-only">POS</span>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right">Point of Sale</TooltipContent>
-              </Tooltip>
+              {navigationItems.map((item) => (
+                <Tooltip key={item.href}>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href={item.href}
+                      className={`flex h-9 w-9 items-center justify-center rounded-lg ${
+                        pathname === item.href
+                          ? "bg-accent text-accent-foreground"
+                          : "text-muted-foreground"
+                      } transition-colors hover:text-foreground`}
+                    >
+                      <item.icon className="h-5 w-5" />
+                      <span className="sr-only">{item.label}</span>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">{item.label}</TooltipContent>
+                </Tooltip>
+              ))}
             </TooltipProvider>
           </nav>
         </aside>
-        <main className="flex-1 p-4 sm:px-6 sm:py-0">{children}</main>
+        <main className="flex-1 p-4 px-6 py-0">{children}</main>
       </div>
     </div>
   );

@@ -30,6 +30,7 @@ export default function Page() {
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [totalProfit, setTotalProfit] = useState(0);
+  const [totalCreditSales, setTotalCreditSales] = useState(0); // Dinero fiado
   const [cashFlow, setCashFlow] = useState<{ date: string; amount: unknown }[]>([]);
   const [revenueByCategory, setRevenueByCategory] = useState({});
   const [expensesByCategory, setExpensesByCategory] = useState({});
@@ -43,6 +44,7 @@ export default function Page() {
           revenueRes,
           expensesRes,
           profitRes,
+          creditSalesRes,
           cashFlowRes,
           revenueByCategoryRes,
           expensesByCategoryRes,
@@ -51,6 +53,7 @@ export default function Page() {
           fetch('/api/admin/revenue/total'),
           fetch('/api/admin/expenses/total'),
           fetch('/api/admin/profit/total'),
+          fetch('/api/admin/credit-sales/total'), // Nueva API para dinero fiado
           fetch('/api/admin/cashflow'),
           fetch('/api/admin/revenue/category'),
           fetch('/api/admin/expenses/category'),
@@ -60,6 +63,7 @@ export default function Page() {
         const revenue = await revenueRes.json();
         const expenses = await expensesRes.json();
         const profit = await profitRes.json();
+        const creditSales = await creditSalesRes.json();
         const cashFlowData = await cashFlowRes.json();
         const revenueByCategoryData = await revenueByCategoryRes.json();
         const expensesByCategoryData = await expensesByCategoryRes.json();
@@ -68,6 +72,7 @@ export default function Page() {
         setTotalRevenue(revenue.totalRevenue);
         setTotalExpenses(expenses.totalExpenses);
         setTotalProfit(profit.totalProfit);
+        setTotalCreditSales(creditSales.totalCreditSales || 0);
         setCashFlow(Object.entries(cashFlowData.cashFlow).map(([date, amount]) => ({ date, amount })));
         setRevenueByCategory(revenueByCategoryData.revenueByCategory);
         setExpensesByCategory(expensesByCategoryData.expensesByCategory);
@@ -92,10 +97,10 @@ export default function Page() {
 
   return (
     <div className="grid flex-1 items-start gap-4">
-      <div className="grid auto-rows-max items-start gap-4 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="grid auto-rows-max items-start gap-4 lg:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Ingresos Totales</CardTitle>
             <DollarSignIcon className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -105,7 +110,7 @@ export default function Page() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">
-              Total Expenses
+              Gastos Totales
             </CardTitle>
             <DollarSignIcon className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
@@ -115,11 +120,21 @@ export default function Page() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Profit (selling)</CardTitle>
+            <CardTitle className="text-sm font-medium">Ganancia Total</CardTitle>
             <DollarSignIcon className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${totalProfit.toFixed(2)}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Dinero Fiado</CardTitle>
+            <DollarSignIcon className="w-4 h-4 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">${totalCreditSales.toFixed(2)}</div>
+            <p className="text-xs text-muted-foreground">Pendiente de cobro</p>
           </CardContent>
         </Card>
       </div>
@@ -127,7 +142,7 @@ export default function Page() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">
-              Revenue by Category
+              Ingresos por Categoría
             </CardTitle>
             <PieChartIcon className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
@@ -138,7 +153,7 @@ export default function Page() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">
-              Expenses by Category
+              Gastos por Categoría
             </CardTitle>
             <PieChartIcon className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
@@ -148,7 +163,7 @@ export default function Page() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Profit Margin (selling)</CardTitle>
+            <CardTitle className="text-sm font-medium">Margen de Ganancia (ventas)</CardTitle>
             <BarChartIcon className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -157,7 +172,7 @@ export default function Page() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Cash Flow</CardTitle>
+            <CardTitle className="text-sm font-medium">Flujo de Caja</CardTitle>
             <DollarSignIcon className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>

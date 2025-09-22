@@ -103,8 +103,10 @@ export default function OrdersPage() {
       if (filters.status !== "all" && order.status !== filters.status) {
         return false;
       }
+      
+      const customerName = order.customer?.name || "Cliente General";
       return (
-        order.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.id.toString().includes(searchTerm)
       );
     });
@@ -216,7 +218,7 @@ export default function OrdersPage() {
   if (error) {
     return (
       <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">Orders</h1>
+        <h1 className="text-2xl font-bold mb-4">Pedidos</h1>
         <Card>
           <CardContent>
             <p className="text-red-500">{error}</p>
@@ -234,7 +236,7 @@ export default function OrdersPage() {
             <div className="relative">
               <Input
                 type="text"
-                placeholder="Search orders..."
+                placeholder="Buscar pedidos..."
                 value={searchTerm}
                 onChange={handleSearch}
                 className="pr-8"
@@ -245,42 +247,42 @@ export default function OrdersPage() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-1">
                   <FilterIcon className="w-4 h-4" />
-                  <span>Filters</span>
+                  <span>Filtros</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+                <DropdownMenuLabel>Filtrar por Estado</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuCheckboxItem
                   checked={filters.status === "all"}
                   onCheckedChange={() => handleFilterChange("all")}
                 >
-                  All Statuses
+                  Todos los Estados
                 </DropdownMenuCheckboxItem>
                 <DropdownMenuCheckboxItem
                   checked={filters.status === "completed"}
                   onCheckedChange={() => handleFilterChange("completed")}
                 >
-                  Completed
+                  Completado
                 </DropdownMenuCheckboxItem>
                 <DropdownMenuCheckboxItem
                   checked={filters.status === "pending"}
                   onCheckedChange={() => handleFilterChange("pending")}
                 >
-                  Pending
+                  Pendiente
                 </DropdownMenuCheckboxItem>
                 <DropdownMenuCheckboxItem
                   checked={filters.status === "cancelled"}
                   onCheckedChange={() => handleFilterChange("cancelled")}
                 >
-                  Cancelled
+                  Cancelado
                 </DropdownMenuCheckboxItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
           <Button size="sm" onClick={() => setShowNewOrderDialog(true)}>
             <PlusCircle className="w-4 h-4 mr-2" />
-            Create Order
+            Crear Pedido
           </Button>
         </div>
       </CardHeader>
@@ -289,19 +291,19 @@ export default function OrdersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Order ID</TableHead>
-                <TableHead>Customer</TableHead>
+                <TableHead>ID Pedido</TableHead>
+                <TableHead>Cliente</TableHead>
                 <TableHead>Total</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead>Fecha</TableHead>
+                <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredOrders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell>{order.id}</TableCell>
-                  <TableCell>{order.customer.name}</TableCell>
+                  <TableCell>{order.customer?.name || "Cliente General"}</TableCell>
                   <TableCell>${order.total_amount.toFixed(2)}</TableCell>
                   <TableCell>{order.status}</TableCell>
                   <TableCell>{order.created_at}</TableCell>
@@ -312,7 +314,7 @@ export default function OrdersPage() {
                         variant="ghost"
                         onClick={() => {
                           setSelectedOrderId(order.id);
-                          setNewOrderCustomerName(order.customer.name);
+                          setNewOrderCustomerName(order.customer?.name || "Cliente General");
                           setNewOrderTotal(order.total_amount.toString());
                           setNewOrderStatus(order.status);
                           setIsEditOrderDialogOpen(true);
