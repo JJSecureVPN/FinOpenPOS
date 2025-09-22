@@ -2,7 +2,7 @@
   command = "npm run build"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "20"
   # Ensure devDependencies (like TypeScript) are installed in Netlify
   NPM_FLAGS = "--include=dev"
 
