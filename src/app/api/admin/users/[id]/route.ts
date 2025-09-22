@@ -12,18 +12,12 @@ export async function PUT(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Verificar si el usuario es admin usando auth.admin.getUserById
   try {
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(user.id);
+    // Verificar si el usuario es admin usando la función SQL
+    const { data: userRole, error: roleError } = await supabase
+      .rpc('get_user_role');
     
-    if (userError) {
-      console.error('Error getting user data:', userError);
-      return NextResponse.json({ error: 'Unable to verify user' }, { status: 500 });
-    }
-
-    const userRole = userData?.user?.user_metadata?.role || 'cajero';
-    
-    if (userRole !== 'admin') {
+    if (roleError || userRole !== 'admin') {
       return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
     }
 
@@ -33,22 +27,19 @@ export async function PUT(
       return NextResponse.json({ error: 'Valid role is required (admin or cajero)' }, { status: 400 });
     }
 
-    // Actualizar el rol del usuario
-    const { data, error } = await supabase.auth.admin.updateUserById(params.id, {
-      user_metadata: { role }
-    });
+    // Actualizar el rol usando función SQL
+    const { data: result, error } = await supabase
+      .rpc('update_user_role_admin', {
+        target_user_id: params.id,
+        new_role: role
+      });
 
     if (error) {
       console.error('Error updating user role:', error);
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    return NextResponse.json({
-      id: data.user.id,
-      email: data.user.email,
-      role: data.user.user_metadata?.role || 'cajero',
-      updated_at: data.user.updated_at
-    });
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error in update user role API:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -66,35 +57,27 @@ export async function DELETE(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Verificar si el usuario es admin usando auth.admin.getUserById
   try {
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(user.id);
+    // Verificar si el usuario es admin usando la función SQL
+    const { data: userRole, error: roleError } = await supabase
+      .rpc('get_user_role');
     
-    if (userError) {
-      console.error('Error getting user data:', userError);
-      return NextResponse.json({ error: 'Unable to verify user' }, { status: 500 });
-    }
-
-    const userRole = userData?.user?.user_metadata?.role || 'cajero';
-    
-    if (userRole !== 'admin') {
+    if (roleError || userRole !== 'admin') {
       return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
     }
 
-    // No permitir que el admin se elimine a sí mismo
-    if (user.id === params.id) {
-      return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 400 });
-    }
-
-    // Eliminar el usuario
-    const { error } = await supabase.auth.admin.deleteUser(params.id);
+    // Eliminar usuario usando función SQL
+    const { data: result, error } = await supabase
+      .rpc('delete_user_admin', {
+        target_user_id: params.id
+      });
 
     if (error) {
       console.error('Error deleting user:', error);
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    return NextResponse.json({ message: 'User deleted successfully' });
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error in delete user API:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
