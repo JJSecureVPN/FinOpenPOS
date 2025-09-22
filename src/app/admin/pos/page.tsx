@@ -292,12 +292,10 @@ export default function POSPage() {
       ) : (
         <div className="max-w-7xl mx-auto p-4">
         {/* Header */}
-        <div className="bg-card rounded-lg shadow-sm p-6 mb-6 border">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Receipt className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold text-foreground">Caja Registradora</h1>
-            </div>
+        <div className="mb-6">
+          <div className="flex items-center space-x-3">
+            <Receipt className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold text-foreground">Caja Registradora</h1>
           </div>
         </div>
 
