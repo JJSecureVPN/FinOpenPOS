@@ -1,9 +1,11 @@
 [build]
-  command = "npm run build"
+  command = "npm run build && npm run export"
   publish = "out"
 
 [build.environment]
   NODE_VERSION = "18"
+  # Ensure devDependencies (like TypeScript) are installed in Netlify
+  NPM_FLAGS = "--include=dev"
 
 # Configuración para Next.js estático
 [[redirects]]
