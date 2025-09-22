@@ -45,7 +45,7 @@ const pageNames: { [key: string]: string } = {
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { isAdmin } = useUserRole();
+  const { isAdmin, loading } = useUserRole();
 
   const navigationItems = [
     { href: "/admin", icon: LayoutDashboardIcon, label: "Panel Principal" },
@@ -54,7 +54,11 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { href: "/admin/customers", icon: UsersIcon, label: "Clientes" },
     { href: "/admin/credit-sales", icon: CreditCardIcon, label: "Ventas al Fiado" },
     { href: "/admin/pos", icon: ShoppingCartIcon, label: "Punto de Venta" },
-    // Solo mostrar gestión de usuarios para admins
+  ];
+
+  // Agregar gestión de usuarios solo para admins (después de cargar)
+  const allNavigationItems = [
+    ...navigationItems,
     ...(isAdmin ? [{ href: "/admin/users", icon: Users2Icon, label: "Gestión de Usuarios" }] : []),
   ];
 
@@ -129,7 +133,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         <aside className="fixed mt-[56px] inset-y-0 left-0 z-10 w-14 flex-col border-r bg-background flex">
           <nav className="flex flex-col items-center gap-4 px-2 py-5">
             <TooltipProvider>
-              {navigationItems.map((item) => (
+              {allNavigationItems.map((item) => (
                 <Tooltip key={item.href}>
                   <TooltipTrigger asChild>
                     <Link
@@ -147,6 +151,10 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                   <TooltipContent side="right">{item.label}</TooltipContent>
                 </Tooltip>
               ))}
+              {/* Debug: Mostrar indicador de carga de roles */}
+              {loading && (
+                <div className="h-2 w-2 bg-yellow-400 rounded-full animate-pulse" title="Cargando roles..." />
+              )}
             </TooltipProvider>
           </nav>
         </aside>
