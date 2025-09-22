@@ -1,89 +1,61 @@
 -- =========================================
--- FINOPEN POS - SISTEMA MULTI-TENANT
+-- FINOPEN POS - ESQUEMA SINGLE-TENANT (user_uid) - PERSONALIZADO
+-- Compatible con el código Next.js que filtra por user_uid y usa categories en transactions
 -- =========================================
 
--- =============================
--- 1. LIMPIAR TABLAS EXISTENTES
--- =============================
+-- INSTRUCCIONES ANTES DE EJECUTAR:
+-- 1. En Supabase SQL Editor, ejecuta primero: SELECT auth.uid();
+-- 2. Copia el resultado (tu UID) y reemplaza 'TU_USER_UID_AQUI' en este script
+-- 3. Reemplaza 'TU_EMAIL_AQUI' con tu email real de Supabase Auth
+-- 4. Ejecuta todo este script
 
--- Drop tables if they exist
-DROP TABLE IF EXISTS debt_payments;
-DROP TABLE IF EXISTS transactions;
-DROP TABLE IF EXISTS order_items;
-DROP TABLE IF EXISTS orders;
-DROP TABLE IF EXISTS customers;
-DROP TABLE IF EXISTS products;
-DROP TABLE IF EXISTS payment_methods;
-DROP TABLE IF EXISTS companies;
+-- 1) LIMPIEZA (¡destruye tablas si existen!)
+DROP TABLE IF EXISTS debt_payments CASCADE;
+DROP TABLE IF EXISTS transactions CASCADE;
+DROP TABLE IF EXISTS order_items CASCADE;
+DROP TABLE IF EXISTS orders CASCADE;
+DROP TABLE IF EXISTS customers CASCADE;
+DROP TABLE IF EXISTS products CASCADE;
+DROP TABLE IF EXISTS payment_methods CASCADE;
 
--- =============================
--- 2. CREAR TABLA DE EMPRESAS
--- =============================
+-- 2) ESQUEMA BASE (single-tenant con user_uid)
 
--- Tabla para manejar múltiples empresas/tiendas
-CREATE TABLE companies (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    admin_id UUID NOT NULL, -- El admin que creó/posee esta empresa
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(20) CHECK (status IN ('active', 'inactive', 'suspended')) DEFAULT 'active',
-    
-    -- Información adicional de la empresa
-    address TEXT,
-    phone VARCHAR(20),
-    email VARCHAR(255),
-    tax_id VARCHAR(50),
-    
-    UNIQUE(admin_id) -- Un admin solo puede tener una empresa
-);
-
--- =============================
--- 3. CREAR ESTRUCTURA DE TABLAS
--- =============================
-
--- Create Products table (ahora vinculada a empresa)
+-- Products
 CREATE TABLE products (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
     in_stock INTEGER NOT NULL,
-    company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    user_uid VARCHAR(255) NOT NULL,
     category VARCHAR(50),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create Customers table (vinculada a empresa)
+-- Customers
 CREATE TABLE customers (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
     phone VARCHAR(20),
-    company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    user_uid VARCHAR(255) NOT NULL,
     status VARCHAR(20) CHECK (status IN ('active', 'inactive')) DEFAULT 'active',
-    debt DECIMAL(10, 2) DEFAULT 0.00,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    -- Un email puede repetirse entre empresas, pero no dentro de la misma empresa
-    UNIQUE(email, company_id)
+    debt DECIMAL(10, 2) DEFAULT 0.00
 );
 
--- Create Orders table (vinculada a empresa)
+-- Orders (customer_id puede ser NULL para ventas sin cliente)
 CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
     customer_id INTEGER REFERENCES customers(id),
     total_amount DECIMAL(10, 2) NOT NULL,
-    company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-    created_by_user_id UUID NOT NULL, -- El usuario (admin o cajero) que creó la orden
+    user_uid VARCHAR(255) NOT NULL,
     status VARCHAR(20) CHECK (status IN ('pending', 'completed', 'cancelled')) DEFAULT 'pending',
-    is_credit_sale BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_credit_sale BOOLEAN DEFAULT FALSE
 );
 
--- Create OrderItems table
+-- OrderItems
 CREATE TABLE order_items (
     id SERIAL PRIMARY KEY,
     order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
@@ -92,62 +64,162 @@ CREATE TABLE order_items (
     price DECIMAL(10, 2) NOT NULL
 );
 
--- Create PaymentMethods table (global para todas las empresas)
+-- PaymentMethods
 CREATE TABLE payment_methods (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE
 );
 
--- Create Transactions table (vinculada a empresa)
+-- Transactions
 CREATE TABLE transactions (
     id SERIAL PRIMARY KEY,
     description TEXT,
     order_id INTEGER REFERENCES orders(id),
     payment_method_id INTEGER REFERENCES payment_methods(id),
     amount DECIMAL(10, 2) NOT NULL,
-    company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-    created_by_user_id UUID NOT NULL, -- El usuario que registró la transacción
-    type VARCHAR(20) CHECK (type IN ('income', 'expense')) DEFAULT 'income',
+    user_uid VARCHAR(255) NOT NULL,
+    type VARCHAR(20) CHECK (type IN ('income', 'expense')),
     category VARCHAR(100),
     status VARCHAR(20) CHECK (status IN ('pending', 'completed', 'failed')) DEFAULT 'completed',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Crear tabla para pagos de deuda (vinculada a empresa)
+-- Debt payments (para pagos de deuda de ventas al fiado)
 CREATE TABLE debt_payments (
     id SERIAL PRIMARY KEY,
     customer_id INTEGER REFERENCES customers(id),
     amount DECIMAL(10, 2) NOT NULL,
     order_ids INTEGER[],
-    company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-    created_by_user_id UUID NOT NULL,
+    user_uid VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     description TEXT
 );
 
--- =============================
--- 3. DATOS INICIALES
--- =============================
+-- Índices útiles por user_uid
+CREATE INDEX IF NOT EXISTS idx_products_user_uid ON products(user_uid);
+CREATE INDEX IF NOT EXISTS idx_customers_user_uid ON customers(user_uid);
+CREATE INDEX IF NOT EXISTS idx_orders_user_uid ON orders(user_uid);
+CREATE INDEX IF NOT EXISTS idx_transactions_user_uid ON transactions(user_uid);
+CREATE INDEX IF NOT EXISTS idx_debt_payments_user_uid ON debt_payments(user_uid);
 
--- Insert initial payment methods
+-- 3) SEED BÁSICO (solo métodos de pago)
 INSERT INTO payment_methods (name) VALUES 
-    ('Credit Card'), 
-    ('Debit Card'), 
-    ('Cash');
+    ('Tarjeta de Crédito'), 
+    ('Tarjeta de Débito'), 
+    ('Efectivo')
+ON CONFLICT (name) DO NOTHING;
 
--- =============================
--- 4. SISTEMA DE ROLES
--- =============================
+-- ✅ BASE DE DATOS LIMPIA - SIN DATOS DEMO
+-- Para agregar tus propios datos:
+-- 1. Reemplaza 'TU_USER_UID_AQUI' con tu UID real de Supabase
+-- 2. Reemplaza 'TU_EMAIL_AQUI' con tu email real
+-- 3. Agrega tus productos y clientes usando la interfaz del sistema
 
--- Crear función para asignar roles por defecto a nuevos usuarios
+-- 4) RLS (Row Level Security) por user_uid
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE debt_payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payment_methods ENABLE ROW LEVEL SECURITY;
+
+-- Limpieza de políticas previas si existieran
+DO $$
+BEGIN
+  -- products
+  DROP POLICY IF EXISTS "Users can view own products" ON products;
+  DROP POLICY IF EXISTS "Users can insert own products" ON products;
+  DROP POLICY IF EXISTS "Users can update own products" ON products;
+  DROP POLICY IF EXISTS "Users can delete own products" ON products;
+  
+  -- customers
+  DROP POLICY IF EXISTS "Users can view own customers" ON customers;
+  DROP POLICY IF EXISTS "Users can insert own customers" ON customers;
+  DROP POLICY IF EXISTS "Users can update own customers" ON customers;
+  DROP POLICY IF EXISTS "Users can delete own customers" ON customers;
+  
+  -- orders
+  DROP POLICY IF EXISTS "Users can view own orders" ON orders;
+  DROP POLICY IF EXISTS "Users can insert own orders" ON orders;
+  DROP POLICY IF EXISTS "Users can update own orders" ON orders;
+  
+  -- order_items
+  DROP POLICY IF EXISTS "Users can view own order_items" ON order_items;
+  DROP POLICY IF EXISTS "Users can insert own order_items" ON order_items;
+  
+  -- transactions
+  DROP POLICY IF EXISTS "Users can view own transactions" ON transactions;
+  DROP POLICY IF EXISTS "Users can insert own transactions" ON transactions;
+  DROP POLICY IF EXISTS "Users can update own transactions" ON transactions;
+  
+  -- debt_payments
+  DROP POLICY IF EXISTS "Users can view own debt_payments" ON debt_payments;
+  DROP POLICY IF EXISTS "Users can insert own debt_payments" ON debt_payments;
+  
+  -- payment_methods
+  DROP POLICY IF EXISTS "Everyone can view payment_methods" ON payment_methods;
+END $$;
+
+-- Nuevas políticas por user_uid
+-- products
+CREATE POLICY "Users can view own products" ON products FOR SELECT USING (user_uid = auth.uid()::text);
+CREATE POLICY "Users can insert own products" ON products FOR INSERT WITH CHECK (user_uid = auth.uid()::text);
+CREATE POLICY "Users can update own products" ON products FOR UPDATE USING (user_uid = auth.uid()::text);
+CREATE POLICY "Users can delete own products" ON products FOR DELETE USING (user_uid = auth.uid()::text);
+
+-- customers
+CREATE POLICY "Users can view own customers" ON customers FOR SELECT USING (user_uid = auth.uid()::text);
+CREATE POLICY "Users can insert own customers" ON customers FOR INSERT WITH CHECK (user_uid = auth.uid()::text);
+CREATE POLICY "Users can update own customers" ON customers FOR UPDATE USING (user_uid = auth.uid()::text);
+CREATE POLICY "Users can delete own customers" ON customers FOR DELETE USING (user_uid = auth.uid()::text);
+
+-- orders
+CREATE POLICY "Users can view own orders" ON orders FOR SELECT USING (user_uid = auth.uid()::text);
+CREATE POLICY "Users can insert own orders" ON orders FOR INSERT WITH CHECK (user_uid = auth.uid()::text);
+CREATE POLICY "Users can update own orders" ON orders FOR UPDATE USING (user_uid = auth.uid()::text);
+
+-- order_items (vía relación con orders)
+CREATE POLICY "Users can view own order_items" ON order_items
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM orders 
+      WHERE orders.id = order_items.order_id 
+      AND orders.user_uid = auth.uid()::text
+    )
+  );
+CREATE POLICY "Users can insert own order_items" ON order_items
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM orders 
+      WHERE orders.id = order_items.order_id 
+      AND orders.user_uid = auth.uid()::text
+    )
+  );
+
+-- transactions
+CREATE POLICY "Users can view own transactions" ON transactions FOR SELECT USING (user_uid = auth.uid()::text);
+CREATE POLICY "Users can insert own transactions" ON transactions FOR INSERT WITH CHECK (user_uid = auth.uid()::text);
+CREATE POLICY "Users can update own transactions" ON transactions FOR UPDATE USING (user_uid = auth.uid()::text);
+
+-- debt_payments
+CREATE POLICY "Users can view own debt_payments" ON debt_payments FOR SELECT USING (user_uid = auth.uid()::text);
+CREATE POLICY "Users can insert own debt_payments" ON debt_payments FOR INSERT WITH CHECK (user_uid = auth.uid()::text);
+
+-- payment_methods: lectura pública
+CREATE POLICY "Everyone can view payment_methods" ON payment_methods FOR SELECT USING (true);
+
+-- 5) SISTEMA DE ROLES (admin/cajero)
+
+-- Función para asignar rol 'cajero' por defecto a nuevos usuarios
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  -- Asignar rol 'cashier' por defecto a nuevos usuarios
+  -- Asignar rol 'cajero' por defecto a nuevos usuarios
   UPDATE auth.users 
   SET raw_user_meta_data = 
     COALESCE(raw_user_meta_data, '{}'::jsonb) || 
-    jsonb_build_object('role', 'cashier')
+    jsonb_build_object('role', 'cajero')
   WHERE id = NEW.id;
   
   RETURN NEW;
@@ -160,145 +232,50 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- =============================
--- 5. CONFIGURACIÓN DE ADMIN
--- =============================
+-- Función para obtener el rol del usuario actual
+CREATE OR REPLACE FUNCTION public.get_user_role()
+RETURNS text AS $$
+BEGIN
+  RETURN (
+    SELECT COALESCE(raw_user_meta_data->>'role', 'cajero')
+    FROM auth.users 
+    WHERE id = auth.uid()
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- ⚠️ IMPORTANTE: Cambiar 'tu-email@ejemplo.com' por tu email real
+-- Función para verificar si el usuario actual es admin
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean AS $$
+BEGIN
+  RETURN public.get_user_role() = 'admin';
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ✅ CONFIGURACIÓN DE USUARIO (PERSONALIZAR ANTES DE EJECUTAR)
+-- Reemplaza estos valores antes de ejecutar el script:
+-- USER_UID: Obtén tu UID ejecutando SELECT auth.uid(); en Supabase
+-- EMAIL: Tu email real de autenticación en Supabase
 UPDATE auth.users 
 SET raw_user_meta_data = 
   COALESCE(raw_user_meta_data, '{}'::jsonb) || 
   jsonb_build_object('role', 'admin')
-WHERE email = 'tu-email@ejemplo.com';
+WHERE email = 'jazmicardozoh05@gmail.com';
 
--- =============================
--- 6. CONSULTAS ÚTILES
--- =============================
+-- 6) VERIFICACIONES (después de ejecutar y personalizar)
+-- Ejecuta estas consultas para verificar la configuración:
 
--- Ver todos los usuarios y sus roles
-SELECT 
-  id,
-  email,
-  raw_user_meta_data->>'role' as role,
-  created_at,
-  email_confirmed_at
-FROM auth.users
-ORDER BY created_at DESC;
+-- Verificar tu rol de usuario:
+-- SELECT id, email, raw_user_meta_data->>'role' as role FROM auth.users WHERE email = 'TU_EMAIL_AQUI';
 
--- =============================
--- 7. POLÍTICAS DE SEGURIDAD RLS
--- =============================
+-- Verificar que puedes acceder a las tablas:
+-- SELECT COUNT(*) as total_productos FROM products WHERE user_uid = auth.uid()::text;
 
--- Habilitar RLS en todas las tablas
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
-ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE debt_payments ENABLE ROW LEVEL SECURITY;
+-- Verificar las funciones de rol:
+-- SELECT public.get_user_role() as mi_rol, public.is_admin() as soy_admin;
 
--- Políticas para products (solo el usuario dueño puede ver/editar)
-CREATE POLICY "Users can view own products" ON products
-  FOR SELECT USING (auth.uid()::text = user_uid);
-
-CREATE POLICY "Users can insert own products" ON products
-  FOR INSERT WITH CHECK (auth.uid()::text = user_uid);
-
-CREATE POLICY "Users can update own products" ON products
-  FOR UPDATE USING (auth.uid()::text = user_uid);
-
-CREATE POLICY "Users can delete own products" ON products
-  FOR DELETE USING (auth.uid()::text = user_uid);
-
--- Políticas para customers
-CREATE POLICY "Users can view own customers" ON customers
-  FOR SELECT USING (auth.uid()::text = user_uid);
-
-CREATE POLICY "Users can insert own customers" ON customers
-  FOR INSERT WITH CHECK (auth.uid()::text = user_uid);
-
-CREATE POLICY "Users can update own customers" ON customers
-  FOR UPDATE USING (auth.uid()::text = user_uid);
-
-CREATE POLICY "Users can delete own customers" ON customers
-  FOR DELETE USING (auth.uid()::text = user_uid);
-
--- Políticas para orders
-CREATE POLICY "Users can view own orders" ON orders
-  FOR SELECT USING (auth.uid()::text = user_uid);
-
-CREATE POLICY "Users can insert own orders" ON orders
-  FOR INSERT WITH CHECK (auth.uid()::text = user_uid);
-
-CREATE POLICY "Users can update own orders" ON orders
-  FOR UPDATE USING (auth.uid()::text = user_uid);
-
--- Políticas para order_items (acceso a través de orders)
-CREATE POLICY "Users can view own order_items" ON order_items
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM orders 
-      WHERE orders.id = order_items.order_id 
-      AND orders.user_uid = auth.uid()::text
-    )
-  );
-
-CREATE POLICY "Users can insert own order_items" ON order_items
-  FOR INSERT WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM orders 
-      WHERE orders.id = order_items.order_id 
-      AND orders.user_uid = auth.uid()::text
-    )
-  );
-
--- Políticas para transactions
-CREATE POLICY "Users can view own transactions" ON transactions
-  FOR SELECT USING (auth.uid()::text = user_uid);
-
-CREATE POLICY "Users can insert own transactions" ON transactions
-  FOR INSERT WITH CHECK (auth.uid()::text = user_uid);
-
-CREATE POLICY "Users can update own transactions" ON transactions
-  FOR UPDATE USING (auth.uid()::text = user_uid);
-
--- Políticas para debt_payments
-CREATE POLICY "Users can view own debt_payments" ON debt_payments
-  FOR SELECT USING (auth.uid()::text = user_uid);
-
-CREATE POLICY "Users can insert own debt_payments" ON debt_payments
-  FOR INSERT WITH CHECK (auth.uid()::text = user_uid);
-
--- Payment methods - acceso público para lectura
-CREATE POLICY "Everyone can view payment_methods" ON payment_methods
-  FOR SELECT USING (true);
-
--- =============================
--- 8. COMANDOS PARA GESTIÓN DE ROLES
--- =============================
-
--- Para asignar rol de admin a un usuario:
--- UPDATE auth.users 
--- SET raw_user_meta_data = 
---   COALESCE(raw_user_meta_data, '{}'::jsonb) || 
---   jsonb_build_object('role', 'admin')
--- WHERE email = 'email-del-usuario@ejemplo.com';
-
--- Para asignar rol de cajero a un usuario:
--- UPDATE auth.users 
--- SET raw_user_meta_data = 
---   COALESCE(raw_user_meta_data, '{}'::jsonb) || 
---   jsonb_build_object('role', 'cashier')
--- WHERE email = 'email-del-usuario@ejemplo.com';
-
--- =============================
--- INSTALACIÓN COMPLETA ✅
--- =============================
-
--- 🎉 ¡Configuración completa!
--- 
--- PASOS SIGUIENTES:
--- 1. Cambiar 'tu-email@ejemplo.com' por tu email real en la línea 97
--- 2. Ejecutar este script completo
--- 3. Verificar que tu usuario tenga rol 'admin' con la consulta de la línea 105
--- 4. ¡Probar el sistema de roles en la aplicación!
+-- ✅ BASE DE DATOS LIMPIA - LISTA PARA USAR
+-- INSTRUCCIONES DE PERSONALIZACIÓN:
+-- 1. Reemplaza 'TU_EMAIL_AQUI' con tu email real de Supabase Auth
+-- 2. Ejecuta todo este script en el SQL Editor de Supabase
+-- 3. Usa la interfaz del sistema para agregar productos y clientes

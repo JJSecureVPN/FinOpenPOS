@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { Button } from "@/components/ui/button";
 import type { Product } from "./types";
 
 type Props = {
@@ -30,12 +31,12 @@ const ProductsTable: React.FC<Props> = ({ products, onEdit, onDelete }) => {
               <td className="p-2 text-right">{p.in_stock ?? 0}</td>
               <td className="p-2 text-right">
                 <div className="inline-flex gap-2">
-                  <button className="rounded border px-2 py-1" onClick={() => onEdit(p)}>
+                  <Button variant="outline" size="sm" onClick={() => onEdit(p)}>
                     Editar
-                  </button>
-                  <button className="rounded border px-2 py-1 text-red-600" onClick={() => onDelete(p)}>
+                  </Button>
+                  <Button variant="destructive" size="sm" onClick={() => onDelete(p)}>
                     Eliminar
-                  </button>
+                  </Button>
                 </div>
               </td>
             </tr>

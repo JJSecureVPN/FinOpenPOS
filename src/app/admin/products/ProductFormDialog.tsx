@@ -1,5 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { Product } from "./types";
 
 type Props = {
@@ -37,60 +42,83 @@ const ProductFormDialog: React.FC<Props> = ({ open, onOpenChange, product, onSub
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md rounded-lg bg-background p-4 shadow-lg">
-        <div className="mb-2 text-lg font-semibold">{form.id ? "Editar producto" : "Nuevo producto"}</div>
-        <form className="space-y-3" onSubmit={handleSubmit}>
-          <input
-            className="w-full rounded-md border px-3 py-2 text-sm"
-            placeholder="Nombre"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            required
-          />
-          <input
-            className="w-full rounded-md border px-3 py-2 text-sm"
-            placeholder="Categoría"
-            value={form.category}
-            onChange={(e) => setForm({ ...form, category: e.target.value })}
-          />
-          <textarea
-            className="w-full rounded-md border px-3 py-2 text-sm"
-            placeholder="Descripción"
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-          />
-          <div className="flex gap-2">
-            <input
-              type="number"
-              className="w-1/2 rounded-md border px-3 py-2 text-sm"
-              placeholder="Precio"
-              value={form.price}
-              min={0}
-              step="0.01"
-              onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })}
-            />
-            <input
-              type="number"
-              className="w-1/2 rounded-md border px-3 py-2 text-sm"
-              placeholder="Stock"
-              value={form.in_stock}
-              min={0}
-              step="1"
-              onChange={(e) => setForm({ ...form, in_stock: parseInt(e.target.value || "0", 10) })}
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{form.id ? "Editar producto" : "Nuevo producto"}</DialogTitle>
+        </DialogHeader>
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div className="space-y-2">
+            <Label htmlFor="name">Nombre *</Label>
+            <Input
+              id="name"
+              placeholder="Nombre del producto"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              required
             />
           </div>
-          <div className="flex justify-end gap-2">
-            <button type="button" className="rounded-md border px-3 py-2 text-sm" onClick={() => onOpenChange(false)}>
+          
+          <div className="space-y-2">
+            <Label htmlFor="category">Categoría</Label>
+            <Input
+              id="category"
+              placeholder="Categoría del producto"
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="description">Descripción</Label>
+            <Textarea
+              id="description"
+              placeholder="Descripción del producto"
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              rows={3}
+            />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="price">Precio *</Label>
+              <Input
+                id="price"
+                type="number"
+                placeholder="0.00"
+                value={form.price}
+                min={0}
+                step="0.01"
+                onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="stock">Stock</Label>
+              <Input
+                id="stock"
+                type="number"
+                placeholder="0"
+                value={form.in_stock}
+                min={0}
+                step="1"
+                onChange={(e) => setForm({ ...form, in_stock: parseInt(e.target.value || "0", 10) })}
+              />
+            </div>
+          </div>
+          
+          <div className="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
-            </button>
-            <button type="submit" className="rounded-md border bg-primary text-primary-foreground px-3 py-2 text-sm">
+            </Button>
+            <Button type="submit">
               Guardar
-            </button>
+            </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
