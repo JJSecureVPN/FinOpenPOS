@@ -270,33 +270,33 @@ export default function POSPage() {
 
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {
-      comestibles: "bg-green-100 text-green-800",
-      snacks: "bg-yellow-100 text-yellow-800",
-      bebidas: "bg-blue-100 text-blue-800",
-      dulces: "bg-pink-100 text-pink-800",
-      limpieza: "bg-purple-100 text-purple-800",
-      higiene: "bg-teal-100 text-teal-800"
+      comestibles: "bg-primary/20 text-primary border border-primary/30",
+      snacks: "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30",
+      bebidas: "bg-blue-500/20 text-blue-300 border border-blue-500/30",
+      dulces: "bg-accent/20 text-accent border border-accent/30",
+      limpieza: "bg-secondary/20 text-secondary border border-secondary/30",
+      higiene: "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
     };
-    return colors[category] || "bg-gray-100 text-gray-800";
+    return colors[category] || "bg-muted text-muted-foreground border border-border";
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-background p-4">
       {isLoading ? (
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Cargando productos...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Cargando productos...</p>
           </div>
         </div>
       ) : (
         <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="bg-card rounded-lg shadow-sm p-6 mb-6 border">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Receipt className="h-8 w-8 text-blue-600" />
-              <h1 className="text-3xl font-bold text-gray-900">Caja Registradora</h1>
+              <Receipt className="h-8 w-8 text-primary" />
+              <h1 className="text-3xl font-bold text-foreground">Caja Registradora</h1>
             </div>
           </div>
         </div>
@@ -326,20 +326,20 @@ export default function POSPage() {
                     <div 
                       key={product.id}
                       onClick={() => addToCart(product)}
-                      className="bg-white border rounded-lg p-4 cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-all"
+                      className="bg-card border rounded-lg p-4 cursor-pointer hover:bg-accent hover:border-primary transition-all"
                     >
                       <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-medium text-sm text-gray-900 line-clamp-2">
+                        <h3 className="font-medium text-sm text-foreground line-clamp-2">
                           {product.name}
                         </h3>
                         <Badge className={`text-xs ${getCategoryColor(product.category)}`}>
                           {product.category}
                         </Badge>
                       </div>
-                      <div className="text-lg font-bold text-green-600">
+                      <div className="text-lg font-bold text-primary">
                         ${product.price.toFixed(2)}
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
+                      <div className="text-xs text-muted-foreground mt-1">
                         Stock: {product.in_stock || 0}
                       </div>
                     </div>
@@ -373,17 +373,17 @@ export default function POSPage() {
                 {/* Lista del carrito */}
                 <div className="space-y-2 max-h-64 overflow-y-auto mb-4">
                   {cart.length === 0 ? (
-                    <div className="text-center text-gray-500 py-8">
-                      <ShoppingCart className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                    <div className="text-center text-muted-foreground py-8">
+                      <ShoppingCart className="h-12 w-12 mx-auto mb-2 text-muted-foreground/50" />
                       <p>Carrito vacío</p>
                       <p className="text-sm">Selecciona productos para agregar</p>
                     </div>
                   ) : (
                     cart.map((item) => (
-                      <div key={item.id} className="flex items-center justify-between bg-gray-50 p-3 rounded">
+                      <div key={item.id} className="flex items-center justify-between bg-muted p-3 rounded">
                         <div className="flex-1">
-                          <div className="font-medium text-sm">{item.name}</div>
-                          <div className="text-green-600 font-semibold">
+                          <div className="font-medium text-sm text-foreground">{item.name}</div>
+                          <div className="text-primary font-semibold">
                             ${item.price.toFixed(2)} × {item.quantity}
                           </div>
                         </div>
@@ -422,7 +422,7 @@ export default function POSPage() {
                     <div className="border-t pt-4 mb-4">
                       <div className="flex justify-between items-center text-xl font-bold">
                         <span>TOTAL:</span>
-                        <span className="text-green-600">${total.toFixed(2)}</span>
+                        <span className="text-primary">${total.toFixed(2)}</span>
                       </div>
                     </div>
 
@@ -430,7 +430,7 @@ export default function POSPage() {
                     {!showPayment ? (
                       <Button 
                         onClick={() => setShowPayment(true)}
-                        className="w-full bg-green-600 hover:bg-green-700"
+                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                         size="lg"
                       >
                         <Calculator className="h-4 w-4 mr-2" />
@@ -440,11 +440,11 @@ export default function POSPage() {
                       <div className="space-y-3">
                         {/* Selección de método de pago */}
                         <div>
-                          <label className="text-sm font-medium text-gray-700">Método de Pago:</label>
+                          <label className="text-sm font-medium text-foreground">Método de Pago:</label>
                           <select
                             value={selectedPaymentMethod}
                             onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                            className="mt-1 w-full p-2 border border-gray-300 rounded-md text-lg"
+                            className="mt-1 w-full p-2 border border-border rounded-md text-lg bg-background text-foreground"
                           >
                             <option value="">Seleccionar método</option>
                             {availablePaymentMethods.map(method => (
@@ -458,7 +458,7 @@ export default function POSPage() {
                         {/* Input condicional según método de pago */}
                         {selectedPaymentMethod === 'cash' && (
                           <div>
-                            <label className="text-sm font-medium text-gray-700">Efectivo Recibido:</label>
+                            <label className="text-sm font-medium text-foreground">Efectivo Recibido:</label>
                             <Input
                               type="number"
                               step="0.01"
@@ -471,22 +471,22 @@ export default function POSPage() {
                         )}
 
                         {selectedPaymentMethod === 'card' && (
-                          <div className="bg-blue-50 p-3 rounded">
-                            <div className="text-sm font-medium text-blue-800">
+                          <div className="bg-accent/50 p-3 rounded border">
+                            <div className="text-sm font-medium text-foreground">
                               💳 Tarjeta: ${total.toFixed(2)}
                             </div>
-                            <div className="text-xs text-blue-600 mt-1">
+                            <div className="text-xs text-muted-foreground mt-1">
                               Confirme el pago en el terminal de tarjeta
                             </div>
                           </div>
                         )}
 
                         {selectedPaymentMethod === 'transfer' && (
-                          <div className="bg-purple-50 p-3 rounded">
-                            <div className="text-sm font-medium text-purple-800">
+                          <div className="bg-secondary/50 p-3 rounded border">
+                            <div className="text-sm font-medium text-foreground">
                               🏦 Transferencia: ${total.toFixed(2)}
                             </div>
-                            <div className="text-xs text-purple-600 mt-1">
+                            <div className="text-xs text-muted-foreground mt-1">
                               Confirme la transferencia bancaria
                             </div>
                           </div>
@@ -494,9 +494,9 @@ export default function POSPage() {
                         
                         {/* Mostrar cambio solo para efectivo */}
                         {selectedPaymentMethod === 'cash' && paymentReceived && parseFloat(paymentReceived) >= total && (
-                          <div className="bg-green-50 p-3 rounded">
-                            <div className="text-sm font-medium text-green-800">
-                              Cambio: <span className="text-lg">${change.toFixed(2)}</span>
+                          <div className="bg-primary/20 p-3 rounded border border-primary/30">
+                            <div className="text-sm font-medium text-foreground">
+                              Cambio: <span className="text-lg text-primary">${change.toFixed(2)}</span>
                             </div>
                           </div>
                         )}
@@ -519,7 +519,7 @@ export default function POSPage() {
                               !selectedPaymentMethod || 
                               (selectedPaymentMethod === 'cash' && (!paymentReceived || parseFloat(paymentReceived) < total))
                             }
-                            className="flex-1 bg-green-600 hover:bg-green-700"
+                            className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
                           >
                             <Receipt className="h-4 w-4 mr-2" />
                             Finalizar
