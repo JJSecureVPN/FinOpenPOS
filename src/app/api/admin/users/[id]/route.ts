@@ -12,11 +12,11 @@ export async function PUT(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Verificar si el usuario actual es admin
-  const { data: currentUserData } = await supabase.auth.admin.getUserById(user.id);
-  const currentUserRole = currentUserData?.user?.user_metadata?.role || 'cajero';
+  // Verificar si el usuario actual es admin usando la función SQL
+  const { data: isAdminResult, error: roleError } = await supabase
+    .rpc('is_admin');
   
-  if (currentUserRole !== 'admin') {
+  if (roleError || !isAdminResult) {
     return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
   }
 
@@ -60,11 +60,11 @@ export async function DELETE(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Verificar si el usuario actual es admin
-  const { data: currentUserData } = await supabase.auth.admin.getUserById(user.id);
-  const currentUserRole = currentUserData?.user?.user_metadata?.role || 'cajero';
+  // Verificar si el usuario actual es admin usando la función SQL
+  const { data: isAdminResult, error: roleError } = await supabase
+    .rpc('is_admin');
   
-  if (currentUserRole !== 'admin') {
+  if (roleError || !isAdminResult) {
     return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
   }
 
