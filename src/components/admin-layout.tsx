@@ -27,7 +27,9 @@ import {
   ShoppingCartIcon,
   UsersIcon,
   CreditCardIcon,
+  Users2Icon,
 } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const pageNames: { [key: string]: string } = {
   "/admin": "Panel Principal",
@@ -36,12 +38,14 @@ const pageNames: { [key: string]: string } = {
   "/admin/pos": "Punto de Venta",
   "/admin/cashier": "Cajero",
   "/admin/credit-sales": "Ventas al Fiado",
+  "/admin/users": "Gestión de Usuarios",
   "/admin/settings": "Configuración",
   "/admin/support": "Soporte Técnico",
 };
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { isAdmin } = useUserRole();
 
   const navigationItems = [
     { href: "/admin", icon: LayoutDashboardIcon, label: "Panel Principal" },
@@ -50,6 +54,8 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { href: "/admin/customers", icon: UsersIcon, label: "Clientes" },
     { href: "/admin/credit-sales", icon: CreditCardIcon, label: "Ventas al Fiado" },
     { href: "/admin/pos", icon: ShoppingCartIcon, label: "Punto de Venta" },
+    // Solo mostrar gestión de usuarios para admins
+    ...(isAdmin ? [{ href: "/admin/users", icon: Users2Icon, label: "Gestión de Usuarios" }] : []),
   ];
 
   const handleConfiguration = () => {
