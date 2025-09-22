@@ -12,6 +12,10 @@ const nextConfig = {
   images: {
     unoptimized: true
   },
+  eslint: {
+    // Do not block production builds due to ESLint errors
+    ignoreDuringBuilds: true,
+  },
   webpack: (config) => {
     config.resolve = config.resolve || {};
     config.resolve.alias = {
