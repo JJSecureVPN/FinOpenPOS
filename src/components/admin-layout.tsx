@@ -30,6 +30,7 @@ import {
   Users2Icon,
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
+import { createClient } from "@/lib/supabase/client";
 
 const pageNames: { [key: string]: string } = {
   "/admin": "Panel Principal",
@@ -70,11 +71,29 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     window.location.href = "/admin/support";
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (confirm("¿Estás seguro de que deseas cerrar sesión?")) {
-      // Aquí puedes agregar la lógica de logout
-      alert("👋 Sesión cerrada exitosamente");
-      // window.location.href = "/login"; // Descomentar cuando exista la página de login
+      try {
+        // Hacer logout en Supabase
+        const supabase = createClient();
+        const { error } = await supabase.auth.signOut();
+        
+        if (error) {
+          console.error('Error al cerrar sesión:', error);
+          alert('Error al cerrar sesión. Inténtalo de nuevo.');
+          return;
+        }
+        
+        // Limpiar storage local si existe
+        localStorage.removeItem('supabase.auth.token');
+        sessionStorage.clear();
+        
+        // Redirigir a login con refresh completo
+        window.location.replace("/login");
+      } catch (error) {
+        console.error('Error al cerrar sesión:', error);
+        alert('Error al cerrar sesión. Inténtalo de nuevo.');
+      }
     }
   };
 
