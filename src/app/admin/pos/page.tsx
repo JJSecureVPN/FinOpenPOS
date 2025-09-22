@@ -326,7 +326,7 @@ export default function POSPage() {
                     <div 
                       key={product.id}
                       onClick={() => addToCart(product)}
-                      className="bg-card border rounded-lg p-4 cursor-pointer hover:bg-accent hover:border-primary transition-all"
+                      className="bg-card border rounded-lg p-4 cursor-pointer hover:bg-card/80 hover:border-border transition-all hover:shadow-sm"
                     >
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="font-medium text-sm text-foreground line-clamp-2">
