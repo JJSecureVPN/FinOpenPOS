@@ -164,11 +164,11 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                       href={item.href}
                       className={`relative flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-200 ${
                         pathname === item.href
-                          ? "bg-primary text-primary-foreground shadow-md scale-105"
-                          : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                       }`}
                     >
-                      {/* Indicador activo más visible */}
+                      {/* Indicador activo más visible con color verde */}
                       {pathname === item.href && (
                         <div className="absolute -left-1 top-1/2 h-6 w-1 bg-primary-foreground rounded-r-full transform -translate-y-1/2" />
                       )}

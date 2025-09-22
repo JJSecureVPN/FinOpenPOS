@@ -52,6 +52,17 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Colores personalizados estilo Odoo
+        odoo: {
+          green: "hsl(142 70% 45%)",
+          "green-dark": "hsl(142 76% 36%)",
+          purple: "hsl(280 35% 50%)",
+          "purple-dark": "hsl(280 30% 25%)",
+          pink: "hsl(320 40% 55%)",
+          "pink-light": "hsl(330 45% 60%)",
+          dark: "hsl(240 10% 8%)",
+          "dark-lighter": "hsl(240 8% 12%)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
