@@ -6,8 +6,7 @@ const __dirname = path.dirname(__filename);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Static export to generate the "out" folder for Netlify
-  output: 'export',
+  // Use default output (SSR/ISR supported by Netlify adapter)
   trailingSlash: true,
   images: {
     unoptimized: true
