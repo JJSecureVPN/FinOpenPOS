@@ -10,14 +10,23 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Obtener el rol del usuario actual
-    const { data: userData } = await supabase.auth.admin.getUserById(user.id);
-    const userRole = userData?.user?.user_metadata?.role || 'cajero';
+    // Obtener el rol usando la función SQL que creamos
+    const { data: roleData, error } = await supabase
+      .rpc('get_user_role');
+
+    if (error) {
+      console.error('Error getting user role:', error);
+      return NextResponse.json({ 
+        user_id: user.id,
+        email: user.email,
+        role: 'cajero' 
+      });
+    }
 
     return NextResponse.json({ 
       user_id: user.id,
       email: user.email,
-      role: userRole 
+      role: roleData || 'cajero' 
     });
   } catch (error) {
     console.error('Error fetching user role:', error);
