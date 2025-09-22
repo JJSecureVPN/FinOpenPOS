@@ -12,7 +12,7 @@ type Props = {
 const ProductsTable: React.FC<Props> = ({ products, onEdit, onDelete }) => {
   return (
     <div className="rounded-md border overflow-hidden">
-      <div className="overflow-x-auto max-h-[600px] overflow-y-auto table-scroll">
+      <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-muted/50 sticky top-0">
             <tr className="border-b">
