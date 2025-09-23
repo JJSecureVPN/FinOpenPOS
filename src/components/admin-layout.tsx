@@ -52,15 +52,20 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
   // Función para determinar si un elemento del menú está activo
   const isActive = (itemHref: string) => {
+    // Normalizar pathname removiendo slash final si existe
+    const normalizedPathname = pathname.endsWith('/') && pathname.length > 1 
+      ? pathname.slice(0, -1) 
+      : pathname;
+    
     if (itemHref === "/admin") {
       // Para el dashboard, solo activo si estamos exactamente en /admin
-      const result = pathname === "/admin";
-      console.log(`Dashboard check: pathname="${pathname}", itemHref="${itemHref}", result=${result}`);
+      const result = normalizedPathname === "/admin";
+      console.log(`Dashboard check: originalPathname="${pathname}", normalizedPathname="${normalizedPathname}", itemHref="${itemHref}", result=${result}`);
       return result;
     }
     // Para otras rutas, activo si el pathname comienza con la ruta del elemento
-    const result = pathname.startsWith(itemHref);
-    console.log(`Other route check: pathname="${pathname}", itemHref="${itemHref}", result=${result}`);
+    const result = normalizedPathname.startsWith(itemHref);
+    console.log(`Other route check: originalPathname="${pathname}", normalizedPathname="${normalizedPathname}", itemHref="${itemHref}", result=${result}`);
     return result;
   };
 
