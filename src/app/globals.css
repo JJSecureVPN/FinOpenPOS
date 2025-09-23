@@ -65,8 +65,18 @@
   * {
     @apply border-border;
   }
-  body {
+  
+  html, body {
     @apply bg-background text-foreground;
+    height: 100vh;
+    overflow: hidden; /* Forzar que no haya scroll en la página */
+    margin: 0;
+    padding: 0;
+  }
+  
+  #__next {
+    height: 100vh;
+    overflow: hidden;
   }
   
   /* Ocultar scrollbars pero mantener funcionalidad */
