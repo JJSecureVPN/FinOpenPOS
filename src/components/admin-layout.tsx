@@ -29,8 +29,6 @@ import {
   CreditCardIcon,
   Users2Icon,
   LogOutIcon,
-  SettingsIcon,
-  HelpCircleIcon,
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { createClient } from "@/lib/supabase/client";
@@ -45,8 +43,6 @@ const pageNames: { [key: string]: string } = {
   "/admin/cashier": "Cajero",
   "/admin/credit-sales": "Ventas al Fiado",
   "/admin/users": "Gestión de Usuarios",
-  "/admin/settings": "Configuración",
-  "/admin/support": "Soporte Técnico",
 };
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -63,12 +59,10 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { href: "/admin/pos", icon: ShoppingCartIcon, label: "Punto de Venta" },
   ];
 
-  // Agregar gestión de usuarios solo para admins y páginas comunes al final
+  // Agregar gestión de usuarios solo para admins
   const allNavigationItems = [
     ...navigationItems,
     ...(isAdmin ? [{ href: "/admin/users", icon: Users2Icon, label: "Gestión de Usuarios" }] : []),
-    { href: "/admin/settings", icon: SettingsIcon, label: "Configuración" },
-    { href: "/admin/support", icon: HelpCircleIcon, label: "Soporte" },
   ];
 
   const handleLogout = async () => {
