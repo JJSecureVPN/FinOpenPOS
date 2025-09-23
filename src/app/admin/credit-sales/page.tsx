@@ -1,75 +1,60 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Loader2Icon, ShoppingCart, CreditCard, ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { ResponsiveContainer, ResponsiveShow } from "@/components/responsive";
+import { Loader2Icon, ArrowLeft, AlertCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-type Product = {
-  id: number;
-  name: string;
-  price: number;
-  in_stock: number;
-  category: string;
-};
-
-type Customer = {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  status: "active" | "inactive";
-  debt: number;
-};
-
-type CartItem = {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-  stock: number;
-};
+// Import our new modular components
+import CreditSaleStats from "./CreditSaleStats";
+import CustomerSelector from "./CustomerSelector";
+import ProductsGrid from "./ProductsGrid";
+import CartPanel from "./CartPanel";
+import type { Product, Customer, CartItem, CreditSaleFilters, CreditSaleOrder } from "./types";
 
 function CreditSalePageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const customerId = searchParams.get('customerId');
 
+  // Main data state
   const [products, setProducts] = useState<Product[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  // Search and filter state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filters, setFilters] = useState<CreditSaleFilters>({
+    category: "all",
+    stockStatus: "all"
+  });
+
+  // Fetch data
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch customer data
+        // Fetch customers
         const customerResponse = await fetch('/api/customers');
         if (customerResponse.ok) {
           const customersData = await customerResponse.json();
           setCustomers(customersData);
           
           if (customerId) {
-            // Si hay customerId, usar ese cliente específico
             const selectedCustomer = customersData.find((c: Customer) => c.id === parseInt(customerId));
             if (selectedCustomer) {
               setCustomer(selectedCustomer);
             } else {
-              alert('Cliente no encontrado');
+              setError('Cliente no encontrado');
               router.push('/admin/customers');
               return;
             }
           }
-          // Si no hay customerId, solo cargar la lista de clientes para mostrar
         }
 
         // Fetch products
@@ -80,6 +65,7 @@ function CreditSalePageInner() {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
+        setError('Error al cargar los datos');
       } finally {
         setLoading(false);
       }
@@ -88,11 +74,7 @@ function CreditSalePageInner() {
     fetchData();
   }, [customerId, router]);
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+  // Cart operations
   const addToCart = (product: Product) => {
     const existingItem = cart.find(item => item.id === product.id);
     
@@ -141,7 +123,9 @@ function CreditSalePageInner() {
   };
 
   const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
+  // Process credit sale
   const processCreditSale = async () => {
     if (cart.length === 0) {
       alert('El carrito está vacío');
@@ -156,9 +140,9 @@ function CreditSalePageInner() {
     setProcessing(true);
 
     try {
-      const orderData = {
+      const orderData: CreditSaleOrder = {
         customerId: customer.id,
-        paymentMethodId: null, // No hay método de pago para ventas al fiado
+        paymentMethodId: null,
         products: cart.map(item => ({
           id: item.id,
           quantity: item.quantity,
@@ -180,11 +164,11 @@ function CreditSalePageInner() {
         alert(`Venta al fiado procesada exitosamente.\nTotal: $${total.toFixed(2)}\nCliente: ${customer.name}`);
         setCart([]);
         
-        // Actualizar la información del cliente
+        // Update customer debt
         const updatedCustomer = { ...customer, debt: customer.debt + total };
         setCustomer(updatedCustomer);
         
-        // Actualizar el stock de productos
+        // Update product stock
         const updatedProducts = products.map(product => {
           const cartItem = cart.find(item => item.id === product.id);
           return cartItem
@@ -207,239 +191,177 @@ function CreditSalePageInner() {
 
   if (loading) {
     return (
-      <div className="h-[80vh] flex items-center justify-center">
-        <Loader2Icon className="h-12 w-12 animate-spin" />
-      </div>
+      <ResponsiveContainer>
+        <div className="flex items-center justify-center h-64">
+          <Loader2Icon className="w-8 h-8 animate-spin" />
+        </div>
+      </ResponsiveContainer>
     );
   }
 
+  if (error) {
+    return (
+      <ResponsiveContainer>
+        <div className="text-center py-12">
+          <AlertCircle className="w-16 h-16 mx-auto text-red-500 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Error</h3>
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()}>
+            Reintentar
+          </Button>
+        </div>
+      </ResponsiveContainer>
+    );
+  }
+
+  // Show customer selector if no customer is selected
   if (!customer) {
     return (
-      <div className="container mx-auto p-4 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Ventas al Fiado</h1>
-          <Link href="/admin/customers">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Ir a Clientes
-            </Button>
-          </Link>
-        </div>
-        
-        <Card>
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Seleccionar Cliente</h2>
-            <p className="text-muted-foreground">
-              Selecciona un cliente para realizar una venta al fiado
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {customers.map((customerItem) => (
-                <Card 
-                  key={customerItem.id} 
-                  className="cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => setCustomer(customerItem)}
-                >
-                  <CardContent className="p-4">
-                    <h3 className="font-medium">{customerItem.name}</h3>
-                    <p className="text-sm text-muted-foreground">{customerItem.email}</p>
-                    <p className="text-sm text-muted-foreground">{customerItem.phone}</p>
-                    <div className="flex justify-between items-center mt-2">
-                      <Badge variant={customerItem.status === 'active' ? 'default' : 'secondary'}>
-                        {customerItem.status === 'active' ? 'Activo' : 'Inactivo'}
-                      </Badge>
-                      <Badge variant={customerItem.debt > 0 ? 'destructive' : 'outline'}>
-                        Deuda: ${customerItem.debt.toFixed(2)}
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              
-              {customers.length === 0 && (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-muted-foreground">No hay clientes disponibles</p>
-                  <Link href="/admin/customers" className="text-blue-500 hover:underline">
-                    Ir a crear un cliente
-                  </Link>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <CustomerSelector 
+        customers={customers}
+        onSelectCustomer={setCustomer}
+      />
     );
   }
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => {
-              if (customerId) {
-                router.push('/admin/customers');
-              } else {
-                setCustomer(null);
-              }
-            }}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            {customerId ? 'Volver a Clientes' : 'Cambiar Cliente'}
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Venta al Fiado</h1>
-            <p className="text-muted-foreground">Cliente: {customer.name}</p>
+    <ResponsiveContainer>
+      <div className="space-y-6">
+        {/* Header */}
+        <ResponsiveShow on="mobile">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  if (customerId) {
+                    router.push('/admin/customers');
+                  } else {
+                    setCustomer(null);
+                  }
+                }}
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <div className="flex-1">
+                <h1 className="text-xl font-bold">Venta al Fiado</h1>
+                <p className="text-sm text-gray-600">{customer.name}</p>
+              </div>
+            </div>
+            
+            <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
+              <span className="text-sm font-medium text-orange-800">Deuda Actual:</span>
+              <Badge variant="destructive" className="text-sm">
+                ${customer.debt.toFixed(2)}
+              </Badge>
+            </div>
           </div>
-        </div>
-        <Badge variant="destructive" className="text-sm">
-          Deuda Actual: ${customer.debt.toFixed(2)}
-        </Badge>
+        </ResponsiveShow>
+
+        <ResponsiveShow on="tablet-desktop">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  if (customerId) {
+                    router.push('/admin/customers');
+                  } else {
+                    setCustomer(null);
+                  }
+                }}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                {customerId ? 'Volver a Clientes' : 'Cambiar Cliente'}
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold">Venta al Fiado</h1>
+                <p className="text-gray-600 mt-1">Cliente: {customer.name}</p>
+              </div>
+            </div>
+            
+            <Badge variant="destructive" className="text-lg px-4 py-2">
+              Deuda Actual: ${customer.debt.toFixed(2)}
+            </Badge>
+          </div>
+        </ResponsiveShow>
+
+        {/* Statistics */}
+        <CreditSaleStats 
+          products={products}
+          selectedCustomer={customer}
+          cartTotal={total}
+          cartItemsCount={cartItemsCount}
+        />
+
+        {/* Main Content */}
+        <ResponsiveShow on="mobile">
+          <div className="space-y-6">
+            {/* Products Grid */}
+            <ProductsGrid
+              products={products}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              filters={filters}
+              onFiltersChange={setFilters}
+              onAddToCart={addToCart}
+            />
+            
+            {/* Cart Panel */}
+            <CartPanel
+              cart={cart}
+              customer={customer}
+              onUpdateQuantity={updateQuantity}
+              onRemoveFromCart={removeFromCart}
+              onProcessSale={processCreditSale}
+              processing={processing}
+            />
+          </div>
+        </ResponsiveShow>
+
+        <ResponsiveShow on="tablet-desktop">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Products Section */}
+            <div className="lg:col-span-2">
+              <ProductsGrid
+                products={products}
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                filters={filters}
+                onFiltersChange={setFilters}
+                onAddToCart={addToCart}
+              />
+            </div>
+
+            {/* Cart Section */}
+            <div className="lg:col-span-1">
+              <CartPanel
+                cart={cart}
+                customer={customer}
+                onUpdateQuantity={updateQuantity}
+                onRemoveFromCart={removeFromCart}
+                onProcessSale={processCreditSale}
+                processing={processing}
+              />
+            </div>
+          </div>
+        </ResponsiveShow>
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Products Section */}
-        <div className="lg:col-span-2 space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Productos</h2>
-                <div className="w-72">
-                  <Input
-                    placeholder="Buscar productos..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filteredProducts.map((product) => (
-                  <Card key={product.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <h3 className="font-medium">{product.name}</h3>
-                      <p className="text-sm text-muted-foreground">{product.category}</p>
-                      <div className="flex justify-between items-center mt-2">
-                        <span className="font-bold">${product.price.toFixed(2)}</span>
-                        <Badge variant={product.in_stock > 0 ? "default" : "destructive"}>
-                          Stock: {product.in_stock}
-                        </Badge>
-                      </div>
-                      <Button
-                        onClick={() => addToCart(product)}
-                        disabled={product.in_stock === 0}
-                        className="w-full mt-2"
-                        size="sm"
-                      >
-                        Agregar al Carrito
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Cart Section */}
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5" />
-                <h2 className="text-lg font-semibold">Carrito</h2>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {cart.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">
-                  Carrito vacío
-                </p>
-              ) : (
-                <>
-                  {cart.map((item) => (
-                    <div key={item.id} className="flex justify-between items-center">
-                      <div className="flex-1">
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          ${item.price.toFixed(2)} c/u
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          size="sm"
-                          variant="outline"
-                        >
-                          -
-                        </Button>
-                        <span className="w-8 text-center">{item.quantity}</span>
-                        <Button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          size="sm"
-                          variant="outline"
-                        >
-                          +
-                        </Button>
-                        <Button
-                          onClick={() => removeFromCart(item.id)}
-                          size="sm"
-                          variant="destructive"
-                        >
-                          ×
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-
-                  <Separator />
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between font-bold text-lg">
-                      <span>Total:</span>
-                      <span>${total.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>Nueva deuda total:</span>
-                      <span>${(customer.debt + total).toFixed(2)}</span>
-                    </div>
-                  </div>
-
-                  <Button
-                    onClick={processCreditSale}
-                    disabled={processing}
-                    className="w-full bg-orange-600 hover:bg-orange-700"
-                  >
-                    {processing ? (
-                      <>
-                        <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-                        Procesando...
-                      </>
-                    ) : (
-                      <>
-                        <CreditCard className="mr-2 h-4 w-4" />
-                        Procesar Venta al Fiado
-                      </>
-                    )}
-                  </Button>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
+    </ResponsiveContainer>
   );
 }
 
 export default function CreditSalePage() {
   return (
-    <Suspense fallback={<div className="h-[80vh] flex items-center justify-center"><Loader2Icon className="h-12 w-12 animate-spin" /></div>}>
+    <Suspense fallback={
+      <ResponsiveContainer>
+        <div className="flex items-center justify-center h-64">
+          <Loader2Icon className="w-8 h-8 animate-spin" />
+        </div>
+      </ResponsiveContainer>
+    }>
       <CreditSalePageInner />
     </Suspense>
   );
