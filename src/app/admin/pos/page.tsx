@@ -351,6 +351,100 @@ export default function POSPage() {
     </Card>
   );
 
+  // Cart sidebar para desktop
+  const CartSidebar = () => (
+    <aside className="hidden lg:block lg:col-span-4 xl:col-span-3">
+      <div className="bg-card border rounded-lg shadow-sm sticky top-20 max-h-[calc(100vh-160px)] flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b bg-background rounded-t-lg">
+          <div className="flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5" />
+            <Typography variant="h3">Carrito</Typography>
+          </div>
+          {totalItems > 0 && (
+            <Badge variant="destructive">{totalItems}</Badge>
+          )}
+        </div>
+        <div className="flex-1 overflow-y-auto p-4">
+          {cart.length === 0 ? (
+            <div className="text-center py-8">
+              <ShoppingCart className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <Typography variant="body" className="text-gray-500">
+                El carrito está vacío
+              </Typography>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {cart.map((item) => (
+                <CartItemRow key={item.id} item={item} />
+              ))}
+            </div>
+          )}
+        </div>
+        {cart.length > 0 && (
+          <div className="border-t p-4 space-y-4 bg-background rounded-b-lg">
+            <div className="flex justify-between items-center">
+              <Typography variant="h3">Total:</Typography>
+              <Typography variant="h3" className="text-primary">
+                ${totalAmount.toFixed(2)}
+              </Typography>
+            </div>
+            <div className="space-y-3">
+              <Typography variant="body-sm" className="text-gray-600">
+                Método de pago:
+              </Typography>
+              <Select value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar método de pago" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availablePaymentMethods.map((method) => (
+                    <SelectItem key={method.id} value={method.id}>
+                      <div className="flex items-center space-x-2">
+                        <PaymentMethodIcon id={method.id} />
+                        <span>{method.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedPaymentMethod === 'cash' && (
+                <div className="space-y-2">
+                  <Typography variant="body-sm" className="text-gray-600">
+                    Monto recibido:
+                  </Typography>
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    value={paymentReceived}
+                    onChange={(e) => setPaymentReceived(e.target.value)}
+                    className="text-base"
+                  />
+                  {paymentReceived && parseFloat(paymentReceived) >= totalAmount && (
+                    <Typography variant="body-sm" className="text-green-600">
+                      Cambio: ${(parseFloat(paymentReceived) - totalAmount).toFixed(2)}
+                    </Typography>
+                  )}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={clearCart} className="flex-1">
+                  Limpiar
+                </Button>
+                <Button
+                  onClick={handleSale}
+                  className="flex-1"
+                  disabled={!selectedPaymentMethod || (selectedPaymentMethod === 'cash' && parseFloat(paymentReceived || '0') < totalAmount)}
+                >
+                  Procesar Venta
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+
   return (
     <div className="relative">
       {/* Header del POS con altura fija (56px) */}
@@ -361,7 +455,7 @@ export default function POSPage() {
 
   {/* Área principal de búsqueda (sin contenedor oscuro, sin scroll extra) */}
   {/* min-h = 100vh - header global (56) - header POS (56) - footer (56) = 100vh - 168px */}
-  <div className="px-4 pt-4 pb-[56px] min-h-[calc(100vh-168px)]">
+  <div className="px-4 pt-4 pb-[56px] lg:pb-4 min-h-[calc(100vh-168px)]">
           {/* Buscador y filtros */}
           <div className="space-y-4 mb-6">
             <div className="relative">
@@ -399,8 +493,9 @@ export default function POSPage() {
             </div>
           </div>
 
-          {/* Resultados de búsqueda */}
-          <div className="space-y-2">
+          {/* Layout responsive: móvil 1 columna, desktop 2 columnas (izq: búsqueda, der: carrito) */}
+          <div className="lg:grid lg:grid-cols-12 lg:gap-6">
+            <div className="space-y-2 lg:col-span-8 xl:col-span-9">
             {searchResults.length === 0 && (searchTerm.trim() !== "" || selectedCategory !== "all") && (
               <EmptyState title="No se encontraron productos" />
             )}
@@ -413,11 +508,14 @@ export default function POSPage() {
             {searchResults.map((product) => (
               <ProductCard key={product.id} product={product} onAdd={addToCart} />
             ))}
+            </div>
+            {/* Carrito lateral solo desktop */}
+            <CartSidebar />
           </div>
         </div>
       
   {/* Footer fijo dentro del área de contenido (respeta sidebar en todas las vistas) */}
-      <div className="fixed bottom-0 left-16 right-0 h-[56px] border-t shadow-lg z-40 bg-background">
+      <div className="fixed bottom-0 left-16 right-0 h-[56px] border-t shadow-lg z-40 bg-background lg:hidden">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Contador de productos */}
@@ -469,7 +567,7 @@ export default function POSPage() {
 
       {/* Carrito como bottom sheet desde el footer (respeta sidebar) */}
       {showCart && (
-        <div className="fixed inset-y-0 left-16 right-0 z-40" onClick={() => setShowCart(false)}>
+        <div className="fixed inset-y-0 left-16 right-0 z-40 lg:hidden" onClick={() => setShowCart(false)}>
           <div
             className="fixed bottom-0 left-16 right-0 bg-card rounded-t-lg shadow-xl border overflow-hidden max-h-[75vh]"
             onClick={(e) => e.stopPropagation()}
