@@ -290,7 +290,7 @@ export default function POSPage() {
           </div>
         </div>
       ) : (
-        <div className="fixed inset-0 flex flex-col bg-background overflow-hidden">
+        <div className="h-screen flex flex-col bg-background overflow-hidden">
           {/* Header compacto - altura fija */}
           <div className="flex items-center justify-between p-4 border-b bg-card/50 flex-shrink-0">
             <div className="flex items-center space-x-3">
@@ -308,7 +308,7 @@ export default function POSPage() {
           </div>
 
           {/* Layout principal - usa toda la altura restante */}
-          <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 overflow-hidden">
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 overflow-hidden min-h-0">
             {/* Panel de Productos */}
             <div className="flex flex-col overflow-hidden">
               <Card className="flex-1 flex flex-col overflow-hidden">
