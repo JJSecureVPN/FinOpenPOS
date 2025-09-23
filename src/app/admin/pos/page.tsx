@@ -240,6 +240,9 @@ export default function POSPage() {
     }
   };
 
+  const totalItems = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
+  const totalAmount = useMemo(() => cart.reduce((sum, item) => sum + item.subtotal, 0), [cart]);
+
   if (isLoading) {
     return (
       <div className="h-[60vh] flex items-center justify-center">
@@ -250,9 +253,6 @@ export default function POSPage() {
       </div>
     );
   }
-
-  const totalItems = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
-  const totalAmount = useMemo(() => cart.reduce((sum, item) => sum + item.subtotal, 0), [cart]);
 
   // Subcomponentes internos para reducir duplicación
   const PaymentMethodIcon = ({ id }: { id: string }) => {
