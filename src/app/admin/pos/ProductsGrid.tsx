@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Package } from "lucide-react";
 import { ResponsiveGrid } from "@/components/responsive";
+import { Typography } from "@/components/ui/typography";
 import type { Product } from "./types";
 
 interface ProductsGridProps {
@@ -40,9 +41,9 @@ export default function ProductsGrid({ products, onAddToCart }: ProductsGridProp
             <CardContent className="p-4">
               <div className="space-y-2">
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-medium text-sm leading-tight line-clamp-2 flex-1 min-w-0">
+                  <Typography variant="body" weight="medium" className="leading-tight line-clamp-2 flex-1 min-w-0">
                     {product.name}
-                  </h3>
+                  </Typography>
                   <Badge 
                     variant="outline" 
                     className={`text-xs shrink-0 ${getCategoryColor(product.category)}`}
@@ -51,14 +52,18 @@ export default function ProductsGrid({ products, onAddToCart }: ProductsGridProp
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-primary">
+                  <Typography variant="h3" weight="bold" className="text-primary">
                     ${product.price.toFixed(2)}
-                  </span>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Package className="h-3 w-3" />
-                    <span className={product.in_stock === 0 ? "text-destructive font-medium" : ""}>
+                  </Typography>
+                  <div className="flex items-center gap-1">
+                    <Package className="h-3 w-3 text-muted-foreground" />
+                    <Typography 
+                      variant="caption" 
+                      weight={product.in_stock === 0 ? "medium" : "normal"}
+                      className={product.in_stock === 0 ? "text-destructive" : "text-muted-foreground"}
+                    >
                       {product.in_stock === 0 ? "Agotado" : `${product.in_stock}`}
-                    </span>
+                    </Typography>
                   </div>
                 </div>
               </div>

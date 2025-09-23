@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
+import { Typography } from "@/components/ui/typography";
 import type { CartItem } from "./types";
 
 interface CartItemsProps {
@@ -16,8 +17,8 @@ export default function CartItems({ cart, onUpdateQuantity, onRemoveFromCart }: 
     return (
       <div className="text-center text-muted-foreground py-8">
         <ShoppingCart className="h-12 w-12 mx-auto mb-4 opacity-50" />
-        <p>El carrito está vacío</p>
-        <p className="text-sm mt-1">Agrega productos para comenzar</p>
+        <Typography variant="body">El carrito está vacío</Typography>
+        <Typography variant="body-sm" className="mt-1">Agrega productos para comenzar</Typography>
       </div>
     );
   }
@@ -28,7 +29,7 @@ export default function CartItems({ cart, onUpdateQuantity, onRemoveFromCart }: 
         <Card key={item.id} className="p-3">
           <div className="space-y-2">
             <div className="flex justify-between items-start gap-2">
-              <h4 className="font-medium text-sm leading-tight">{item.name}</h4>
+              <Typography variant="body" weight="medium" className="leading-tight">{item.name}</Typography>
               <Button
                 variant="ghost"
                 size="sm"
@@ -48,7 +49,7 @@ export default function CartItems({ cart, onUpdateQuantity, onRemoveFromCart }: 
                 >
                   -
                 </Button>
-                <span className="w-8 text-center text-sm">{item.quantity}</span>
+                <Typography variant="body-sm" className="w-8 text-center">{item.quantity}</Typography>
                 <Button
                   variant="outline"
                   size="sm"
@@ -58,7 +59,7 @@ export default function CartItems({ cart, onUpdateQuantity, onRemoveFromCart }: 
                   +
                 </Button>
               </div>
-              <span className="font-semibold text-sm">${item.subtotal.toFixed(2)}</span>
+              <Typography variant="body-sm" weight="semibold">${item.subtotal.toFixed(2)}</Typography>
             </div>
           </div>
         </Card>

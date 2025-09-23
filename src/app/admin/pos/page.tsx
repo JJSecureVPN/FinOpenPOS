@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Receipt } from "lucide-react";
 import { configService, getEnabledPaymentMethods, type PaymentMethod } from "@/lib/config";
 import { ResponsiveContainer, MobileAdaptive } from "@/components/responsive";
+import { Typography } from "@/components/ui/typography";
 import type { Product, CartItem } from "./types";
 import ProductsGrid from "./ProductsGrid";
 import CartPanel from "./CartPanel";
@@ -221,7 +222,7 @@ export default function POSPage() {
       <div className="h-[60vh] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Cargando productos...</p>
+          <Typography variant="body" className="mt-4 text-muted-foreground">Cargando productos...</Typography>
         </div>
       </div>
     );
@@ -232,7 +233,7 @@ export default function POSPage() {
       {/* Header */}
       <div className="flex items-center space-x-3 mb-6">
         <Receipt className="h-8 w-8 text-primary" />
-        <h1 className="text-3xl font-bold">Punto de Venta</h1>
+        <Typography variant="h1" weight="bold">Punto de Venta</Typography>
       </div>
 
       <MobileAdaptive

@@ -1,6 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
+import { Typography } from "@/components/ui/typography";
 import { Search } from "lucide-react";
 import { MobileAdaptive } from "@/components/responsive";
 
@@ -27,9 +28,9 @@ export default function SearchHeader({ searchTerm, onSearchChange, productsCount
             className="pl-10 w-full"
           />
         </div>
-        <div className="text-sm text-muted-foreground sm:whitespace-nowrap">
+        <Typography variant="body-sm" className="text-muted-foreground sm:whitespace-nowrap">
           {productsCount} productos
-        </div>
+        </Typography>
       </div>
     </MobileAdaptive>
   );

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calculator, Receipt } from "lucide-react";
+import { Typography } from "@/components/ui/typography";
 
 interface PaymentSectionProps {
   showPayment: boolean;
@@ -36,7 +37,7 @@ export default function PaymentSection({
         size="lg"
       >
         <Calculator className="h-4 w-4 mr-2" />
-        Procesar Pago
+        <Typography variant="body">Procesar Pago</Typography>
       </Button>
     );
   }
@@ -44,7 +45,7 @@ export default function PaymentSection({
   return (
     <div className="space-y-3">
       <div className="space-y-2">
-        <label className="text-sm font-medium">Método de Pago:</label>
+        <Typography variant="body-sm" weight="medium">Método de Pago:</Typography>
         <Select value={selectedPaymentMethod} onValueChange={onPaymentMethodChange}>
           <SelectTrigger>
             <SelectValue placeholder="Seleccionar método" />
@@ -61,7 +62,7 @@ export default function PaymentSection({
 
       {selectedPaymentMethod === 'cash' && (
         <div className="space-y-2">
-          <label className="text-sm font-medium">Monto Recibido:</label>
+          <Typography variant="body-sm" weight="medium">Monto Recibido:</Typography>
           <Input
             type="number"
             step="0.01"
@@ -70,11 +71,12 @@ export default function PaymentSection({
             onChange={(e) => onPaymentReceivedChange(e.target.value)}
           />
           {paymentReceived && (
-            <div className="text-sm">
-              <span className={calculateChange() >= 0 ? "text-green-600" : "text-red-600"}>
-                Cambio: ${calculateChange().toFixed(2)}
-              </span>
-            </div>
+            <Typography 
+              variant="body-sm"
+              className={calculateChange() >= 0 ? "text-green-600" : "text-red-600"}
+            >
+              Cambio: ${calculateChange().toFixed(2)}
+            </Typography>
           )}
         </div>
       )}
@@ -85,7 +87,7 @@ export default function PaymentSection({
           onClick={() => onShowPayment(false)}
           className="flex-1"
         >
-          Cancelar
+          <Typography variant="body-sm">Cancelar</Typography>
         </Button>
         <Button 
           onClick={onProcessSale} 
@@ -93,7 +95,7 @@ export default function PaymentSection({
           disabled={selectedPaymentMethod === 'cash' && (!paymentReceived || calculateChange() < 0)}
         >
           <Receipt className="h-3 w-3 mr-1" />
-          Finalizar
+          <Typography variant="body-sm">Finalizar</Typography>
         </Button>
       </div>
     </div>

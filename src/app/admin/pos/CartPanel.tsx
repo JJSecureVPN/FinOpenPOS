@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart } from "lucide-react";
+import { Typography } from "@/components/ui/typography";
 import type { CartItem } from "./types";
 import CartItems from "./CartItems";
 import PaymentSection from "./PaymentSection";
@@ -50,10 +51,10 @@ export default function CartPanel({
   return (
     <Card className="sticky top-6">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center justify-between text-lg">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
-            <span>Carrito</span>
+            <Typography variant="h2" weight="semibold">Carrito</Typography>
             {cart.length > 0 && (
               <Badge variant="secondary">{cart.length}</Badge>
             )}
@@ -64,10 +65,10 @@ export default function CartPanel({
               size="sm" 
               onClick={onClearCart}
             >
-              Limpiar
+              <Typography variant="body-sm">Limpiar</Typography>
             </Button>
           )}
-        </CardTitle>
+        </div>
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -80,9 +81,11 @@ export default function CartPanel({
         {cart.length > 0 && (
           <>
             <div className="border-t pt-4">
-              <div className="flex justify-between items-center text-lg font-bold">
-                <span>Total:</span>
-                <span className="text-primary">${getTotalAmount().toFixed(2)}</span>
+              <div className="flex justify-between items-center">
+                <Typography variant="h2" weight="bold">Total:</Typography>
+                <Typography variant="h2" weight="bold" className="text-primary">
+                  ${getTotalAmount().toFixed(2)}
+                </Typography>
               </div>
             </div>
 
