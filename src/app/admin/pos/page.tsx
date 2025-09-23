@@ -290,20 +290,20 @@ export default function POSPage() {
           </div>
         </div>
       ) : (
-        <div className="h-[calc(100vh-4rem)] p-4 max-w-none">
+        <div className="h-screen p-4 overflow-hidden">
         {/* Header más compacto */}
-        <div className="mb-4">
+        <div className="mb-4 flex-shrink-0">
           <div className="flex items-center space-x-3">
             <Receipt className="h-6 w-6 text-primary" />
             <h1 className="text-2xl font-bold text-foreground">Caja Registradora</h1>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 h-[calc(100%-4rem)]">
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 h-[calc(100%-5rem)]">
           {/* Panel de Productos - Más espacio en pantallas grandes */}
-          <div className="xl:col-span-3">
+          <div className="xl:col-span-3 h-full">
             <Card className="h-full flex flex-col">
-              <CardHeader className="pb-4">
+              <CardHeader className="pb-4 flex-shrink-0">
                 <CardTitle className="flex items-center text-lg">
                   <Package className="h-5 w-5 mr-2" />
                   Productos Disponibles
@@ -318,8 +318,8 @@ export default function POSPage() {
                   />
                 </div>
               </CardHeader>
-              <CardContent className="flex-1 overflow-hidden">
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 h-full overflow-y-auto">
+              <CardContent className="flex-1 overflow-hidden p-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 h-full overflow-y-auto pr-2">
                   {filteredProducts.map((product) => (
                     <div 
                       key={product.id}
@@ -350,9 +350,9 @@ export default function POSPage() {
           </div>
 
           {/* Panel del Carrito - Más ancho en pantallas grandes */}
-          <div className="xl:col-span-1">
+          <div className="xl:col-span-1 h-full">
             <Card className="h-full flex flex-col">
-              <CardHeader className="pb-4">
+              <CardHeader className="pb-4 flex-shrink-0">
                 <CardTitle className="flex items-center justify-between text-lg">
                   <div className="flex items-center">
                     <ShoppingCart className="h-5 w-5 mr-2" />
@@ -369,9 +369,9 @@ export default function POSPage() {
                   )}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex-1 flex flex-col">
+              <CardContent className="flex-1 flex flex-col overflow-hidden p-4">
                 {/* Lista del carrito */}
-                <div className="space-y-2 flex-1 overflow-y-auto mb-4 min-h-0">
+                <div className="flex-1 overflow-y-auto mb-4 pr-2">
                   {cart.length === 0 ? (
                     <div className="text-center text-muted-foreground py-8 flex flex-col items-center justify-center h-full">
                       <ShoppingCart className="h-12 w-12 mb-2 text-muted-foreground/50" />
@@ -379,49 +379,51 @@ export default function POSPage() {
                       <p className="text-sm">Selecciona productos para agregar</p>
                     </div>
                   ) : (
-                    cart.map((item) => (
-                      <div key={item.id} className="flex items-center justify-between bg-muted p-3 rounded">
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm text-foreground truncate">{item.name}</div>
-                          <div className="text-primary font-semibold">
-                            ${item.price.toFixed(2)} × {item.quantity}
+                    <div className="space-y-2">
+                      {cart.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between bg-muted p-3 rounded">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm text-foreground truncate">{item.name}</div>
+                            <div className="text-primary font-semibold">
+                              ${item.price.toFixed(2)} × {item.quantity}
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-1 ml-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              className="h-7 w-7 p-0"
+                            >
+                              -
+                            </Button>
+                            <span className="w-8 text-center text-sm">{item.quantity}</span>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              className="h-7 w-7 p-0"
+                            >
+                              +
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => removeFromCart(item.id)}
+                              className="h-7 w-7 p-0"
+                            >
+                              ×
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-1 ml-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="h-7 w-7 p-0"
-                          >
-                            -
-                          </Button>
-                          <span className="w-8 text-center text-sm">{item.quantity}</span>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="h-7 w-7 p-0"
-                          >
-                            +
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => removeFromCart(item.id)}
-                            className="h-7 w-7 p-0"
-                          >
-                            ×
-                          </Button>
-                        </div>
-                      </div>
-                    ))
+                      ))}
+                    </div>
                   )}
                 </div>
 
                 {/* Total y Pago - Fijo en la parte inferior */}
                 {cart.length > 0 && (
-                  <div className="border-t pt-4 space-y-4">
+                  <div className="border-t pt-4 space-y-4 flex-shrink-0">
                     <div className="flex justify-between items-center text-xl font-bold">
                       <span>TOTAL:</span>
                       <span className="text-primary">${total.toFixed(2)}</span>
