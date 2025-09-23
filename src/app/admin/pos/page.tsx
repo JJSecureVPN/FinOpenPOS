@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Receipt } from "lucide-react";
 import { configService, getEnabledPaymentMethods, type PaymentMethod } from "@/lib/config";
+import { ResponsiveContainer, MobileAdaptive } from "@/components/responsive";
 import type { Product, CartItem } from "./types";
 import ProductsGrid from "./ProductsGrid";
 import CartPanel from "./CartPanel";
@@ -227,50 +228,56 @@ export default function POSPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <ResponsiveContainer variant="page" padding="md">
       {/* Header */}
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center space-x-3 mb-6">
         <Receipt className="h-8 w-8 text-primary" />
         <h1 className="text-3xl font-bold">Punto de Venta</h1>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-        {/* Panel de Productos */}
-        <div className="xl:col-span-3">
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-            <div className="p-6">
-              <SearchHeader
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                productsCount={filteredProducts.length}
-              />
-              
-              <ProductsGrid
-                products={filteredProducts}
-                onAddToCart={addToCart}
-              />
+      <MobileAdaptive
+        mobileLayout="stack"
+        breakpoint="lg"
+        className="gap-6"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Panel de Productos */}
+          <div className="lg:col-span-3">
+            <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+              <div className="p-4 sm:p-6">
+                <SearchHeader
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  productsCount={filteredProducts.length}
+                />
+                
+                <ProductsGrid
+                  products={filteredProducts}
+                  onAddToCart={addToCart}
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Panel del Carrito */}
-        <div className="xl:col-span-1">
-          <CartPanel
-            cart={cart}
-            onUpdateQuantity={updateQuantity}
-            onRemoveFromCart={removeFromCart}
-            onClearCart={clearCart}
-            showPayment={showPayment}
-            onShowPayment={setShowPayment}
-            onProcessSale={handleSale}
-            paymentReceived={paymentReceived}
-            onPaymentReceivedChange={setPaymentReceived}
-            selectedPaymentMethod={selectedPaymentMethod}
-            onPaymentMethodChange={setSelectedPaymentMethod}
-            availablePaymentMethods={availablePaymentMethods}
-          />
+          {/* Panel del Carrito */}
+          <div className="lg:col-span-1">
+            <CartPanel
+              cart={cart}
+              onUpdateQuantity={updateQuantity}
+              onRemoveFromCart={removeFromCart}
+              onClearCart={clearCart}
+              showPayment={showPayment}
+              onShowPayment={setShowPayment}
+              onProcessSale={handleSale}
+              paymentReceived={paymentReceived}
+              onPaymentReceivedChange={setPaymentReceived}
+              selectedPaymentMethod={selectedPaymentMethod}
+              onPaymentMethodChange={setSelectedPaymentMethod}
+              availablePaymentMethods={availablePaymentMethods}
+            />
+          </div>
         </div>
-      </div>
-    </div>
+      </MobileAdaptive>
+    </ResponsiveContainer>
   );
 }
