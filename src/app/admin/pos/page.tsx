@@ -252,11 +252,9 @@ export default function POSPage() {
   const totalAmount = cart.reduce((sum, item) => sum + item.subtotal, 0);
 
   return (
-    <div className="relative h-screen bg-background overflow-hidden">
-      {/* Contenedor scroll interno que descuenta el alto del footer (56px) */}
-      <div className="absolute inset-0 overflow-auto pb-[56px]">
+    <div className="relative min-h-screen bg-background">
       {/* Header con título dentro del flujo de contenido */}
-      <div className="px-4 py-3 border-b sticky top-0 z-10 bg-background">
+      <div className="px-4 py-3 border-b sticky top-0 z-20 bg-background">
         <div className="flex items-center">
           <ShoppingCart className="h-6 w-6 text-primary mr-2" />
           <Typography variant="h2">Punto de Venta</Typography>
@@ -264,7 +262,7 @@ export default function POSPage() {
       </div>
 
   {/* Área principal de búsqueda (sin contenedor oscuro, sin scroll extra) */}
-  <div className="px-4 pt-4 pb-4">
+  <div className="px-4 pt-4 pb-24">
           {/* Buscador y filtros */}
           <div className="space-y-4 mb-6">
             <div className="relative">
@@ -353,7 +351,7 @@ export default function POSPage() {
             ))}
           </div>
         </div>
-  </div>
+      
   {/* Footer fijo dentro del área de contenido (respeta sidebar en todas las vistas) */}
       <div className="fixed bottom-0 left-16 right-0 h-[56px] bg-background border-t shadow-lg z-40">
         <div className="px-4 py-3">
@@ -407,7 +405,7 @@ export default function POSPage() {
 
       {/* Carrito como bottom sheet desde el footer (respeta sidebar) */}
       {showCart && (
-        <div className="fixed inset-y-0 left-16 right-0 z-50" onClick={() => setShowCart(false)}>
+        <div className="fixed inset-y-0 left-16 right-0 z-40" onClick={() => setShowCart(false)}>
           <div
             className="fixed bottom-0 left-16 right-0 bg-card rounded-t-lg shadow-xl border overflow-hidden max-h-[75vh]"
             onClick={(e) => e.stopPropagation()}
