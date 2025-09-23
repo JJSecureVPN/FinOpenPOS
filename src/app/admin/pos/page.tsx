@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { Search, ShoppingCart, X, Plus, Minus, Trash2, CreditCard, DollarSign } from "lucide-react";
-import { configService, getEnabledPaymentMethods, type PaymentMethod } from "@/lib/config";
+import { getEnabledPaymentMethods, type PaymentMethod } from "@/lib/config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Typography } from "@/components/ui";
 import type { Product, CartItem } from "./types";
@@ -20,7 +20,7 @@ export default function POSPage() {
   const [paymentReceived, setPaymentReceived] = useState<string>("");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
   const [showCart, setShowCart] = useState(false);
-  const [showPayment, setShowPayment] = useState(false);
+  // const [showPayment, setShowPayment] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [availablePaymentMethods, setAvailablePaymentMethods] = useState<PaymentMethod[]>([]);
 
@@ -154,8 +154,7 @@ export default function POSPage() {
 
   const clearCart = () => {
     setCart([]);
-    setPaymentReceived("");
-    setShowPayment(false);
+  setPaymentReceived("");
   };
 
   const handleSale = async () => {
@@ -253,18 +252,19 @@ export default function POSPage() {
   const totalAmount = cart.reduce((sum, item) => sum + item.subtotal, 0);
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      {/* Header con título */}
-      <div className="bg-background border-b px-4 py-3">
+    <div className="relative h-screen bg-background overflow-hidden">
+      {/* Contenedor scroll interno que descuenta el alto del footer (56px) */}
+      <div className="absolute inset-0 overflow-auto pb-[56px]">
+      {/* Header con título dentro del flujo de contenido */}
+      <div className="px-4 py-3 border-b sticky top-0 z-10 bg-background">
         <div className="flex items-center">
           <ShoppingCart className="h-6 w-6 text-primary mr-2" />
           <Typography variant="h2">Punto de Venta</Typography>
         </div>
       </div>
 
-      {/* Área principal de búsqueda */}
-      <div className="flex-1 overflow-auto">
-        <div className="p-4 pb-28">
+  {/* Área principal de búsqueda (sin contenedor oscuro, sin scroll extra) */}
+  <div className="px-4 pt-4 pb-4">
           {/* Buscador y filtros */}
           <div className="space-y-4 mb-6">
             <div className="relative">
@@ -353,10 +353,9 @@ export default function POSPage() {
             ))}
           </div>
         </div>
-      </div>
-
-      {/* Footer fijo dentro del área de contenido (respeta sidebar en todas las vistas) */}
-      <div className="fixed bottom-0 left-16 right-0 bg-background border-t shadow-lg z-40">
+  </div>
+  {/* Footer fijo dentro del área de contenido (respeta sidebar en todas las vistas) */}
+      <div className="fixed bottom-0 left-16 right-0 h-[56px] bg-background border-t shadow-lg z-40">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Contador de productos */}
@@ -408,9 +407,9 @@ export default function POSPage() {
 
       {/* Carrito como bottom sheet desde el footer (respeta sidebar) */}
       {showCart && (
-        <div className="fixed inset-y-0 left-16 right-0 z-50 bg-transparent" onClick={() => setShowCart(false)}>
+        <div className="fixed inset-y-0 left-16 right-0 z-50" onClick={() => setShowCart(false)}>
           <div
-            className="fixed bottom-0 left-16 right-0 bg-card rounded-t-lg shadow-xl border overflow-hidden max-h-[80vh]"
+            className="fixed bottom-0 left-16 right-0 bg-card rounded-t-lg shadow-xl border overflow-hidden max-h-[75vh]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header del carrito */}
