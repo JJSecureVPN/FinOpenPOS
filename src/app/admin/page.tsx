@@ -8,6 +8,7 @@ import {
   CardDescription,
   CardFooter,
 } from "@/components/ui/card";
+import { Typography } from "@/components/ui";
 import {
   ChartTooltipContent,
   ChartTooltip,
@@ -110,7 +111,7 @@ export default function Page() {
           size="sm"
           headerActions={<DollarSignIcon className="w-4 h-4 text-muted-foreground" />}
         >
-          <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+          <Typography variant="h2" weight="bold">${totalRevenue.toFixed(2)}</Typography>
         </ResponsiveCard>
         
         <ResponsiveCard
@@ -118,7 +119,7 @@ export default function Page() {
           size="sm"
           headerActions={<DollarSignIcon className="w-4 h-4 text-muted-foreground" />}
         >
-          <div className="text-2xl font-bold">${totalExpenses.toFixed(2)}</div>
+          <Typography variant="h2" weight="bold">${totalExpenses.toFixed(2)}</Typography>
         </ResponsiveCard>
         
         <ResponsiveCard
@@ -126,7 +127,7 @@ export default function Page() {
           size="sm"
           headerActions={<DollarSignIcon className="w-4 h-4 text-muted-foreground" />}
         >
-          <div className="text-2xl font-bold">${totalProfit.toFixed(2)}</div>
+          <Typography variant="h2" weight="bold">${totalProfit.toFixed(2)}</Typography>
         </ResponsiveCard>
         
         <ResponsiveCard
@@ -134,8 +135,8 @@ export default function Page() {
           size="sm"
           headerActions={<DollarSignIcon className="w-4 h-4 text-orange-500" />}
         >
-          <div className="text-2xl font-bold text-orange-600">${totalCreditSales.toFixed(2)}</div>
-          <p className="text-xs text-muted-foreground mt-1">Pendiente de cobro</p>
+          <Typography variant="h2" weight="bold" className="text-orange-600">${totalCreditSales.toFixed(2)}</Typography>
+          <Typography variant="micro" className="text-muted-foreground mt-1">Pendiente de cobro</Typography>
         </ResponsiveCard>
       </ResponsiveGrid>
 

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import { Typography } from "@/components/ui";
 import {
   Dialog,
   DialogContent,
@@ -193,7 +194,7 @@ export default function Cashier() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Cargando transacciones...</p>
+            <Typography variant="body" className="text-muted-foreground">Cargando transacciones...</Typography>
           </div>
         </div>
       </ResponsiveContainer>
@@ -206,10 +207,10 @@ export default function Cashier() {
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-bold">Cajero</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
+            <Typography variant="h1">Cajero</Typography>
+            <Typography variant="body" className="text-muted-foreground">
               Gestiona las transacciones de ingresos y gastos
-            </p>
+            </Typography>
           </div>
           <Button 
             onClick={handleNewTransaction} 
@@ -217,7 +218,7 @@ export default function Cashier() {
             size="default"
           >
             <Plus className="w-4 h-4" />
-            <span className="sm:inline">Nueva Transacción</span>
+            <Typography variant="button">Nueva Transacción</Typography>
           </Button>
         </div>
 
@@ -236,7 +237,9 @@ export default function Cashier() {
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
-                {transactionToEdit ? "Editar Transacción" : "Nueva Transacción"}
+                <Typography variant="h3">
+                  {transactionToEdit ? "Editar Transacción" : "Nueva Transacción"}
+                </Typography>
               </DialogTitle>
             </DialogHeader>
             <TransactionForm
@@ -251,16 +254,18 @@ export default function Cashier() {
         <Dialog open={isDeleteConfirmationOpen} onOpenChange={setIsDeleteConfirmationOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Confirmar Eliminación</DialogTitle>
+              <DialogTitle>
+                <Typography variant="h3">Confirmar Eliminación</Typography>
+              </DialogTitle>
             </DialogHeader>
             <div className="py-4">
-              <p>¿Estás seguro de que deseas eliminar esta transacción?</p>
+              <Typography variant="body">¿Estás seguro de que deseas eliminar esta transacción?</Typography>
               {transactionToDelete && (
                 <div className="mt-3 p-3 bg-gray-100 rounded-md">
-                  <p className="font-medium">{transactionToDelete.description}</p>
-                  <p className="text-sm text-gray-600">
+                  <Typography variant="body" weight="medium">{transactionToDelete.description}</Typography>
+                  <Typography variant="body-sm" className="text-gray-600">
                     {transactionToDelete.category} - ${transactionToDelete.amount.toFixed(2)}
-                  </p>
+                  </Typography>
                 </div>
               )}
             </div>
@@ -269,13 +274,13 @@ export default function Cashier() {
                 variant="outline" 
                 onClick={() => setIsDeleteConfirmationOpen(false)}
               >
-                Cancelar
+                <Typography variant="button">Cancelar</Typography>
               </Button>
               <Button 
                 variant="destructive" 
                 onClick={confirmDelete}
               >
-                Eliminar
+                <Typography variant="button">Eliminar</Typography>
               </Button>
             </DialogFooter>
           </DialogContent>

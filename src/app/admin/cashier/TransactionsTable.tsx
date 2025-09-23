@@ -3,6 +3,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Typography } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -48,11 +49,13 @@ export default function TransactionsTable({ transactions, onEdit, onDelete }: Tr
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {getTypeIcon(transaction.type)}
-              <span className={`text-xl font-bold ${
-                transaction.type === "income" ? "text-green-600" : "text-red-600"
-              }`}>
+              <Typography 
+                variant="h3" 
+                weight="bold" 
+                className={transaction.type === "income" ? "text-green-600" : "text-red-600"}
+              >
                 ${transaction.amount.toFixed(2)}
-              </span>
+              </Typography>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -63,14 +66,14 @@ export default function TransactionsTable({ transactions, onEdit, onDelete }: Tr
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => onEdit(transaction)}>
                   <Edit className="mr-2 h-4 w-4" />
-                  Editar
+                  <Typography variant="body-sm">Editar</Typography>
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => onDelete(transaction.id)}
                   className="text-red-600"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Eliminar
+                  <Typography variant="body-sm">Eliminar</Typography>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -79,18 +82,20 @@ export default function TransactionsTable({ transactions, onEdit, onDelete }: Tr
           {/* Type badge and category */}
           <div className="flex items-center gap-2 flex-wrap">
             <Badge className={getTypeColor(transaction.type)}>
-              {transaction.type === "income" ? "Ingreso" : "Gasto"}
+              <Typography variant="caption">
+                {transaction.type === "income" ? "Ingreso" : "Gasto"}
+              </Typography>
             </Badge>
-            <span className="text-sm text-muted-foreground">
+            <Typography variant="body-sm" className="text-muted-foreground">
               {transaction.category}
-            </span>
+            </Typography>
           </div>
 
           {/* Description */}
           <div>
-            <p className="text-sm text-gray-700 line-clamp-2">
+            <Typography variant="body-sm" className="text-gray-700 line-clamp-2">
               {transaction.description}
-            </p>
+            </Typography>
           </div>
 
           {/* Date */}
@@ -111,10 +116,10 @@ export default function TransactionsTable({ transactions, onEdit, onDelete }: Tr
             <Card>
               <CardContent className="p-8 text-center">
                 <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No hay transacciones registradas</p>
-                <p className="text-sm text-gray-400 mt-1">
+                <Typography variant="body" className="text-gray-500">No hay transacciones registradas</Typography>
+                <Typography variant="body-sm" className="text-gray-400 mt-1">
                   Agrega tu primera transacción para comenzar
-                </p>
+                </Typography>
               </CardContent>
             </Card>
           ) : (
@@ -132,11 +137,11 @@ export default function TransactionsTable({ transactions, onEdit, onDelete }: Tr
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Categoría</TableHead>
-                    <TableHead>Descripción</TableHead>
-                    <TableHead className="text-right">Monto</TableHead>
+                    <TableHead><Typography variant="body-sm" weight="medium">Fecha</Typography></TableHead>
+                    <TableHead><Typography variant="body-sm" weight="medium">Tipo</Typography></TableHead>
+                    <TableHead><Typography variant="body-sm" weight="medium">Categoría</Typography></TableHead>
+                    <TableHead><Typography variant="body-sm" weight="medium">Descripción</Typography></TableHead>
+                    <TableHead className="text-right"><Typography variant="body-sm" weight="medium">Monto</Typography></TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -146,10 +151,10 @@ export default function TransactionsTable({ transactions, onEdit, onDelete }: Tr
                       <TableCell colSpan={6} className="text-center py-8">
                         <div className="flex flex-col items-center gap-2">
                           <DollarSign className="w-12 h-12 text-gray-400" />
-                          <p className="text-gray-500">No hay transacciones registradas</p>
-                          <p className="text-sm text-gray-400">
+                          <Typography variant="body" className="text-gray-500">No hay transacciones registradas</Typography>
+                          <Typography variant="body-sm" className="text-gray-400">
                             Agrega tu primera transacción para comenzar
-                          </p>
+                          </Typography>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -166,24 +171,28 @@ export default function TransactionsTable({ transactions, onEdit, onDelete }: Tr
                           <div className="flex items-center gap-2">
                             {getTypeIcon(transaction.type)}
                             <Badge className={getTypeColor(transaction.type)}>
-                              {transaction.type === "income" ? "Ingreso" : "Gasto"}
+                              <Typography variant="caption">
+                                {transaction.type === "income" ? "Ingreso" : "Gasto"}
+                              </Typography>
                             </Badge>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="font-medium">{transaction.category}</span>
+                          <Typography variant="body" weight="medium">{transaction.category}</Typography>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm text-gray-700 max-w-[300px] truncate block">
+                          <Typography variant="body-sm" className="text-gray-700 max-w-[300px] truncate block">
                             {transaction.description}
-                          </span>
+                          </Typography>
                         </TableCell>
                         <TableCell className="text-right">
-                          <span className={`font-bold ${
-                            transaction.type === "income" ? "text-green-600" : "text-red-600"
-                          }`}>
+                          <Typography 
+                            variant="body" 
+                            weight="bold" 
+                            className={transaction.type === "income" ? "text-green-600" : "text-red-600"}
+                          >
                             ${transaction.amount.toFixed(2)}
-                          </span>
+                          </Typography>
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>
@@ -195,14 +204,14 @@ export default function TransactionsTable({ transactions, onEdit, onDelete }: Tr
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => onEdit(transaction)}>
                                 <Edit className="mr-2 h-4 w-4" />
-                                Editar
+                                <Typography variant="body-sm">Editar</Typography>
                               </DropdownMenuItem>
                               <DropdownMenuItem 
                                 onClick={() => onDelete(transaction.id)}
                                 className="text-red-600"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                Eliminar
+                                <Typography variant="body-sm">Eliminar</Typography>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
