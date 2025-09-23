@@ -1,59 +1,47 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import React, { useState, useEffect, useMemo } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsiveContainer, ResponsiveShow } from "@/components/responsive";
+import { UserPlus, Users, AlertTriangle, Loader2Icon } from "lucide-react";
 import { useAlert } from "@/components/ui/alert-modal";
-import { 
-  UserPlus, 
-  Users, 
-  Shield, 
-  ShieldCheck, 
-  Trash2, 
-  Edit,
-  AlertTriangle 
-} from "lucide-react";
-import { formatDate } from "@/lib/utils";
 
-interface User {
-  id: string;
-  email: string;
-  role: 'admin' | 'cajero';
-  created_at: string;
-  last_sign_in_at?: string;
-  email_confirmed_at?: string;
-}
-
-interface NewUser {
-  email: string;
-  password: string;
-  confirmPassword: string;
-  role: 'admin' | 'cajero';
-}
+// Import our new modular components
+import UserStats from "./UserStats";
+import UserSearchFilters from "./UserSearchFilters";
+import UsersTable from "./UsersTable";
+import UserForm from "./UserForm";
+import type { User, NewUser, CurrentUser, UserFilters } from "./types";
 
 export default function UsersManagement() {
+  // Main data state
   const [users, setUsers] = useState<User[]>([]);
-  const [currentUser, setCurrentUser] = useState<{user_id: string; email: string; role: string} | null>(null);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [userToEdit, setUserToEdit] = useState<User | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<User | null>(null);
-  const [newUser, setNewUser] = useState<NewUser>({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: 'cajero'
+  const [error, setError] = useState<string | null>(null);
+
+  // Search and filter state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filters, setFilters] = useState<UserFilters>({
+    role: "all",
+    status: "all",
+    activity: "all"
   });
+
+  // Dialog states
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  
+  // Selected user states
+  const [userToEdit, setUserToEdit] = useState<User | null>(null);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+
   const { showAlert, AlertModal } = useAlert();
 
+  // Fetch current user
   const fetchCurrentUser = async () => {
     try {
       const response = await fetch('/api/auth/user');
@@ -66,21 +54,23 @@ export default function UsersManagement() {
     }
   };
 
+  // Fetch users
   const fetchUsers = async () => {
     try {
       const response = await fetch('/api/admin/users');
       if (response.status === 403) {
-        // Usuario no es admin
+        setError('Acceso denegado. Solo los administradores pueden ver esta página.');
         return;
       }
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
       } else {
-        console.error('Failed to fetch users');
+        setError('Error al cargar usuarios');
       }
     } catch (error) {
       console.error('Error fetching users:', error);
+      setError('Error de conexión');
     } finally {
       setLoading(false);
     }
@@ -91,17 +81,35 @@ export default function UsersManagement() {
     fetchUsers();
   }, []);
 
-  const handleCreateUser = async () => {
-    if (newUser.password !== newUser.confirmPassword) {
-      showAlert('Las contraseñas no coinciden', { variant: 'error' });
-      return;
-    }
+  // Filter users
+  const filteredUsers = useMemo(() => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    if (newUser.password.length < 6) {
-      showAlert('La contraseña debe tener al menos 6 caracteres', { variant: 'error' });
-      return;
-    }
+    return users.filter((user) => {
+      // Text search
+      const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Role filter
+      const matchesRole = filters.role === "all" || user.role === filters.role;
+      
+      // Status filter (verification)
+      const matchesStatus = filters.status === "all" || 
+        (filters.status === "verified" && user.email_confirmed_at) ||
+        (filters.status === "unverified" && !user.email_confirmed_at);
+      
+      // Activity filter
+      const isActive = user.last_sign_in_at && new Date(user.last_sign_in_at) > thirtyDaysAgo;
+      const matchesActivity = filters.activity === "all" ||
+        (filters.activity === "active" && isActive) ||
+        (filters.activity === "inactive" && !isActive);
+      
+      return matchesSearch && matchesRole && matchesStatus && matchesActivity;
+    });
+  }, [users, searchTerm, filters]);
 
+  // User CRUD operations
+  const handleCreateUser = async (userData: NewUser) => {
     try {
       const response = await fetch('/api/admin/users', {
         method: 'POST',
@@ -109,17 +117,16 @@ export default function UsersManagement() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: newUser.email,
-          password: newUser.password,
-          role: newUser.role
+          email: userData.email,
+          password: userData.password,
+          role: userData.role
         }),
       });
 
       if (response.ok) {
         const createdUser = await response.json();
-        setUsers([...users, createdUser]);
-        setIsCreateDialogOpen(false);
-        setNewUser({ email: '', password: '', confirmPassword: '', role: 'cajero' });
+        setUsers(prev => [...prev, createdUser]);
+        setShowCreateDialog(false);
         showAlert('Usuario creado exitosamente', { variant: 'success' });
       } else {
         const error = await response.json();
@@ -131,7 +138,7 @@ export default function UsersManagement() {
     }
   };
 
-  const handleUpdateUserRole = async () => {
+  const handleEditUser = async () => {
     if (!userToEdit) return;
 
     try {
@@ -145,8 +152,10 @@ export default function UsersManagement() {
 
       if (response.ok) {
         const updatedUser = await response.json();
-        setUsers(users.map(u => u.id === updatedUser.id ? { ...u, role: updatedUser.role } : u));
-        setIsEditDialogOpen(false);
+        setUsers(prev => 
+          prev.map(u => u.id === updatedUser.id ? { ...u, role: updatedUser.role } : u)
+        );
+        setShowEditDialog(false);
         setUserToEdit(null);
         showAlert('Rol actualizado exitosamente', { variant: 'success' });
       } else {
@@ -168,8 +177,8 @@ export default function UsersManagement() {
       });
 
       if (response.ok) {
-        setUsers(users.filter(u => u.id !== userToDelete.id));
-        setIsDeleteDialogOpen(false);
+        setUsers(prev => prev.filter(u => u.id !== userToDelete.id));
+        setShowDeleteDialog(false);
         setUserToDelete(null);
         showAlert('Usuario eliminado exitosamente', { variant: 'success' });
       } else {
@@ -182,10 +191,40 @@ export default function UsersManagement() {
     }
   };
 
-  // Si el usuario no es admin, mostrar mensaje de acceso denegado
-  if (!loading && currentUser?.role !== 'admin') {
+  // Event handlers
+  const onEditUser = (user: User) => {
+    setUserToEdit(user);
+    setShowEditDialog(true);
+  };
+
+  const onDeleteUser = (user: User) => {
+    setUserToDelete(user);
+    setShowDeleteDialog(true);
+  };
+
+  const onClearFilters = () => {
+    setSearchTerm("");
+    setFilters({
+      role: "all",
+      status: "all",
+      activity: "all"
+    });
+  };
+
+  if (loading) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
+      <ResponsiveContainer>
+        <div className="flex items-center justify-center h-64">
+          <Loader2Icon className="w-8 h-8 animate-spin" />
+        </div>
+      </ResponsiveContainer>
+    );
+  }
+
+  // Access denied for non-admin users
+  if (error?.includes('Acceso denegado') || (!loading && currentUser?.role !== 'admin')) {
+    return (
+      <ResponsiveContainer>
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertTriangle className="h-16 w-16 text-red-500 mb-4" />
@@ -195,245 +234,185 @@ export default function UsersManagement() {
             </p>
           </CardContent>
         </Card>
-      </div>
+      </ResponsiveContainer>
     );
   }
 
-  if (loading) {
+  if (error) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
+      <ResponsiveContainer>
         <Card>
-          <CardContent className="flex justify-center py-12">
-            <p>Cargando...</p>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <AlertTriangle className="h-16 w-16 text-red-500 mb-4" />
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Error</h2>
+            <p className="text-red-600 text-center mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()}>
+              Reintentar
+            </Button>
           </CardContent>
         </Card>
-      </div>
+      </ResponsiveContainer>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Users className="h-8 w-8 text-blue-600" />
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
-              <p className="text-gray-600">Administra los usuarios del sistema</p>
+    <ResponsiveContainer>
+      <div className="space-y-6">
+        {/* Page Header */}
+        <ResponsiveShow on="mobile">
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-center gap-3">
+              <Users className="h-8 w-8 text-blue-600" />
+              <div>
+                <h1 className="text-2xl font-bold">Gestión de Usuarios</h1>
+                <p className="text-gray-600">Administra usuarios</p>
+              </div>
             </div>
+            <Button onClick={() => setShowCreateDialog(true)} className="w-full">
+              <UserPlus className="w-4 h-4 mr-2" />
+              Crear Usuario
+            </Button>
           </div>
-          
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Crear Cajero
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Crear Nuevo Usuario</DialogTitle>
-              </DialogHeader>
+        </ResponsiveShow>
+
+        <ResponsiveShow on="tablet-desktop">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Users className="h-8 w-8 text-blue-600" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
+                <p className="text-gray-600">Administra los usuarios del sistema</p>
+              </div>
+            </div>
+            <Button onClick={() => setShowCreateDialog(true)}>
+              <UserPlus className="w-4 h-4 mr-2" />
+              Crear Usuario
+            </Button>
+          </div>
+        </ResponsiveShow>
+
+        {/* Statistics */}
+        <UserStats users={users} />
+
+        {/* Search and Filters */}
+        <UserSearchFilters
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          filters={filters}
+          onFiltersChange={setFilters}
+          onClearFilters={onClearFilters}
+          totalCount={users.length}
+          filteredCount={filteredUsers.length}
+        />
+
+        {/* Users Table */}
+        <UsersTable
+          users={filteredUsers}
+          currentUser={currentUser}
+          onEdit={onEditUser}
+          onDelete={onDeleteUser}
+        />
+
+        {/* Create User Dialog */}
+        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Crear Nuevo Usuario</DialogTitle>
+              <DialogDescription>
+                Complete la información del nuevo usuario del sistema
+              </DialogDescription>
+            </DialogHeader>
+            <UserForm
+              onSubmit={handleCreateUser}
+              onCancel={() => setShowCreateDialog(false)}
+              submitText="Crear Usuario"
+            />
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit User Dialog */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Editar Rol de Usuario</DialogTitle>
+              <DialogDescription>
+                Modifica el rol del usuario seleccionado
+              </DialogDescription>
+            </DialogHeader>
+            {userToEdit && (
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={newUser.email}
-                    onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                    placeholder="usuario@ejemplo.com"
-                  />
+                  <label className="text-sm font-medium text-gray-700">Email</label>
+                  <p className="mt-1 p-2 bg-gray-50 rounded border">{userToEdit.email}</p>
                 </div>
                 <div>
-                  <Label htmlFor="password">Contraseña</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={newUser.password}
-                    onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                    placeholder="Mínimo 6 caracteres"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={newUser.confirmPassword}
-                    onChange={(e) => setNewUser({ ...newUser, confirmPassword: e.target.value })}
-                    placeholder="Repite la contraseña"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="role">Rol</Label>
-                  <Select 
-                    value={newUser.role} 
-                    onValueChange={(value: 'admin' | 'cajero') => setNewUser({ ...newUser, role: value })}
+                  <label className="text-sm font-medium text-gray-700">Rol</label>
+                  <select
+                    value={userToEdit.role}
+                    onChange={(e) => setUserToEdit({ ...userToEdit, role: e.target.value as 'admin' | 'cajero' })}
+                    className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
                   >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cajero">Cajero</SelectItem>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <option value="cajero">Cajero</option>
+                    <option value="admin">Administrador</option>
+                  </select>
                 </div>
               </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleCreateUser}>
-                  Crear Usuario
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
+            )}
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowEditDialog(false);
+                  setUserToEdit(null);
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button onClick={handleEditUser}>
+                Actualizar Rol
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete User Dialog */}
+        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Eliminar Usuario</DialogTitle>
+              <DialogDescription>
+                Esta acción no se puede deshacer
+              </DialogDescription>
+            </DialogHeader>
+            {userToDelete && (
+              <div className="space-y-4">
+                <p>¿Estás seguro de que deseas eliminar al usuario <strong>{userToDelete.email}</strong>?</p>
+                <div className="p-3 bg-red-50 border border-red-200 rounded">
+                  <p className="text-sm text-red-600">
+                    ⚠️ Esta acción eliminará permanentemente al usuario y no se puede deshacer.
+                  </p>
+                </div>
+              </div>
+            )}
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowDeleteDialog(false);
+                  setUserToDelete(null);
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button variant="destructive" onClick={handleDeleteUser}>
+                Eliminar Usuario
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <AlertModal />
       </div>
-
-      {/* Users Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Usuarios del Sistema</CardTitle>
-          <CardDescription>
-            Lista de todos los usuarios registrados en el sistema
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Email</TableHead>
-                <TableHead>Rol</TableHead>
-                <TableHead>Creado</TableHead>
-                <TableHead>Último acceso</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.email}</TableCell>
-                  <TableCell>
-                    <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                      {user.role === 'admin' ? (
-                        <><ShieldCheck className="h-3 w-3 mr-1" />Admin</>
-                      ) : (
-                        <><Shield className="h-3 w-3 mr-1" />Cajero</>
-                      )}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{formatDate(user.created_at)}</TableCell>
-                  <TableCell>
-                    {user.last_sign_in_at ? formatDate(user.last_sign_in_at) : 'Nunca'}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={user.email_confirmed_at ? 'default' : 'destructive'}>
-                      {user.email_confirmed_at ? 'Verificado' : 'Sin verificar'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setUserToEdit(user);
-                          setIsEditDialogOpen(true);
-                        }}
-                      >
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                      {currentUser && user.id !== currentUser.user_id && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setUserToDelete(user);
-                            setIsDeleteDialogOpen(true);
-                          }}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {/* Edit User Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Editar Rol de Usuario</DialogTitle>
-          </DialogHeader>
-          {userToEdit && (
-            <div className="space-y-4">
-              <div>
-                <Label>Email</Label>
-                <Input value={userToEdit.email} disabled />
-              </div>
-              <div>
-                <Label htmlFor="editRole">Rol</Label>
-                <Select 
-                  value={userToEdit.role} 
-                  onValueChange={(value: 'admin' | 'cajero') => setUserToEdit({ ...userToEdit, role: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cajero">Cajero</SelectItem>
-                    <SelectItem value="admin">Administrador</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleUpdateUserRole}>
-              Actualizar Rol
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete User Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Eliminar Usuario</DialogTitle>
-          </DialogHeader>
-          {userToDelete && (
-            <div className="space-y-4">
-              <p>¿Estás seguro de que deseas eliminar al usuario <strong>{userToDelete.email}</strong>?</p>
-              <p className="text-sm text-red-600">Esta acción no se puede deshacer.</p>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteUser}>
-              Eliminar Usuario
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      <AlertModal />
-    </div>
+    </ResponsiveContainer>
   );
 }
