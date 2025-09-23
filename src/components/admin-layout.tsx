@@ -54,10 +54,14 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const isActive = (itemHref: string) => {
     if (itemHref === "/admin") {
       // Para el dashboard, solo activo si estamos exactamente en /admin
-      return pathname === "/admin";
+      const result = pathname === "/admin";
+      console.log(`Dashboard check: pathname="${pathname}", itemHref="${itemHref}", result=${result}`);
+      return result;
     }
     // Para otras rutas, activo si el pathname comienza con la ruta del elemento
-    return pathname.startsWith(itemHref);
+    const result = pathname.startsWith(itemHref);
+    console.log(`Other route check: pathname="${pathname}", itemHref="${itemHref}", result=${result}`);
+    return result;
   };
 
   const navigationItems = [
