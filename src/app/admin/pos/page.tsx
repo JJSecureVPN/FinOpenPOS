@@ -253,9 +253,9 @@ export default function POSPage() {
   const totalAmount = cart.reduce((sum, item) => sum + item.subtotal, 0);
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-background">
       {/* Header con título */}
-      <div className="bg-white shadow-sm border-b px-4 py-3">
+      <div className="bg-background border-b px-4 py-3">
         <div className="flex items-center">
           <ShoppingCart className="h-6 w-6 text-primary mr-2" />
           <Typography variant="h2">Punto de Venta</Typography>
@@ -356,7 +356,7 @@ export default function POSPage() {
       </div>
 
       {/* Footer fijo dentro del área de contenido */}
-      <div className="fixed bottom-0 left-16 right-0 bg-white border-t shadow-lg z-40">
+      <div className="fixed bottom-0 left-0 md:left-16 right-0 bg-background border-t shadow-lg z-40">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Contador de productos */}
@@ -408,9 +408,9 @@ export default function POSPage() {
 
       {/* Panel deslizante del carrito */}
       {showCart && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50" onClick={() => setShowCart(false)}>
-          <div 
-            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-lg shadow-xl max-h-[80vh] overflow-hidden"
+        <div className="fixed inset-y-0 left-0 md:left-16 right-0 bg-black bg-opacity-50 z-50" onClick={() => setShowCart(false)}>
+          <div
+            className="fixed bottom-0 right-0 left-0 md:left-auto w-full md:w-[640px] bg-card rounded-t-lg shadow-xl max-h-[80vh] overflow-hidden border"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header del carrito */}
