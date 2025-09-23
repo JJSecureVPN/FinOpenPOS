@@ -1,22 +1,25 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Receipt } from "lucide-react";
+import { Search, ShoppingCart, X, Plus, Minus, Trash2, CreditCard, DollarSign } from "lucide-react";
 import { configService, getEnabledPaymentMethods, type PaymentMethod } from "@/lib/config";
-import { ResponsiveContainer, MobileAdaptive } from "@/components/responsive";
-import { Typography } from "@/components/ui/typography";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Typography } from "@/components/ui";
 import type { Product, CartItem } from "./types";
-import ProductsGrid from "./ProductsGrid";
-import CartPanel from "./CartPanel";
-import SearchHeader from "./SearchHeader";
 
 export default function POSPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [paymentReceived, setPaymentReceived] = useState<string>("");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
+  const [showCart, setShowCart] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [availablePaymentMethods, setAvailablePaymentMethods] = useState<PaymentMethod[]>([]);
@@ -70,17 +73,35 @@ export default function POSPage() {
     }
   };
 
+  // Búsqueda y filtrado de productos
   useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredProducts(products);
-    } else {
-      const filtered = products.filter(product =>
+    if (searchTerm.trim() === "" && selectedCategory === "all") {
+      setSearchResults([]);
+      return;
+    }
+
+    let filtered = products;
+    
+    // Filtrar por categoría
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter(product => 
+        product.category.toLowerCase() === selectedCategory.toLowerCase()
+      );
+    }
+    
+    // Filtrar por término de búsqueda
+    if (searchTerm.trim() !== "") {
+      filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.category.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredProducts(filtered);
     }
-  }, [products, searchTerm]);
+    
+    setSearchResults(filtered);
+  }, [products, searchTerm, selectedCategory]);
+
+  // Obtener categorías únicas
+  const categories = Array.from(new Set(products.map(p => p.category))).sort();
 
   const addToCart = (product: Product) => {
     if (product.in_stock === 0) {
@@ -228,57 +249,322 @@ export default function POSPage() {
     );
   }
 
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const totalAmount = cart.reduce((sum, item) => sum + item.subtotal, 0);
+
   return (
-    <ResponsiveContainer variant="page" padding="md">
-      {/* Header */}
-      <div className="flex items-center space-x-3 mb-6">
-        <Receipt className="h-8 w-8 text-primary" />
-        <Typography variant="h1" weight="bold">Punto de Venta</Typography>
+    <div className="flex flex-col h-screen bg-gray-50">
+      {/* Header con título */}
+      <div className="bg-white shadow-sm border-b px-4 py-3">
+        <div className="flex items-center">
+          <ShoppingCart className="h-6 w-6 text-primary mr-2" />
+          <Typography variant="h2">Punto de Venta</Typography>
+        </div>
       </div>
 
-      <MobileAdaptive
-        mobileLayout="stack"
-        breakpoint="lg"
-        className="gap-6"
-      >
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Panel de Productos */}
-          <div className="lg:col-span-3">
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
-              <div className="p-4 sm:p-6">
-                <SearchHeader
-                  searchTerm={searchTerm}
-                  onSearchChange={setSearchTerm}
-                  productsCount={filteredProducts.length}
-                />
-                
-                <ProductsGrid
-                  products={filteredProducts}
-                  onAddToCart={addToCart}
-                />
-              </div>
+      {/* Área principal de búsqueda */}
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full p-4 pb-20">
+          {/* Buscador y filtros */}
+          <div className="space-y-4 mb-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Buscar productos por nombre..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-12 text-base"
+              />
+            </div>
+            
+            {/* Selector de categorías */}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={selectedCategory === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory("all")}
+                className="rounded-full"
+              >
+                Todas
+              </Button>
+              {categories.map((category) => (
+                <Button
+                  key={category}
+                  variant={selectedCategory === category ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory(category)}
+                  className="rounded-full"
+                >
+                  {category}
+                </Button>
+              ))}
             </div>
           </div>
 
-          {/* Panel del Carrito */}
-          <div className="lg:col-span-1">
-            <CartPanel
-              cart={cart}
-              onUpdateQuantity={updateQuantity}
-              onRemoveFromCart={removeFromCart}
-              onClearCart={clearCart}
-              showPayment={showPayment}
-              onShowPayment={setShowPayment}
-              onProcessSale={handleSale}
-              paymentReceived={paymentReceived}
-              onPaymentReceivedChange={setPaymentReceived}
-              selectedPaymentMethod={selectedPaymentMethod}
-              onPaymentMethodChange={setSelectedPaymentMethod}
-              availablePaymentMethods={availablePaymentMethods}
-            />
+          {/* Resultados de búsqueda */}
+          <div className="space-y-2">
+            {searchResults.length === 0 && (searchTerm.trim() !== "" || selectedCategory !== "all") && (
+              <div className="text-center py-12 text-gray-500">
+                <Search className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <Typography variant="body">No se encontraron productos</Typography>
+              </div>
+            )}
+            
+            {searchResults.length === 0 && searchTerm.trim() === "" && selectedCategory === "all" && (
+              <div className="text-center py-12 text-gray-500">
+                <Search className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <Typography variant="body">Busca productos por nombre o categoría</Typography>
+                <Typography variant="body-sm" className="mt-2">
+                  Usa la barra de búsqueda o selecciona una categoría para comenzar
+                </Typography>
+              </div>
+            )}
+
+            {searchResults.map((product) => (
+              <Card key={product.id} className="p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <Typography variant="body" className="font-medium">
+                      {product.name}
+                    </Typography>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="secondary" className="text-xs">
+                        {product.category}
+                      </Badge>
+                      <Typography variant="body-sm" className="text-gray-500">
+                        Stock: {product.in_stock}
+                      </Typography>
+                    </div>
+                    <Typography variant="body" className="font-semibold text-primary mt-1">
+                      ${product.price.toFixed(2)}
+                    </Typography>
+                  </div>
+                  <Button
+                    onClick={() => addToCart(product)}
+                    disabled={product.in_stock === 0}
+                    size="sm"
+                    className="ml-4"
+                  >
+                    Agregar
+                  </Button>
+                </div>
+              </Card>
+            ))}
           </div>
         </div>
-      </MobileAdaptive>
-    </ResponsiveContainer>
+      </div>
+
+      {/* Footer fijo */}
+      <div className="bg-white border-t shadow-lg">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between">
+            {/* Contador de productos */}
+            <div className="flex items-center space-x-2">
+              <div className="relative">
+                <ShoppingCart className="h-6 w-6 text-gray-600" />
+                {totalItems > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs"
+                  >
+                    {totalItems}
+                  </Badge>
+                )}
+              </div>
+              <Typography variant="body-sm" className="text-gray-600">
+                {totalItems} producto{totalItems !== 1 ? 's' : ''}
+              </Typography>
+              {totalAmount > 0 && (
+                <Typography variant="body" className="font-semibold">
+                  ${totalAmount.toFixed(2)}
+                </Typography>
+              )}
+            </div>
+
+            {/* Botones de acción */}
+            <div className="flex space-x-2">
+              {totalItems > 0 && (
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCart(true)}
+                  size="sm"
+                >
+                  Ver Carrito
+                </Button>
+              )}
+              <Button
+                onClick={() => totalItems > 0 ? setShowCart(true) : null}
+                disabled={totalItems === 0}
+                size="sm"
+                className="px-6"
+              >
+                Pagar
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Panel deslizante del carrito */}
+      {showCart && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50" onClick={() => setShowCart(false)}>
+          <div 
+            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-lg shadow-xl max-h-[80vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header del carrito */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <Typography variant="h3">Carrito de Compras</Typography>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowCart(false)}
+                className="p-2"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Lista de productos */}
+            <div className="flex-1 overflow-y-auto p-4 max-h-[50vh]">
+              {cart.length === 0 ? (
+                <div className="text-center py-8">
+                  <ShoppingCart className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <Typography variant="body" className="text-gray-500">
+                    El carrito está vacío
+                  </Typography>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {cart.map((item) => (
+                    <Card key={item.id} className="p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <Typography variant="body" className="font-medium">
+                            {item.name}
+                          </Typography>
+                          <Typography variant="body-sm" className="text-gray-500">
+                            ${item.price.toFixed(2)} c/u
+                          </Typography>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <Typography variant="body" className="w-8 text-center">
+                            {item.quantity}
+                          </Typography>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeFromCart(item.id)}
+                            className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="mt-2 text-right">
+                        <Typography variant="body" className="font-semibold">
+                          ${item.subtotal.toFixed(2)}
+                        </Typography>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Footer del carrito con total y pago */}
+            {cart.length > 0 && (
+              <div className="border-t p-4 space-y-4">
+                <div className="flex justify-between items-center">
+                  <Typography variant="h3">Total:</Typography>
+                  <Typography variant="h3" className="text-primary">
+                    ${totalAmount.toFixed(2)}
+                  </Typography>
+                </div>
+                
+                {/* Métodos de pago */}
+                <div className="space-y-3">
+                  <Typography variant="body-sm" className="text-gray-600">
+                    Método de pago:
+                  </Typography>
+                  <Select value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar método de pago" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availablePaymentMethods.map((method) => (
+                        <SelectItem key={method.id} value={method.id}>
+                          <div className="flex items-center space-x-2">
+                            {method.id === 'cash' && <DollarSign className="h-4 w-4" />}
+                            {(method.id === 'credit-card' || method.id === 'debit-card') && <CreditCard className="h-4 w-4" />}
+                            <span>{method.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {/* Input para efectivo */}
+                  {selectedPaymentMethod === 'cash' && (
+                    <div className="space-y-2">
+                      <Typography variant="body-sm" className="text-gray-600">
+                        Monto recibido:
+                      </Typography>
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        value={paymentReceived}
+                        onChange={(e) => setPaymentReceived(e.target.value)}
+                        className="text-base"
+                      />
+                      {paymentReceived && parseFloat(paymentReceived) >= totalAmount && (
+                        <Typography variant="body-sm" className="text-green-600">
+                          Cambio: ${(parseFloat(paymentReceived) - totalAmount).toFixed(2)}
+                        </Typography>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Botón de procesar venta */}
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={clearCart}
+                      className="flex-1"
+                    >
+                      Limpiar
+                    </Button>
+                    <Button
+                      onClick={handleSale}
+                      className="flex-1"
+                      disabled={!selectedPaymentMethod || (selectedPaymentMethod === 'cash' && parseFloat(paymentReceived || '0') < totalAmount)}
+                    >
+                      Procesar Venta
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
