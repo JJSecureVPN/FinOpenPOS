@@ -25,10 +25,13 @@ export default function POSPage() {
   // const [showPayment, setShowPayment] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [availablePaymentMethods, setAvailablePaymentMethods] = useState<PaymentMethod[]>([]);
+  const [dbPaymentMethods, setDbPaymentMethods] = useState<Array<{ id: number; name: string }>>([]);
 
   useEffect(() => {
     fetchProducts();
     loadPaymentMethods();
+    // Cargar métodos de pago desde la base de datos para mapear IDs
+    fetchPaymentMethodsFromDB();
   }, []);
 
   
@@ -41,6 +44,23 @@ export default function POSPage() {
     if (methods.length > 0) {
       const cashMethod = methods.find(m => m.id === 'cash');
       setSelectedPaymentMethod(cashMethod ? cashMethod.id : methods[0].id);
+    }
+  };
+
+  // Cargar métodos de pago reales desde la API (ids de Supabase)
+  const fetchPaymentMethodsFromDB = async () => {
+    try {
+      const res = await fetch('/api/payment-methods');
+      if (res.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
+      if (res.ok) {
+        const data = await res.json();
+        setDbPaymentMethods(Array.isArray(data) ? data : []);
+      }
+    } catch (e) {
+      console.error('No se pudieron cargar métodos de pago desde DB', e);
     }
   };
 
@@ -189,47 +209,44 @@ export default function POSPage() {
     }
 
     try {
-      const saleResponse = await fetch("/api/sales", {
+      // Mapear método seleccionado a ID en DB
+      const paymentMethodId = (() => {
+        const map: Record<string, string> = {
+          'cash': 'Efectivo',
+          'credit-card': 'Tarjeta de Crédito',
+          'debit-card': 'Tarjeta de Débito',
+          'transfer': 'Transferencia Bancaria',
+        };
+        const targetName = map[selectedPaymentMethod] || '';
+        const pm = dbPaymentMethods.find(m => m.name === targetName);
+        return pm?.id ?? null;
+      })();
+
+      const productsPayload = cart.map(item => ({ id: item.id, quantity: item.quantity, price: item.price }));
+
+      const saleResponse = await fetch("/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          items: cart.map(item => ({
-            product_id: item.id,
-            quantity: item.quantity,
-            unit_price: item.price,
-            subtotal: item.subtotal
-          })),
-          total_amount: total,
-          payment_method: selectedPaymentMethod,
-          payment_received: selectedPaymentMethod === 'cash' ? received : total,
-          change_given: selectedPaymentMethod === 'cash' ? Math.max(0, received - total) : 0
+          products: productsPayload,
+          total,
+          paymentMethodId: paymentMethodId,
+          isCreditSale: false,
         }),
       });
 
       if (!saleResponse.ok) {
-        const errorData = await saleResponse.json();
-        throw new Error(errorData.error || "Error al procesar la venta");
+        let message = 'Error al procesar la venta';
+        try {
+          const errorData = await saleResponse.json();
+          message = errorData?.error || message;
+        } catch {}
+        throw new Error(message);
       }
 
       const saleData = await saleResponse.json();
-
-      for (const item of cart) {
-        const updateResponse = await fetch(`/api/products/${item.id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            in_stock: item.in_stock - item.quantity
-          }),
-        });
-
-        if (!updateResponse.ok) {
-          console.error(`Error actualizando stock del producto ${item.id}`);
-        }
-      }
 
       await fetchProducts();
 
