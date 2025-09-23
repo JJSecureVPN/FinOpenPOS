@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Typography } from "@/components/ui";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ResponsiveShow, ResponsiveGrid } from "@/components/responsive";
@@ -54,14 +55,16 @@ export default function CustomersTable({
               <User className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <CardTitle className="text-lg">{customer.name}</CardTitle>
+              <Typography variant="h3" weight="medium">{customer.name}</Typography>
               <Badge variant={customer.status === "active" ? "default" : "secondary"} className="mt-1">
                 {customer.status === "active" ? (
                   <CheckCircle className="w-3 h-3 mr-1" />
                 ) : (
                   <AlertCircle className="w-3 h-3 mr-1" />
                 )}
-                {customer.status === "active" ? "Activo" : "Inactivo"}
+                <Typography variant="caption">
+                  {customer.status === "active" ? "Activo" : "Inactivo"}
+                </Typography>
               </Badge>
             </div>
           </div>
@@ -78,33 +81,37 @@ export default function CustomersTable({
       <CardContent className="space-y-4">
         {/* Contact Info */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2">
             <Mail className="w-4 h-4" />
-            <span>{customer.email}</span>
+            <Typography variant="body-sm" className="text-gray-600">{customer.email}</Typography>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2">
             <Phone className="w-4 h-4" />
-            <span>{customer.phone}</span>
+            <Typography variant="body-sm" className="text-gray-600">{customer.phone}</Typography>
           </div>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 py-3 border-t border-gray-100">
           <div className="text-center">
-            <div className="text-xs text-gray-500">Órdenes</div>
-            <div className="font-semibold text-sm">{customer.totalOrders}</div>
+            <Typography variant="micro" className="text-gray-500">Órdenes</Typography>
+            <Typography variant="body-sm" weight="semibold">{customer.totalOrders}</Typography>
           </div>
           <div className="text-center">
-            <div className="text-xs text-gray-500">Gastado</div>
-            <div className="font-semibold text-sm text-green-600">
+            <Typography variant="micro" className="text-gray-500">Gastado</Typography>
+            <Typography variant="body-sm" weight="semibold" className="text-green-600">
               {formatCurrency(customer.totalSpent)}
-            </div>
+            </Typography>
           </div>
           <div className="text-center">
-            <div className="text-xs text-gray-500">Deuda</div>
-            <div className={`font-semibold text-sm ${customer.debt > 0 ? 'text-red-600' : 'text-gray-500'}`}>
+            <Typography variant="micro" className="text-gray-500">Deuda</Typography>
+            <Typography 
+              variant="body-sm" 
+              weight="semibold" 
+              className={customer.debt > 0 ? 'text-red-600' : 'text-gray-500'}
+            >
               {formatCurrency(customer.debt)}
-            </div>
+            </Typography>
           </div>
         </div>
 
@@ -117,7 +124,7 @@ export default function CustomersTable({
             className="flex-1"
           >
             <Eye className="w-4 h-4 mr-1" />
-            Ver
+            <Typography variant="button">Ver</Typography>
           </Button>
           
           {customer.debt > 0 && (
@@ -128,7 +135,7 @@ export default function CustomersTable({
               className="flex-1"
             >
               <DollarSign className="w-4 h-4 mr-1" />
-              Pagar
+              <Typography variant="button">Pagar</Typography>
             </Button>
           )}
           
@@ -139,7 +146,7 @@ export default function CustomersTable({
             className="flex-1"
           >
             <ShoppingCart className="w-4 h-4 mr-1" />
-            Órdenes
+            <Typography variant="button">Órdenes</Typography>
           </Button>
           
           <Button
@@ -149,7 +156,7 @@ export default function CustomersTable({
             className="flex-1"
           >
             <History className="w-4 h-4 mr-1" />
-            Historial
+            <Typography variant="button">Historial</Typography>
           </Button>
         </div>
       </CardContent>
@@ -165,7 +172,7 @@ export default function CustomersTable({
             <Card>
               <CardContent className="py-8 text-center">
                 <User className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-                <p className="text-gray-500">No se encontraron clientes</p>
+                <Typography variant="body" className="text-gray-500">No se encontraron clientes</Typography>
               </CardContent>
             </Card>
           ) : (
@@ -182,13 +189,13 @@ export default function CustomersTable({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Contacto</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-right">Órdenes</TableHead>
-                <TableHead className="text-right">Total Gastado</TableHead>
-                <TableHead className="text-right">Deuda</TableHead>
-                <TableHead className="text-center">Acciones</TableHead>
+                <TableHead><Typography variant="body-sm" weight="medium">Cliente</Typography></TableHead>
+                <TableHead><Typography variant="body-sm" weight="medium">Contacto</Typography></TableHead>
+                <TableHead><Typography variant="body-sm" weight="medium">Estado</Typography></TableHead>
+                <TableHead className="text-right"><Typography variant="body-sm" weight="medium">Órdenes</Typography></TableHead>
+                <TableHead className="text-right"><Typography variant="body-sm" weight="medium">Total Gastado</Typography></TableHead>
+                <TableHead className="text-right"><Typography variant="body-sm" weight="medium">Deuda</Typography></TableHead>
+                <TableHead className="text-center"><Typography variant="body-sm" weight="medium">Acciones</Typography></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -196,7 +203,7 @@ export default function CustomersTable({
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8">
                     <User className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-                    <p className="text-gray-500">No se encontraron clientes</p>
+                    <Typography variant="body" className="text-gray-500">No se encontraron clientes</Typography>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -208,21 +215,21 @@ export default function CustomersTable({
                           <User className="w-4 h-4 text-blue-600" />
                         </div>
                         <div>
-                          <div className="font-medium">{customer.name}</div>
-                          <div className="text-sm text-gray-500">ID: {customer.id}</div>
+                          <Typography variant="body" weight="medium">{customer.name}</Typography>
+                          <Typography variant="body-sm" className="text-gray-500">ID: {customer.id}</Typography>
                         </div>
                       </div>
                     </TableCell>
                     
                     <TableCell>
                       <div className="space-y-1">
-                        <div className="flex items-center gap-1 text-sm">
+                        <div className="flex items-center gap-1">
                           <Mail className="w-3 h-3 text-gray-400" />
-                          <span>{customer.email}</span>
+                          <Typography variant="body-sm">{customer.email}</Typography>
                         </div>
-                        <div className="flex items-center gap-1 text-sm">
+                        <div className="flex items-center gap-1">
                           <Phone className="w-3 h-3 text-gray-400" />
-                          <span>{customer.phone}</span>
+                          <Typography variant="body-sm">{customer.phone}</Typography>
                         </div>
                       </div>
                     </TableCell>
@@ -234,22 +241,30 @@ export default function CustomersTable({
                         ) : (
                           <AlertCircle className="w-3 h-3 mr-1" />
                         )}
-                        {customer.status === "active" ? "Activo" : "Inactivo"}
+                        <Typography variant="caption">
+                          {customer.status === "active" ? "Activo" : "Inactivo"}
+                        </Typography>
                       </Badge>
                     </TableCell>
                     
-                    <TableCell className="text-right font-medium">
-                      {customer.totalOrders}
-                    </TableCell>
-                    
-                    <TableCell className="text-right font-medium text-green-600">
-                      {formatCurrency(customer.totalSpent)}
+                    <TableCell className="text-right">
+                      <Typography variant="body" weight="medium">{customer.totalOrders}</Typography>
                     </TableCell>
                     
                     <TableCell className="text-right">
-                      <span className={`font-medium ${customer.debt > 0 ? 'text-red-600' : 'text-gray-500'}`}>
+                      <Typography variant="body" weight="medium" className="text-green-600">
+                        {formatCurrency(customer.totalSpent)}
+                      </Typography>
+                    </TableCell>
+                    
+                    <TableCell className="text-right">
+                      <Typography 
+                        variant="body" 
+                        weight="medium" 
+                        className={customer.debt > 0 ? 'text-red-600' : 'text-gray-500'}
+                      >
                         {formatCurrency(customer.debt)}
-                      </span>
+                      </Typography>
                     </TableCell>
                     
                     <TableCell>

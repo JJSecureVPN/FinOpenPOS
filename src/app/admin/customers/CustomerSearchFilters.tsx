@@ -3,6 +3,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Typography } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ResponsiveContainer, ResponsiveShow, ResponsiveGrid } from "@/components/responsive";
@@ -68,19 +69,19 @@ export default function CustomerSearchFilters({
                       <SelectItem value="all">
                         <div className="flex items-center gap-2">
                           <Users className="w-4 h-4" />
-                          Todos los Estados
+                          <Typography variant="body-sm">Todos los Estados</Typography>
                         </div>
                       </SelectItem>
                       <SelectItem value="active">
                         <div className="flex items-center gap-2">
                           <UserCheck className="w-4 h-4 text-green-600" />
-                          Solo Activos
+                          <Typography variant="body-sm">Solo Activos</Typography>
                         </div>
                       </SelectItem>
                       <SelectItem value="inactive">
                         <div className="flex items-center gap-2">
                           <UserX className="w-4 h-4 text-red-600" />
-                          Solo Inactivos
+                          <Typography variant="body-sm">Solo Inactivos</Typography>
                         </div>
                       </SelectItem>
                     </SelectContent>
@@ -100,12 +101,14 @@ export default function CustomerSearchFilters({
               </div>
 
               {/* Results Counter */}
-              <div className="text-sm text-gray-600 text-center py-2 border-t">
-                {filteredCount === totalCount ? (
-                  <span>Mostrando {totalCount} clientes</span>
-                ) : (
-                  <span>Mostrando {filteredCount} de {totalCount} clientes</span>
-                )}
+              <div className="text-center py-2 border-t">
+                <Typography variant="body-sm" className="text-gray-600">
+                  {filteredCount === totalCount ? (
+                    <>Mostrando {totalCount} clientes</>
+                  ) : (
+                    <>Mostrando {filteredCount} de {totalCount} clientes</>
+                  )}
+                </Typography>
               </div>
             </div>
           </ResponsiveShow>
@@ -143,19 +146,19 @@ export default function CustomerSearchFilters({
                       <SelectItem value="all">
                         <div className="flex items-center gap-2">
                           <Users className="w-4 h-4" />
-                          Todos los Estados
+                          <Typography variant="body-sm">Todos los Estados</Typography>
                         </div>
                       </SelectItem>
                       <SelectItem value="active">
                         <div className="flex items-center gap-2">
                           <UserCheck className="w-4 h-4 text-green-600" />
-                          Solo Activos
+                          <Typography variant="body-sm">Solo Activos</Typography>
                         </div>
                       </SelectItem>
                       <SelectItem value="inactive">
                         <div className="flex items-center gap-2">
                           <UserX className="w-4 h-4 text-red-600" />
-                          Solo Inactivos
+                          <Typography variant="body-sm">Solo Inactivos</Typography>
                         </div>
                       </SelectItem>
                     </SelectContent>
@@ -170,26 +173,26 @@ export default function CustomerSearchFilters({
                     className="flex items-center gap-2"
                   >
                     <X className="w-4 h-4" />
-                    Limpiar Filtros
+                    <Typography variant="button">Limpiar Filtros</Typography>
                   </Button>
                 )}
               </div>
 
               {/* Results Counter */}
-              <div className="flex justify-between items-center text-sm text-gray-600 border-t pt-3">
-                <div>
+              <div className="flex justify-between items-center border-t pt-3">
+                <Typography variant="body-sm" className="text-gray-600">
                   {filteredCount === totalCount ? (
-                    <span>Mostrando todos los {totalCount} clientes</span>
+                    <>Mostrando todos los {totalCount} clientes</>
                   ) : (
-                    <span>Mostrando {filteredCount} de {totalCount} clientes</span>
+                    <>Mostrando {filteredCount} de {totalCount} clientes</>
                   )}
-                </div>
+                </Typography>
                 
                 {hasActiveFilters && (
-                  <div className="text-blue-600">
+                  <Typography variant="body-sm" className="text-blue-600">
                     <Filter className="w-4 h-4 inline mr-1" />
                     Filtros activos
-                  </div>
+                  </Typography>
                 )}
               </div>
             </div>

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Typography } from "@/components/ui";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -50,7 +51,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
           <div className="space-y-2">
             <Label htmlFor="name" className="flex items-center gap-2">
               <User className="w-4 h-4" />
-              Nombre Completo
+              <Typography variant="body-sm" weight="medium">Nombre Completo</Typography>
             </Label>
             <Input
               id="name"
@@ -65,7 +66,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
           <div className="space-y-2">
             <Label htmlFor="email" className="flex items-center gap-2">
               <Mail className="w-4 h-4" />
-              Correo Electrónico
+              <Typography variant="body-sm" weight="medium">Correo Electrónico</Typography>
             </Label>
             <Input
               id="email"
@@ -80,7 +81,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
           <div className="space-y-2">
             <Label htmlFor="phone" className="flex items-center gap-2">
               <Phone className="w-4 h-4" />
-              Teléfono
+              <Typography variant="body-sm" weight="medium">Teléfono</Typography>
             </Label>
             <Input
               id="phone"
@@ -95,7 +96,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
           <div className="space-y-2">
             <Label htmlFor="status" className="flex items-center gap-2">
               <UserCheck className="w-4 h-4" />
-              Estado
+              <Typography variant="body-sm" weight="medium">Estado</Typography>
             </Label>
             <Select
               value={formData.status}
@@ -105,8 +106,12 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="active">Activo</SelectItem>
-                <SelectItem value="inactive">Inactivo</SelectItem>
+                <SelectItem value="active">
+                  <Typography variant="body-sm">Activo</Typography>
+                </SelectItem>
+                <SelectItem value="inactive">
+                  <Typography variant="body-sm">Inactivo</Typography>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -114,12 +119,12 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
           <div className="flex flex-col space-y-2 pt-2">
             <Button type="submit" className="w-full">
               <Plus className="w-4 h-4 mr-2" />
-              {initialData ? "Actualizar Cliente" : "Agregar Cliente"}
+              <Typography variant="button">{initialData ? "Actualizar Cliente" : "Agregar Cliente"}</Typography>
             </Button>
             {onCancel && (
               <Button type="button" variant="outline" onClick={onCancel} className="w-full">
                 <X className="w-4 h-4 mr-2" />
-                Cancelar
+                <Typography variant="button">Cancelar</Typography>
               </Button>
             )}
           </div>
@@ -133,7 +138,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
             // Compact horizontal layout
             <div className="flex flex-wrap gap-3 items-end">
               <div className="flex-1 min-w-[150px]">
-                <Label htmlFor="name">Nombre</Label>
+                <Label htmlFor="name"><Typography variant="body-sm" weight="medium">Nombre</Typography></Label>
                 <Input
                   id="name"
                   placeholder="Nombre completo..."
@@ -144,7 +149,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
               </div>
 
               <div className="flex-1 min-w-[150px]">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email"><Typography variant="body-sm" weight="medium">Email</Typography></Label>
                 <Input
                   id="email"
                   type="email"
@@ -156,7 +161,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
               </div>
 
               <div className="flex-1 min-w-[120px]">
-                <Label htmlFor="phone">Teléfono</Label>
+                <Label htmlFor="phone"><Typography variant="body-sm" weight="medium">Teléfono</Typography></Label>
                 <Input
                   id="phone"
                   type="tel"
@@ -168,7 +173,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
               </div>
 
               <div className="flex-1 min-w-[100px]">
-                <Label htmlFor="status">Estado</Label>
+                <Label htmlFor="status"><Typography variant="body-sm" weight="medium">Estado</Typography></Label>
                 <Select
                   value={formData.status}
                   onValueChange={(value: "active" | "inactive") => handleInputChange("status", value)}
@@ -177,8 +182,8 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">Activo</SelectItem>
-                    <SelectItem value="inactive">Inactivo</SelectItem>
+                    <SelectItem value="active"><Typography variant="body-sm">Activo</Typography></SelectItem>
+                    <SelectItem value="inactive"><Typography variant="body-sm">Inactivo</Typography></SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -186,7 +191,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
               <div className="flex gap-2">
                 <Button type="submit">
                   <Plus className="w-4 h-4 mr-2" />
-                  {initialData ? "Actualizar" : "Agregar"}
+                  <Typography variant="button">{initialData ? "Actualizar" : "Agregar"}</Typography>
                 </Button>
                 {onCancel && (
                   <Button type="button" variant="outline" onClick={onCancel}>
@@ -201,7 +206,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
               <div className="space-y-2">
                 <Label htmlFor="name" className="flex items-center gap-2">
                   <User className="w-4 h-4" />
-                  Nombre Completo
+                  <Typography variant="body-sm" weight="medium">Nombre Completo</Typography>
                 </Label>
                 <Input
                   id="name"
@@ -216,7 +221,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
               <div className="space-y-2">
                 <Label htmlFor="status" className="flex items-center gap-2">
                   <UserCheck className="w-4 h-4" />
-                  Estado
+                  <Typography variant="body-sm" weight="medium">Estado</Typography>
                 </Label>
                 <Select
                   value={formData.status}
@@ -226,8 +231,8 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">Activo</SelectItem>
-                    <SelectItem value="inactive">Inactivo</SelectItem>
+                    <SelectItem value="active"><Typography variant="body-sm">Activo</Typography></SelectItem>
+                    <SelectItem value="inactive"><Typography variant="body-sm">Inactivo</Typography></SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -235,7 +240,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
               <div className="space-y-2">
                 <Label htmlFor="email" className="flex items-center gap-2">
                   <Mail className="w-4 h-4" />
-                  Correo Electrónico
+                  <Typography variant="body-sm" weight="medium">Correo Electrónico</Typography>
                 </Label>
                 <Input
                   id="email"
@@ -250,7 +255,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
               <div className="space-y-2">
                 <Label htmlFor="phone" className="flex items-center gap-2">
                   <Phone className="w-4 h-4" />
-                  Teléfono
+                  <Typography variant="body-sm" weight="medium">Teléfono</Typography>
                 </Label>
                 <Input
                   id="phone"
@@ -266,12 +271,12 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
                 {onCancel && (
                   <Button type="button" variant="outline" onClick={onCancel}>
                     <X className="w-4 h-4 mr-2" />
-                    Cancelar
+                    <Typography variant="button">Cancelar</Typography>
                   </Button>
                 )}
                 <Button type="submit">
                   <Plus className="w-4 h-4 mr-2" />
-                  {initialData ? "Actualizar Cliente" : "Agregar Cliente"}
+                  <Typography variant="button">{initialData ? "Actualizar Cliente" : "Agregar Cliente"}</Typography>
                 </Button>
               </div>
             </div>
@@ -289,7 +294,9 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
     <ResponsiveContainer>
       <Card>
         <CardHeader>
-          <CardTitle>{initialData ? "Editar Cliente" : "Nuevo Cliente"}</CardTitle>
+          <CardTitle>
+            <Typography variant="h3">{initialData ? "Editar Cliente" : "Nuevo Cliente"}</Typography>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <FormContent />

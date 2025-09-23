@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Typography } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -305,9 +306,9 @@ export default function CustomersPage() {
         <Card>
           <CardContent className="py-8 text-center">
             <AlertCircle className="w-12 h-12 mx-auto text-red-500 mb-4" />
-            <p className="text-red-600">Error: {error}</p>
+            <Typography variant="body" className="text-red-600">Error: {error}</Typography>
             <Button onClick={() => window.location.reload()} className="mt-4">
-              Reintentar
+              <Typography variant="button">Reintentar</Typography>
             </Button>
           </CardContent>
         </Card>
@@ -321,20 +322,20 @@ export default function CustomersPage() {
         {/* Page Header */}
         <ResponsiveShow on="mobile">
           <div className="flex flex-col space-y-4">
-            <h1 className="text-2xl font-bold">Clientes</h1>
+            <Typography variant="h1">Clientes</Typography>
             <Button onClick={() => setShowNewCustomerDialog(true)} className="w-full">
               <PlusCircle className="w-4 h-4 mr-2" />
-              Nuevo Cliente
+              <Typography variant="button">Nuevo Cliente</Typography>
             </Button>
           </div>
         </ResponsiveShow>
 
         <ResponsiveShow on="tablet-desktop">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">Gestión de Clientes</h1>
+            <Typography variant="h1">Gestión de Clientes</Typography>
             <Button onClick={() => setShowNewCustomerDialog(true)}>
               <PlusCircle className="w-4 h-4 mr-2" />
-              Nuevo Cliente
+              <Typography variant="button">Nuevo Cliente</Typography>
             </Button>
           </div>
         </ResponsiveShow>
@@ -367,9 +368,11 @@ export default function CustomersPage() {
         <Dialog open={showNewCustomerDialog} onOpenChange={setShowNewCustomerDialog}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Agregar Nuevo Cliente</DialogTitle>
+              <DialogTitle>
+                <Typography variant="h3">Agregar Nuevo Cliente</Typography>
+              </DialogTitle>
               <DialogDescription>
-                Complete la información del nuevo cliente
+                <Typography variant="body">Complete la información del nuevo cliente</Typography>
               </DialogDescription>
             </DialogHeader>
             <CustomerForm
@@ -383,9 +386,11 @@ export default function CustomersPage() {
         <Dialog open={showEditCustomerDialog} onOpenChange={setShowEditCustomerDialog}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Editar Cliente</DialogTitle>
+              <DialogTitle>
+                <Typography variant="h3">Editar Cliente</Typography>
+              </DialogTitle>
               <DialogDescription>
-                Modifique la información del cliente
+                <Typography variant="body">Modifique la información del cliente</Typography>
               </DialogDescription>
             </DialogHeader>
             {selectedCustomer && (
@@ -410,14 +415,20 @@ export default function CustomersPage() {
         <Dialog open={showDebtPaymentDialog} onOpenChange={setShowDebtPaymentDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Pagar Deuda</DialogTitle>
+              <DialogTitle>
+                <Typography variant="h3">Pagar Deuda</Typography>
+              </DialogTitle>
               <DialogDescription>
-                {selectedCustomer && `Procesar pago para ${selectedCustomer.name}`}
+                <Typography variant="body">
+                  {selectedCustomer && `Procesar pago para ${selectedCustomer.name}`}
+                </Typography>
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="amount">Monto a Pagar</Label>
+                <Label htmlFor="amount">
+                  <Typography variant="body-sm" weight="medium">Monto a Pagar</Typography>
+                </Label>
                 <Input
                   id="amount"
                   type="number"
@@ -428,7 +439,9 @@ export default function CustomersPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="description">Descripción (Opcional)</Label>
+                <Label htmlFor="description">
+                  <Typography variant="body-sm" weight="medium">Descripción (Opcional)</Typography>
+                </Label>
                 <Input
                   id="description"
                   value={paymentDescription}
@@ -447,7 +460,7 @@ export default function CustomersPage() {
                   setPaymentDescription("");
                 }}
               >
-                Cancelar
+                <Typography variant="button">Cancelar</Typography>
               </Button>
               <Button
                 onClick={handlePayDebt}
@@ -458,7 +471,7 @@ export default function CustomersPage() {
                 ) : (
                   <DollarSign className="w-4 h-4 mr-2" />
                 )}
-                Procesar Pago
+                <Typography variant="button">Procesar Pago</Typography>
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -469,7 +482,9 @@ export default function CustomersPage() {
           <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {selectedCustomer && `Historial de ${selectedCustomer.name}`}
+                <Typography variant="h3">
+                  {selectedCustomer && `Historial de ${selectedCustomer.name}`}
+                </Typography>
               </DialogTitle>
             </DialogHeader>
             {loadingHistory ? (
@@ -479,9 +494,15 @@ export default function CustomersPage() {
             ) : customerHistory ? (
               <Tabs defaultValue="activities" className="w-full">
                 <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="activities">Actividades</TabsTrigger>
-                  <TabsTrigger value="orders">Órdenes</TabsTrigger>
-                  <TabsTrigger value="payments">Pagos</TabsTrigger>
+                  <TabsTrigger value="activities">
+                    <Typography variant="body-sm">Actividades</Typography>
+                  </TabsTrigger>
+                  <TabsTrigger value="orders">
+                    <Typography variant="body-sm">Órdenes</Typography>
+                  </TabsTrigger>
+                  <TabsTrigger value="payments">
+                    <Typography variant="body-sm">Pagos</Typography>
+                  </TabsTrigger>
                 </TabsList>
                 <TabsContent value="activities" className="space-y-4">
                   {customerHistory.activities.map((activity) => (
@@ -489,11 +510,13 @@ export default function CustomersPage() {
                       <CardContent className="pt-4">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="font-medium">{activity.description}</p>
-                            <p className="text-sm text-gray-500">{activity.created_at}</p>
+                            <Typography variant="body" weight="medium">{activity.description}</Typography>
+                            <Typography variant="caption" className="text-gray-500">{activity.created_at}</Typography>
                           </div>
                           {activity.amount && (
-                            <Badge variant="outline">${activity.amount}</Badge>
+                            <Badge variant="outline">
+                              <Typography variant="caption">${activity.amount}</Typography>
+                            </Badge>
                           )}
                         </div>
                       </CardContent>
@@ -502,15 +525,15 @@ export default function CustomersPage() {
                 </TabsContent>
                 <TabsContent value="orders">
                   {/* Orders content */}
-                  <p>Contenido de órdenes...</p>
+                  <Typography variant="body">Contenido de órdenes...</Typography>
                 </TabsContent>
                 <TabsContent value="payments">
                   {/* Payments content */}
-                  <p>Contenido de pagos...</p>
+                  <Typography variant="body">Contenido de pagos...</Typography>
                 </TabsContent>
               </Tabs>
             ) : (
-              <p>No se pudo cargar el historial</p>
+              <Typography variant="body">No se pudo cargar el historial</Typography>
             )}
           </DialogContent>
         </Dialog>

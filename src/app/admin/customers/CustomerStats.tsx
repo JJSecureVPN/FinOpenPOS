@@ -3,6 +3,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Typography } from "@/components/ui";
 import { ResponsiveGrid } from "@/components/responsive";
 import { Users, UserCheck, UserX, DollarSign } from "lucide-react";
 import type { Customer } from "./types";
@@ -61,12 +62,12 @@ export default function CustomerStats({ customers }: CustomerStatsProps) {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground font-medium">
+                    <Typography variant="body-sm" weight="medium" className="text-muted-foreground">
                       {stat.title}
-                    </p>
-                    <p className={`text-2xl font-bold ${stat.color}`}>
+                    </Typography>
+                    <Typography variant="h2" weight="bold" className={stat.color}>
                       {stat.value}
-                    </p>
+                    </Typography>
                   </div>
                   <div className={`p-3 rounded-full ${stat.bgColor}`}>
                     <Icon className={`h-6 w-6 ${stat.color}`} />
