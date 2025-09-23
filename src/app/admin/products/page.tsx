@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, Loader2Icon } from "lucide-react";
+import { PlusIcon, Loader2Icon, ChevronLeft, ChevronRight } from "lucide-react";
 import StatsCards from "./StatsCards";
 import FiltersDropdown from "./FiltersDropdown";
 import ProductsTable from "./ProductsTable";
@@ -174,6 +174,50 @@ export default function Products() {
           onEdit={(p) => { setEditingProduct(p); setIsProductDialogOpen(true); }}
           onDelete={(p) => { setProductToDelete(p); setIsDeleteConfirmationOpen(true); }}
         />
+
+        {/* Controles de Paginación */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-4">
+            <div className="text-sm text-muted-foreground">
+              Mostrando {indexOfFirstProduct + 1} a {Math.min(indexOfLastProduct, filteredProducts.length)} de {filteredProducts.length} productos
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Anterior
+              </Button>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePageChange(page)}
+                    className="min-w-[32px]"
+                  >
+                    {page}
+                  </Button>
+                ))}
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Siguiente
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       <ProductFormDialog

@@ -1,15 +1,13 @@
 [build]
   command = "npm run build"
-  publish = "out"
+  publish = ".next"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "20"
+  # Ensure devDependencies (like TypeScript) are installed in Netlify
+  NPM_FLAGS = "--include=dev"
 
-# Configuración para Next.js estático
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# No redirects overriding Next.js routing; Netlify Next adapter handles routing
 
 # Configuración para Next.js
 [functions]

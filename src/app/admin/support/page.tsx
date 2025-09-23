@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { useAlert } from "@/components/ui/alert-modal";
 import { 
   Phone, 
   Mail, 
@@ -44,13 +45,15 @@ export default function SupportPage() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { showAlert, AlertModal } = useAlert();
 
   const handleSubmitTicket = async () => {
     setIsSubmitting(true);
     try {
       // Simular envío de ticket
       await new Promise(resolve => setTimeout(resolve, 2000));
-      alert("🎫 Ticket de soporte enviado exitosamente!\n\nNúmero de ticket: #" + Math.floor(Math.random() * 10000) + "\n\nRecibirás una respuesta en tu email dentro de 24 horas.");
+      const ticketNumber = Math.floor(Math.random() * 10000);
+      showAlert(`Ticket de soporte enviado exitosamente!\n\nNúmero de ticket: #${ticketNumber}\n\nRecibirás una respuesta en tu email dentro de 24 horas.`, { variant: 'success', title: '🎫 Ticket Creado' });
       setTicketForm({
         subject: "",
         category: "technical",
@@ -60,7 +63,7 @@ export default function SupportPage() {
         phone: ""
       });
     } catch (error) {
-      alert("❌ Error al enviar el ticket. Intenta nuevamente.");
+      showAlert("Error al enviar el ticket. Intenta nuevamente.", { variant: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -450,6 +453,8 @@ export default function SupportPage() {
           </div>
         </TabsContent>
       </Tabs>
+      
+      <AlertModal />
     </div>
   );
 }

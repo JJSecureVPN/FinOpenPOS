@@ -281,47 +281,45 @@ export default function POSPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="fixed inset-0 top-14 left-16 bg-background overflow-hidden p-4">
       {isLoading ? (
-        <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Cargando productos...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Cargando productos...</p>
           </div>
         </div>
       ) : (
-        <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Receipt className="h-8 w-8 text-blue-600" />
-              <h1 className="text-3xl font-bold text-gray-900">Caja Registradora</h1>
-            </div>
+        <div className="h-full overflow-auto">
+        {/* Header compacto */}
+        <div className="bg-background rounded-lg shadow-sm p-3 mb-4">
+          <div className="flex items-center space-x-2">
+            <Receipt className="h-6 w-6 text-primary" />
+            <h1 className="text-xl font-bold">POS</h1>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-8rem)]">
           {/* Panel de Productos */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Package className="h-5 w-5 mr-2" />
-                  Productos Disponibles
+          <div className="lg:col-span-2 flex flex-col min-h-0">
+            <Card className="flex-1 flex flex-col">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center text-lg">
+                  <Package className="h-4 w-4 mr-2" />
+                  Productos
                 </CardTitle>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Buscar producto por nombre o categoría..."
+                    placeholder="Buscar productos..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
                   />
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
+              <CardContent className="flex-1 overflow-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {filteredProducts.map((product) => (
                     <div 
                       key={product.id}
@@ -350,12 +348,12 @@ export default function POSPage() {
           </div>
 
           {/* Panel del Carrito */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-4">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
+          <div className="lg:col-span-1 flex flex-col min-h-0">
+            <Card className="flex-1 flex flex-col">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center justify-between text-lg">
                   <div className="flex items-center">
-                    <ShoppingCart className="h-5 w-5 mr-2" />
+                    <ShoppingCart className="h-4 w-4 mr-2" />
                     Carrito ({cart.length})
                   </div>
                   {cart.length > 0 && (
@@ -369,14 +367,13 @@ export default function POSPage() {
                   )}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-1 flex flex-col">
                 {/* Lista del carrito */}
-                <div className="space-y-2 max-h-64 overflow-y-auto mb-4">
+                <div className="flex-1 overflow-auto space-y-2 mb-4">
                   {cart.length === 0 ? (
-                    <div className="text-center text-gray-500 py-8">
-                      <ShoppingCart className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                      <p>Carrito vacío</p>
-                      <p className="text-sm">Selecciona productos para agregar</p>
+                    <div className="text-center text-muted-foreground py-8">
+                      <ShoppingCart className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Carrito vacío</p>
                     </div>
                   ) : (
                     cart.map((item) => (

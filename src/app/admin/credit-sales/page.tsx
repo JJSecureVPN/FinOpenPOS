@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +36,7 @@ type CartItem = {
   stock: number;
 };
 
-export default function CreditSalePage() {
+function CreditSalePageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const customerId = searchParams.get('customerId');
@@ -434,5 +434,13 @@ export default function CreditSalePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CreditSalePage() {
+  return (
+    <Suspense fallback={<div className="h-[80vh] flex items-center justify-center"><Loader2Icon className="h-12 w-12 animate-spin" /></div>}>
+      <CreditSalePageInner />
+    </Suspense>
   );
 }

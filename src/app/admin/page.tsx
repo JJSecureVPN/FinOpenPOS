@@ -25,6 +25,7 @@ import {
   Line,
   LineChart,
 } from "recharts";
+import { ResponsiveContainer, ResponsiveGrid, ResponsiveCard } from "@/components/responsive";
 
 export default function Page() {
   const [totalRevenue, setTotalRevenue] = useState(0);
@@ -60,23 +61,24 @@ export default function Page() {
           fetch('/api/admin/profit/margin')
         ]);
 
-        const revenue = await revenueRes.json();
-        const expenses = await expensesRes.json();
-        const profit = await profitRes.json();
-        const creditSales = await creditSalesRes.json();
-        const cashFlowData = await cashFlowRes.json();
-        const revenueByCategoryData = await revenueByCategoryRes.json();
-        const expensesByCategoryData = await expensesByCategoryRes.json();
-        const profitMarginData = await profitMarginRes.json();
+        const revenue = revenueRes.ok ? await revenueRes.json() : {};
+        const expenses = expensesRes.ok ? await expensesRes.json() : {};
+        const profit = profitRes.ok ? await profitRes.json() : {};
+        const creditSales = creditSalesRes.ok ? await creditSalesRes.json() : {};
+        const cashFlowData = cashFlowRes.ok ? await cashFlowRes.json() : {};
+        const revenueByCategoryData = revenueByCategoryRes.ok ? await revenueByCategoryRes.json() : {};
+        const expensesByCategoryData = expensesByCategoryRes.ok ? await expensesByCategoryRes.json() : {};
+        const profitMarginData = profitMarginRes.ok ? await profitMarginRes.json() : {};
 
-        setTotalRevenue(revenue.totalRevenue);
-        setTotalExpenses(expenses.totalExpenses);
-        setTotalProfit(profit.totalProfit);
-        setTotalCreditSales(creditSales.totalCreditSales || 0);
-        setCashFlow(Object.entries(cashFlowData.cashFlow).map(([date, amount]) => ({ date, amount })));
-        setRevenueByCategory(revenueByCategoryData.revenueByCategory);
-        setExpensesByCategory(expensesByCategoryData.expensesByCategory);
-        setProfitMargin(profitMarginData.profitMargin);
+        setTotalRevenue(Number(revenue.totalRevenue) || 0);
+        setTotalExpenses(Number(expenses.totalExpenses) || 0);
+        setTotalProfit(Number(profit.totalProfit) || 0);
+        setTotalCreditSales(Number(creditSales.totalCreditSales) || 0);
+        const cf = cashFlowData && cashFlowData.cashFlow ? cashFlowData.cashFlow : {};
+        setCashFlow(Object.entries(cf).map(([date, amount]) => ({ date, amount })));
+        setRevenueByCategory(revenueByCategoryData.revenueByCategory || {});
+        setExpensesByCategory(expensesByCategoryData.expensesByCategory || {});
+        setProfitMargin(Array.isArray(profitMarginData.profitMargin) ? profitMarginData.profitMargin : []);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -96,91 +98,85 @@ export default function Page() {
   }
 
   return (
-    <div className="grid flex-1 items-start gap-4">
-      <div className="grid auto-rows-max items-start gap-4 lg:grid-cols-2 xl:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Ingresos Totales</CardTitle>
-            <DollarSignIcon className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Gastos Totales
-            </CardTitle>
-            <DollarSignIcon className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totalExpenses.toFixed(2)}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Ganancia Total</CardTitle>
-            <DollarSignIcon className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totalProfit.toFixed(2)}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Dinero Fiado</CardTitle>
-            <DollarSignIcon className="w-4 h-4 text-orange-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">${totalCreditSales.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">Pendiente de cobro</p>
-          </CardContent>
-        </Card>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Ingresos por Categoría
-            </CardTitle>
-            <PieChartIcon className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <PiechartcustomChart data={revenueByCategory} className="aspect-auto" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Gastos por Categoría
-            </CardTitle>
-            <PieChartIcon className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <PiechartcustomChart data={expensesByCategory} className="aspect-auto" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Margen de Ganancia (ventas)</CardTitle>
-            <BarChartIcon className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <BarchartChart data={profitMargin} className="aspect-auto" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Flujo de Caja</CardTitle>
-            <DollarSignIcon className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <LinechartChart data={cashFlow} className="aspect-auto" />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+    <ResponsiveContainer variant="dashboard" padding="md">
+      {/* Cards de métricas principales */}
+      <ResponsiveGrid 
+        cols={{ default: 1, sm: 2, lg: 4 }} 
+        gap="md"
+        className="mb-6"
+      >
+        <ResponsiveCard
+          title="Ingresos Totales"
+          size="sm"
+          headerActions={<DollarSignIcon className="w-4 h-4 text-muted-foreground" />}
+        >
+          <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+        </ResponsiveCard>
+        
+        <ResponsiveCard
+          title="Gastos Totales"
+          size="sm"
+          headerActions={<DollarSignIcon className="w-4 h-4 text-muted-foreground" />}
+        >
+          <div className="text-2xl font-bold">${totalExpenses.toFixed(2)}</div>
+        </ResponsiveCard>
+        
+        <ResponsiveCard
+          title="Ganancia Total"
+          size="sm"
+          headerActions={<DollarSignIcon className="w-4 h-4 text-muted-foreground" />}
+        >
+          <div className="text-2xl font-bold">${totalProfit.toFixed(2)}</div>
+        </ResponsiveCard>
+        
+        <ResponsiveCard
+          title="Dinero Fiado"
+          size="sm"
+          headerActions={<DollarSignIcon className="w-4 h-4 text-orange-500" />}
+        >
+          <div className="text-2xl font-bold text-orange-600">${totalCreditSales.toFixed(2)}</div>
+          <p className="text-xs text-muted-foreground mt-1">Pendiente de cobro</p>
+        </ResponsiveCard>
+      </ResponsiveGrid>
+
+      {/* Gráficos */}
+      <ResponsiveGrid 
+        cols={{ default: 1, md: 2, xl: 4 }} 
+        gap="md"
+      >
+        <ResponsiveCard
+          title="Ingresos por Categoría"
+          headerActions={<PieChartIcon className="w-4 h-4 text-muted-foreground" />}
+          fullHeight
+        >
+          <PiechartcustomChart data={revenueByCategory} className="aspect-auto" />
+        </ResponsiveCard>
+        
+        <ResponsiveCard
+          title="Gastos por Categoría"
+          headerActions={<PieChartIcon className="w-4 h-4 text-muted-foreground" />}
+          fullHeight
+        >
+          <PiechartcustomChart data={expensesByCategory} className="aspect-auto" />
+        </ResponsiveCard>
+        
+        <ResponsiveCard
+          title="Margen de Ganancia (ventas)"
+          headerActions={<BarChartIcon className="w-4 h-4 text-muted-foreground" />}
+          fullHeight
+        >
+          <BarchartChart data={profitMargin} className="aspect-auto" />
+        </ResponsiveCard>
+        
+        <ResponsiveCard
+          title="Flujo de Caja"
+          headerActions={<DollarSignIcon className="w-4 h-4 text-muted-foreground" />}
+          fullHeight
+        >
+          <LinechartChart data={cashFlow} className="aspect-auto" />
+        </ResponsiveCard>
+      </ResponsiveGrid>
+    </ResponsiveContainer>
   );
 }
 

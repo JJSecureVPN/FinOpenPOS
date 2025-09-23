@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { useAlert } from "@/components/ui/alert-modal";
 import { 
   Building2, 
   Printer, 
@@ -32,6 +33,7 @@ export default function SettingsPage() {
   const [printerSettings, setPrinterSettings] = useState<PrinterConfig>(configService.getPrinterConfig());
   const [paymentSettings, setPaymentSettings] = useState<PaymentConfig>(configService.getPaymentConfig());
   const [isSaving, setIsSaving] = useState(false);
+  const { showAlert, AlertModal } = useAlert();
 
   // Cargar configuración al montar el componente
   useEffect(() => {
@@ -44,9 +46,9 @@ export default function SettingsPage() {
     setIsSaving(true);
     try {
       configService.saveCompanyConfig(companySettings);
-      alert("✅ Configuración de empresa guardada exitosamente");
+      showAlert("Configuración de empresa guardada exitosamente", { variant: 'success' });
     } catch (error) {
-      alert("❌ Error al guardar la configuración");
+      showAlert("Error al guardar la configuración", { variant: 'error' });
     } finally {
       setIsSaving(false);
     }
@@ -56,9 +58,9 @@ export default function SettingsPage() {
     setIsSaving(true);
     try {
       configService.savePrinterConfig(printerSettings);
-      alert("✅ Configuración de impresoras guardada exitosamente");
+      showAlert("Configuración de impresoras guardada exitosamente", { variant: 'success' });
     } catch (error) {
-      alert("❌ Error al guardar la configuración de impresoras");
+      showAlert("Error al guardar la configuración de impresoras", { variant: 'error' });
     } finally {
       setIsSaving(false);
     }
@@ -68,9 +70,9 @@ export default function SettingsPage() {
     setIsSaving(true);
     try {
       configService.savePaymentConfig(paymentSettings);
-      alert("✅ Configuración de pagos guardada exitosamente\n\nLos métodos de pago se han actualizado en el sistema de ventas.");
+      showAlert("Configuración de pagos guardada exitosamente\n\nLos métodos de pago se han actualizado en el sistema de ventas.", { variant: 'success' });
     } catch (error) {
-      alert("❌ Error al guardar la configuración de pagos");
+      showAlert("Error al guardar la configuración de pagos", { variant: 'error' });
     } finally {
       setIsSaving(false);
     }
@@ -435,6 +437,8 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+      
+      <AlertModal />
     </div>
   );
 }

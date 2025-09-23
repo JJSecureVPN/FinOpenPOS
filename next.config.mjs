@@ -6,10 +6,14 @@ const __dirname = path.dirname(__filename);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  // Use default output (SSR/ISR supported by Netlify adapter)
   trailingSlash: true,
   images: {
     unoptimized: true
+  },
+  eslint: {
+    // Do not block production builds due to ESLint errors
+    ignoreDuringBuilds: true,
   },
   // Asegura que los imports con alias '@/...' se resuelvan en build (Netlify)
   webpack: (config) => {

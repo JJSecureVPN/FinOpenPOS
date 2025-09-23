@@ -27,7 +27,15 @@ import {
   ShoppingCartIcon,
   UsersIcon,
   CreditCardIcon,
+  Users2Icon,
+  LogOutIcon,
+  SettingsIcon,
+  HelpCircleIcon,
 } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
+import { createClient } from "@/lib/supabase/client";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
+import { useAlert } from "@/components/ui/alert-modal";
 
 const pageNames: { [key: string]: string } = {
   "/admin": "Panel Principal",
@@ -36,12 +44,15 @@ const pageNames: { [key: string]: string } = {
   "/admin/pos": "Punto de Venta",
   "/admin/cashier": "Cajero",
   "/admin/credit-sales": "Ventas al Fiado",
+  "/admin/users": "Gestión de Usuarios",
   "/admin/settings": "Configuración",
   "/admin/support": "Soporte Técnico",
 };
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { isAdmin, loading } = useUserRole();
+  const { showAlert, AlertModal } = useAlert();
 
   const navigationItems = [
     { href: "/admin", icon: LayoutDashboardIcon, label: "Panel Principal" },
@@ -52,25 +63,41 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { href: "/admin/pos", icon: ShoppingCartIcon, label: "Punto de Venta" },
   ];
 
-  const handleConfiguration = () => {
-    window.location.href = "/admin/settings";
-  };
+  // Agregar gestión de usuarios solo para admins y páginas comunes al final
+  const allNavigationItems = [
+    ...navigationItems,
+    ...(isAdmin ? [{ href: "/admin/users", icon: Users2Icon, label: "Gestión de Usuarios" }] : []),
+    { href: "/admin/settings", icon: SettingsIcon, label: "Configuración" },
+    { href: "/admin/support", icon: HelpCircleIcon, label: "Soporte" },
+  ];
 
-  const handleSupport = () => {
-    window.location.href = "/admin/support";
-  };
-
-  const handleLogout = () => {
-    if (confirm("¿Estás seguro de que deseas cerrar sesión?")) {
-      // Aquí puedes agregar la lógica de logout
-      alert("👋 Sesión cerrada exitosamente");
-      // window.location.href = "/login"; // Descomentar cuando exista la página de login
+  const handleLogout = async () => {
+    try {
+      // Hacer logout en Supabase
+      const supabase = createClient();
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Error al cerrar sesión:', error);
+        showAlert('Error al cerrar sesión. Inténtalo de nuevo.', { variant: 'error' });
+        return;
+      }
+      
+      // Limpiar storage local si existe
+      localStorage.removeItem('supabase.auth.token');
+      sessionStorage.clear();
+      
+      // Redirigir a login con refresh completo
+      window.location.replace("/login");
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      showAlert('Error al cerrar sesión. Inténtalo de nuevo.', { variant: 'error' });
     }
   };
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 pl-14">
+      <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 pl-16">
         <Link
           href="/admin"
           className="flex items-center gap-2 text-lg font-semibold"
@@ -106,46 +133,67 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleConfiguration} className="cursor-pointer">
-              Configuración
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleSupport} className="cursor-pointer">
-              Soporte
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-              Cerrar Sesión
-            </DropdownMenuItem>
+            <ConfirmationModal
+              title="Cerrar Sesión"
+              description="¿Estás seguro de que deseas cerrar sesión? Serás redirigido a la página de login."
+              confirmText="Cerrar Sesión"
+              cancelText="Cancelar"
+              onConfirm={handleLogout}
+              variant="destructive"
+              icon={<LogOutIcon className="w-4 h-4" />}
+            >
+              <DropdownMenuItem 
+                onSelect={(e) => e.preventDefault()} 
+                className="cursor-pointer text-red-600 focus:text-red-600"
+              >
+                <LogOutIcon className="w-4 h-4 mr-2" />
+                Cerrar Sesión
+              </DropdownMenuItem>
+            </ConfirmationModal>
           </DropdownMenuContent>
         </DropdownMenu>
       </header>
-      <div className="flex flex-col gap-4 py-4 pl-14">
-        <aside className="fixed mt-[56px] inset-y-0 left-0 z-10 w-14 flex-col border-r bg-background flex">
-          <nav className="flex flex-col items-center gap-4 px-2 py-5">
+      <div className="flex flex-col gap-4 py-4 pl-16">
+        <aside className="fixed mt-[56px] inset-y-0 left-0 z-10 w-16 flex-col border-r bg-background flex shadow-sm">
+          <nav className="flex flex-col items-center gap-3 px-2 py-6">
             <TooltipProvider>
-              {navigationItems.map((item) => (
+              {allNavigationItems.map((item) => (
                 <Tooltip key={item.href}>
                   <TooltipTrigger asChild>
                     <Link
                       href={item.href}
-                      className={`flex h-9 w-9 items-center justify-center rounded-lg ${
+                      className={`relative flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-200 ${
                         pathname === item.href
-                          ? "bg-accent text-accent-foreground"
-                          : "text-muted-foreground"
-                      } transition-colors hover:text-foreground`}
+                          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                      }`}
                     >
-                      <item.icon className="h-5 w-5" />
+                      {/* Indicador activo más visible con color verde */}
+                      {pathname === item.href && (
+                        <div className="absolute -left-1 top-1/2 h-6 w-1 bg-primary-foreground rounded-r-full transform -translate-y-1/2" />
+                      )}
+                      <item.icon className={`h-5 w-5 ${pathname === item.href ? 'drop-shadow-sm' : ''}`} />
                       <span className="sr-only">{item.label}</span>
                     </Link>
                   </TooltipTrigger>
-                  <TooltipContent side="right">{item.label}</TooltipContent>
+                  <TooltipContent side="right" className="font-medium">
+                    {item.label}
+                    {pathname === item.href && (
+                      <span className="ml-1 text-xs opacity-75">• Activo</span>
+                    )}
+                  </TooltipContent>
                 </Tooltip>
               ))}
+              {/* Debug: Mostrar indicador de carga de roles */}
+              {loading && (
+                <div className="h-2 w-2 bg-yellow-400 rounded-full animate-pulse" title="Cargando roles..." />
+              )}
             </TooltipProvider>
           </nav>
         </aside>
         <main className="flex-1 p-4 px-6 py-0">{children}</main>
       </div>
+      <AlertModal />
     </div>
   );
 }
