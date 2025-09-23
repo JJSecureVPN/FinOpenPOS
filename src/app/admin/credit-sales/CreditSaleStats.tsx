@@ -3,6 +3,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Typography } from "@/components/ui";
 import { ResponsiveGrid } from "@/components/responsive";
 import { CreditCard, Package, AlertTriangle, DollarSign } from "lucide-react";
 import type { Product, Customer } from "./types";
@@ -82,11 +83,11 @@ export default function CreditSaleStats({
                 <stat.icon className={`w-5 h-5 ${stat.color}`} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-600 truncate">{stat.title}</p>
-                <p className={`text-lg font-bold ${stat.color} truncate`}>
+                <Typography variant="body-sm" className="text-gray-600 truncate">{stat.title}</Typography>
+                <Typography variant="body" weight="bold" className={`${stat.color} truncate`}>
                   {stat.value}
-                </p>
-                <p className="text-xs text-gray-500 truncate">{stat.description}</p>
+                </Typography>
+                <Typography variant="micro" className="text-gray-500 truncate">{stat.description}</Typography>
               </div>
             </div>
           </CardContent>

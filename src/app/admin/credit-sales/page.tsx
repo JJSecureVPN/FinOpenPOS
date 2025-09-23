@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Typography } from "@/components/ui";
 import { ResponsiveContainer, ResponsiveShow } from "@/components/responsive";
 import { Loader2Icon, ArrowLeft, AlertCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -204,10 +205,10 @@ function CreditSalePageInner() {
       <ResponsiveContainer>
         <div className="text-center py-12">
           <AlertCircle className="w-16 h-16 mx-auto text-red-500 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Error</h3>
-          <p className="text-red-600 mb-4">{error}</p>
+          <Typography variant="h3" weight="medium" className="text-gray-900 mb-2">Error</Typography>
+          <Typography variant="body" className="text-red-600 mb-4">{error}</Typography>
           <Button onClick={() => window.location.reload()}>
-            Reintentar
+            <Typography variant="button">Reintentar</Typography>
           </Button>
         </div>
       </ResponsiveContainer>
@@ -245,15 +246,15 @@ function CreditSalePageInner() {
                 <ArrowLeft className="w-4 h-4" />
               </Button>
               <div className="flex-1">
-                <h1 className="text-xl font-bold">Venta al Fiado</h1>
-                <p className="text-sm text-gray-600">{customer.name}</p>
+                <Typography variant="h2" weight="bold">Venta al Fiado</Typography>
+                <Typography variant="body-sm" className="text-gray-600">{customer.name}</Typography>
               </div>
             </div>
             
             <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
-              <span className="text-sm font-medium text-orange-800">Deuda Actual:</span>
-              <Badge variant="destructive" className="text-sm">
-                ${customer.debt.toFixed(2)}
+              <Typography variant="body-sm" weight="medium" className="text-orange-800">Deuda Actual:</Typography>
+              <Badge variant="destructive">
+                <Typography variant="body-sm">${customer.debt.toFixed(2)}</Typography>
               </Badge>
             </div>
           </div>
@@ -274,16 +275,16 @@ function CreditSalePageInner() {
                 }}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                {customerId ? 'Volver a Clientes' : 'Cambiar Cliente'}
+                <Typography variant="button">{customerId ? 'Volver a Clientes' : 'Cambiar Cliente'}</Typography>
               </Button>
               <div>
-                <h1 className="text-3xl font-bold">Venta al Fiado</h1>
-                <p className="text-gray-600 mt-1">Cliente: {customer.name}</p>
+                <Typography variant="h1">Venta al Fiado</Typography>
+                <Typography variant="body" className="text-gray-600 mt-1">Cliente: {customer.name}</Typography>
               </div>
             </div>
             
-            <Badge variant="destructive" className="text-lg px-4 py-2">
-              Deuda Actual: ${customer.debt.toFixed(2)}
+            <Badge variant="destructive" className="px-4 py-2">
+              <Typography variant="body">Deuda Actual: ${customer.debt.toFixed(2)}</Typography>
             </Badge>
           </div>
         </ResponsiveShow>
