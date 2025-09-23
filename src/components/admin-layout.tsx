@@ -59,14 +59,10 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     
     if (itemHref === "/admin") {
       // Para el dashboard, solo activo si estamos exactamente en /admin
-      const result = normalizedPathname === "/admin";
-      console.log(`Dashboard check: originalPathname="${pathname}", normalizedPathname="${normalizedPathname}", itemHref="${itemHref}", result=${result}`);
-      return result;
+      return normalizedPathname === "/admin";
     }
     // Para otras rutas, activo si el pathname comienza con la ruta del elemento
-    const result = normalizedPathname.startsWith(itemHref);
-    console.log(`Other route check: originalPathname="${pathname}", normalizedPathname="${normalizedPathname}", itemHref="${itemHref}", result=${result}`);
-    return result;
+    return normalizedPathname.startsWith(itemHref);
   };
 
   const navigationItems = [
