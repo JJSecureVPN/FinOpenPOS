@@ -352,9 +352,9 @@ export default function POSPage() {
   );
 
   return (
-    <div className="relative bg-background">
+    <div className="relative">
       {/* Header del POS con altura fija (56px) */}
-      <div className="h-14 px-4 border-b sticky top-0 z-20 bg-background flex items-center">
+      <div className="h-14 px-4 border-b sticky top-0 z-20 flex items-center">
         <ShoppingCart className="h-6 w-6 text-primary mr-2" />
         <Typography variant="h2">Punto de Venta</Typography>
       </div>
@@ -417,7 +417,7 @@ export default function POSPage() {
         </div>
       
   {/* Footer fijo dentro del área de contenido (respeta sidebar en todas las vistas) */}
-      <div className="fixed bottom-0 left-16 right-0 h-[56px] bg-background border-t shadow-lg z-40">
+      <div className="fixed bottom-0 left-16 right-0 h-[56px] border-t shadow-lg z-40">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Contador de productos */}
@@ -475,7 +475,7 @@ export default function POSPage() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header del carrito */}
-            <div className="flex items-center justify-between p-4 border-b bg-background">
+            <div className="flex items-center justify-between p-4 border-b">
               <Typography variant="h3">Carrito de Compras</Typography>
               <Button
                 variant="ghost"
