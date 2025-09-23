@@ -60,9 +60,6 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     return pathname.startsWith(itemHref);
   };
 
-  // Debug temporal - remover después
-  console.log('Current pathname:', pathname);
-
   const navigationItems = [
     { href: "/admin", icon: LayoutDashboardIcon, label: "Panel Principal" },
     { href: "/admin/cashier", icon: DollarSignIcon, label: "Cajero" },
@@ -171,15 +168,19 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                       href={item.href}
                       className={`relative flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200 ${
                         isActive(item.href)
-                          ? "bg-blue-600 text-white shadow-xl shadow-blue-600/30 scale-110 ring-2 ring-blue-100"
+                          ? "text-white"
                           : "text-gray-600 hover:text-gray-900 hover:bg-gray-100 hover:scale-105"
                       }`}
                     >
                       {/* Indicador lateral para página activa */}
                       {isActive(item.href) && (
-                        <div className="absolute -left-2 top-1/2 h-8 w-1 bg-blue-600 rounded-r-full transform -translate-y-1/2 shadow-sm" />
+                        <div className="absolute -left-2 top-1/2 h-8 w-1 bg-white rounded-r-full transform -translate-y-1/2 shadow-sm" />
                       )}
-                      <item.icon className={`h-5 w-5 ${isActive(item.href) ? 'text-white drop-shadow-sm' : ''}`} />
+                      <item.icon className={`transition-all duration-200 ${
+                        isActive(item.href) 
+                          ? 'h-6 w-6 text-white drop-shadow-lg scale-110' 
+                          : 'h-5 w-5'
+                      }`} />
                       <span className="sr-only">{item.label}</span>
                     </Link>
                   </TooltipTrigger>
@@ -187,8 +188,8 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                     <div className="flex items-center gap-2">
                       {item.label}
                       {isActive(item.href) && (
-                        <span className="px-2 py-1 text-xs bg-blue-600 text-white rounded-full">
-                          Actual
+                        <span className="px-1.5 py-0.5 text-xs bg-gray-600 text-white rounded">
+                          •
                         </span>
                       )}
                     </div>
