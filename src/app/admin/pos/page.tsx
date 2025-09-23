@@ -264,7 +264,7 @@ export default function POSPage() {
 
       {/* Área principal de búsqueda */}
       <div className="flex-1 overflow-hidden">
-        <div className="h-full p-4 pb-20">
+        <div className="h-full p-4 pb-24">
           {/* Buscador y filtros */}
           <div className="space-y-4 mb-6">
             <div className="relative">
@@ -356,7 +356,7 @@ export default function POSPage() {
       </div>
 
       {/* Footer fijo */}
-      <div className="bg-white border-t shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-40">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Contador de productos */}
