@@ -355,8 +355,8 @@ export default function POSPage() {
         </div>
       </div>
 
-      {/* Footer fijo dentro del área de contenido */}
-      <div className="fixed bottom-0 left-0 md:left-16 right-0 bg-background border-t shadow-lg z-40">
+      {/* Footer fijo dentro del área de contenido (respeta sidebar en todas las vistas) */}
+      <div className="fixed bottom-0 left-16 right-0 bg-background border-t shadow-lg z-40">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Contador de productos */}
@@ -406,11 +406,11 @@ export default function POSPage() {
         </div>
       </div>
 
-      {/* Carrito como modal centrado */}
+      {/* Carrito como bottom sheet desde el footer (respeta sidebar) */}
       {showCart && (
-        <div className="fixed inset-y-0 left-0 md:left-16 right-0 z-50 bg-black/50 flex items-end md:items-center justify-center p-4" onClick={() => setShowCart(false)}>
+        <div className="fixed inset-y-0 left-16 right-0 z-50 bg-black/50" onClick={() => setShowCart(false)}>
           <div
-            className="w-full max-w-3xl bg-card rounded-lg shadow-xl border overflow-hidden flex flex-col max-h-[85vh]"
+            className="fixed bottom-0 left-16 right-0 bg-card rounded-t-lg shadow-xl border overflow-hidden max-h-[80vh]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header del carrito */}
