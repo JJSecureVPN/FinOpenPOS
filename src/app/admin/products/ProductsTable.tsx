@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ResponsiveShow, MobileAdaptive } from "@/components/responsive";
+import { Typography } from "@/components/ui/typography";
 import { Edit, Trash2, Package } from "lucide-react";
 import type { Product } from "./types";
 
@@ -19,7 +20,7 @@ const ProductsTable: React.FC<Props> = ({ products, onEdit, onDelete }) => {
       <div className="rounded-lg border">
         <div className="p-8 text-center text-muted-foreground">
           <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p>No se encontraron productos</p>
+          <Typography variant="body" className="text-muted-foreground">No se encontraron productos</Typography>
         </div>
       </div>
     );
@@ -34,40 +35,54 @@ const ProductsTable: React.FC<Props> = ({ products, onEdit, onDelete }) => {
             <table className="min-w-full text-sm">
               <thead className="bg-muted/50 sticky top-0">
                 <tr className="border-b">
-                  <th className="text-left p-3 font-medium">Nombre</th>
-                  <th className="text-left p-3 font-medium">Categoría</th>
-                  <th className="text-right p-3 font-medium">Precio</th>
-                  <th className="text-right p-3 font-medium">Stock</th>
-                  <th className="text-right p-3 font-medium">Acciones</th>
+                  <th className="text-left p-3">
+                    <Typography variant="body-sm" weight="medium">Nombre</Typography>
+                  </th>
+                  <th className="text-left p-3">
+                    <Typography variant="body-sm" weight="medium">Categoría</Typography>
+                  </th>
+                  <th className="text-right p-3">
+                    <Typography variant="body-sm" weight="medium">Precio</Typography>
+                  </th>
+                  <th className="text-right p-3">
+                    <Typography variant="body-sm" weight="medium">Stock</Typography>
+                  </th>
+                  <th className="text-right p-3">
+                    <Typography variant="body-sm" weight="medium">Acciones</Typography>
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {products.map((p) => (
                   <tr key={p.id} className="border-b hover:bg-muted/40 transition-colors">
-                    <td className="p-3 font-medium">{p.name}</td>
+                    <td className="p-3">
+                      <Typography variant="body-sm" weight="medium">{p.name}</Typography>
+                    </td>
                     <td className="p-3">
                       <Badge variant="secondary" className="text-xs">
-                        {p.category || "Sin categoría"}
+                        <Typography variant="caption">{p.category || "Sin categoría"}</Typography>
                       </Badge>
                     </td>
-                    <td className="p-3 text-right font-mono">${p.price.toFixed(2)}</td>
+                    <td className="p-3 text-right">
+                      <Typography variant="body-sm" className="font-mono">${p.price.toFixed(2)}</Typography>
+                    </td>
                     <td className="p-3 text-right">
                       <Badge 
                         variant={(p.in_stock ?? 0) > 0 ? "default" : "destructive"}
                         className="text-xs"
                       >
-                        {p.in_stock ?? 0}
+                        <Typography variant="caption">{p.in_stock ?? 0}</Typography>
                       </Badge>
                     </td>
                     <td className="p-3 text-right">
                       <div className="inline-flex gap-2">
                         <Button variant="outline" size="sm" onClick={() => onEdit(p)}>
                           <Edit className="h-3 w-3 mr-1" />
-                          Editar
+                          <Typography variant="button">Editar</Typography>
                         </Button>
                         <Button variant="destructive" size="sm" onClick={() => onDelete(p)}>
                           <Trash2 className="h-3 w-3 mr-1" />
-                          Eliminar
+                          <Typography variant="button">Eliminar</Typography>
                         </Button>
                       </div>
                     </td>
@@ -88,24 +103,24 @@ const ProductsTable: React.FC<Props> = ({ products, onEdit, onDelete }) => {
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-sm leading-tight line-clamp-2">
+                      <Typography variant="body-sm" weight="medium" className="leading-tight line-clamp-2">
                         {p.name}
-                      </h3>
+                      </Typography>
                       <div className="mt-1">
                         <Badge variant="secondary" className="text-xs">
-                          {p.category || "Sin categoría"}
+                          <Typography variant="caption">{p.category || "Sin categoría"}</Typography>
                         </Badge>
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="text-lg font-bold text-primary">
+                      <Typography variant="h3" weight="bold" className="text-primary">
                         ${p.price.toFixed(2)}
-                      </div>
+                      </Typography>
                       <Badge 
                         variant={(p.in_stock ?? 0) > 0 ? "default" : "destructive"}
                         className="text-xs mt-1"
                       >
-                        Stock: {p.in_stock ?? 0}
+                        <Typography variant="caption">Stock: {p.in_stock ?? 0}</Typography>
                       </Badge>
                     </div>
                   </div>
@@ -118,7 +133,7 @@ const ProductsTable: React.FC<Props> = ({ products, onEdit, onDelete }) => {
                       className="flex-1"
                     >
                       <Edit className="h-3 w-3 mr-1" />
-                      Editar
+                      <Typography variant="button">Editar</Typography>
                     </Button>
                     <Button 
                       variant="destructive" 
@@ -127,7 +142,7 @@ const ProductsTable: React.FC<Props> = ({ products, onEdit, onDelete }) => {
                       className="flex-1"
                     >
                       <Trash2 className="h-3 w-3 mr-1" />
-                      Eliminar
+                      <Typography variant="button">Eliminar</Typography>
                     </Button>
                   </div>
                 </div>

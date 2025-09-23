@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, Loader2Icon, ChevronLeft, ChevronRight } from "lucide-react";
 import { ResponsiveContainer, MobileAdaptive, ResponsiveShow } from "@/components/responsive";
+import { Typography } from "@/components/ui/typography";
 import StatsCards from "./StatsCards";
 import FiltersDropdown from "./FiltersDropdown";
 import ProductsTable from "./ProductsTable";
@@ -177,10 +178,10 @@ export default function Products() {
               >
                 <PlusIcon className="w-4 h-4 mr-2" />
                 <ResponsiveShow on="mobile">
-                  Agregar
+                  <Typography variant="button">Agregar</Typography>
                 </ResponsiveShow>
                 <ResponsiveShow on="tablet-desktop">
-                  Agregar Producto
+                  <Typography variant="button">Agregar Producto</Typography>
                 </ResponsiveShow>
               </Button>
             </div>
@@ -200,9 +201,9 @@ export default function Products() {
               className="mt-6 gap-4"
             >
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="text-sm text-muted-foreground text-center sm:text-left">
+                <Typography variant="body-sm" className="text-muted-foreground text-center sm:text-left">
                   Mostrando {indexOfFirstProduct + 1} a {Math.min(indexOfLastProduct, filteredProducts.length)} de {filteredProducts.length} productos
-                </div>
+                </Typography>
                 <div className="flex items-center justify-center gap-2 overflow-x-auto">
                   <Button
                     variant="outline"
@@ -213,7 +214,7 @@ export default function Products() {
                   >
                     <ChevronLeft className="h-4 w-4 sm:mr-1" />
                     <ResponsiveShow on="tablet-desktop">
-                      Anterior
+                      <Typography variant="button">Anterior</Typography>
                     </ResponsiveShow>
                   </Button>
                   
@@ -237,7 +238,7 @@ export default function Products() {
                           onClick={() => handlePageChange(page)}
                           className="min-w-[32px] shrink-0"
                         >
-                          {page}
+                          <Typography variant="button">{page}</Typography>
                         </Button>
                       );
                     })}
@@ -251,7 +252,7 @@ export default function Products() {
                     className="shrink-0"
                   >
                     <ResponsiveShow on="tablet-desktop">
-                      Siguiente
+                      <Typography variant="button">Siguiente</Typography>
                     </ResponsiveShow>
                     <ChevronRight className="h-4 w-4 sm:ml-1" />
                   </Button>

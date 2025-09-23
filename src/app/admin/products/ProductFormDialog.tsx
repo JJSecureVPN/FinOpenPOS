@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Typography } from "@/components/ui/typography";
 import type { Product } from "./types";
 
 type Props = {
@@ -45,11 +46,17 @@ const ProductFormDialog: React.FC<Props> = ({ open, onOpenChange, product, onSub
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{form.id ? "Editar producto" : "Nuevo producto"}</DialogTitle>
+          <DialogTitle>
+            <Typography variant="h3" weight="semibold">
+              {form.id ? "Editar producto" : "Nuevo producto"}
+            </Typography>
+          </DialogTitle>
         </DialogHeader>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <Label htmlFor="name">Nombre *</Label>
+            <Label htmlFor="name">
+              <Typography variant="body-sm" weight="medium">Nombre *</Typography>
+            </Label>
             <Input
               id="name"
               placeholder="Nombre del producto"
@@ -60,7 +67,9 @@ const ProductFormDialog: React.FC<Props> = ({ open, onOpenChange, product, onSub
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="category">Categoría</Label>
+            <Label htmlFor="category">
+              <Typography variant="body-sm" weight="medium">Categoría</Typography>
+            </Label>
             <Input
               id="category"
               placeholder="Categoría del producto"
@@ -70,7 +79,9 @@ const ProductFormDialog: React.FC<Props> = ({ open, onOpenChange, product, onSub
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="description">Descripción</Label>
+            <Label htmlFor="description">
+              <Typography variant="body-sm" weight="medium">Descripción</Typography>
+            </Label>
             <Textarea
               id="description"
               placeholder="Descripción del producto"
@@ -82,7 +93,9 @@ const ProductFormDialog: React.FC<Props> = ({ open, onOpenChange, product, onSub
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="price">Precio *</Label>
+              <Label htmlFor="price">
+                <Typography variant="body-sm" weight="medium">Precio *</Typography>
+              </Label>
               <Input
                 id="price"
                 type="number"
@@ -95,7 +108,9 @@ const ProductFormDialog: React.FC<Props> = ({ open, onOpenChange, product, onSub
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="stock">Stock</Label>
+              <Label htmlFor="stock">
+                <Typography variant="body-sm" weight="medium">Stock</Typography>
+              </Label>
               <Input
                 id="stock"
                 type="number"
@@ -110,10 +125,10 @@ const ProductFormDialog: React.FC<Props> = ({ open, onOpenChange, product, onSub
           
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
+              <Typography variant="button">Cancelar</Typography>
             </Button>
             <Button type="submit">
-              Guardar
+              <Typography variant="button">Guardar</Typography>
             </Button>
           </div>
         </form>

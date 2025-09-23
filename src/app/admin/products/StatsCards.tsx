@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { ResponsiveGrid } from "@/components/responsive";
+import { Typography } from "@/components/ui/typography";
 
 type Props = {
   totalValue: number;
@@ -40,12 +41,12 @@ export const StatsCards: React.FC<Props> = ({ totalValue, totalUnits, totalSkus 
             className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 hover:shadow-md transition-shadow"
           >
             <div className="flex flex-col space-y-1">
-              <span className="text-sm text-muted-foreground font-medium">
+              <Typography variant="body-sm" weight="medium" className="text-muted-foreground">
                 {stat.label}
-              </span>
-              <span className={`text-2xl font-bold leading-none ${stat.className}`}>
+              </Typography>
+              <Typography variant="h2" weight="bold" className={`leading-none ${stat.className}`}>
                 {stat.value}
-              </span>
+              </Typography>
             </div>
           </div>
         ))}

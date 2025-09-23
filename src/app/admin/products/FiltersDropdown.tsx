@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Typography } from "@/components/ui/typography";
 import type { Filters } from "./types";
 
 type Props = {
@@ -40,13 +41,15 @@ const FiltersDropdown: React.FC<Props> = ({ categories, filters, onChange }) => 
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56">
-        <DropdownMenuLabel>Filtrar por categoría</DropdownMenuLabel>
+        <DropdownMenuLabel>
+          <Typography variant="body-sm" weight="medium">Filtrar por categoría</Typography>
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuCheckboxItem
           checked={filters.category === "all"}
           onCheckedChange={(v) => toggleCategory("all", Boolean(v))}
         >
-          Todas las categorías
+          <Typography variant="body-sm">Todas las categorías</Typography>
         </DropdownMenuCheckboxItem>
         {categories.map((c) => (
           <DropdownMenuCheckboxItem
@@ -54,29 +57,31 @@ const FiltersDropdown: React.FC<Props> = ({ categories, filters, onChange }) => 
             checked={filters.category === c}
             onCheckedChange={(v) => toggleCategory(c, Boolean(v))}
           >
-            {c}
+            <Typography variant="body-sm">{c}</Typography>
           </DropdownMenuCheckboxItem>
         ))}
         <DropdownMenuSeparator />
-        <DropdownMenuLabel>Stock</DropdownMenuLabel>
+        <DropdownMenuLabel>
+          <Typography variant="body-sm" weight="medium">Stock</Typography>
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuCheckboxItem
           checked={filters.inStock === "all"}
           onCheckedChange={(v) => toggleStock("all", Boolean(v))}
         >
-          Todo el stock
+          <Typography variant="body-sm">Todo el stock</Typography>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={filters.inStock === "in-stock"}
           onCheckedChange={(v) => toggleStock("in-stock", Boolean(v))}
         >
-          En stock
+          <Typography variant="body-sm">En stock</Typography>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={filters.inStock === "out-of-stock"}
           onCheckedChange={(v) => toggleStock("out-of-stock", Boolean(v))}
         >
-          Sin stock
+          <Typography variant="body-sm">Sin stock</Typography>
         </DropdownMenuCheckboxItem>
       </DropdownMenuContent>
     </DropdownMenu>
