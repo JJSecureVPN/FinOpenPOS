@@ -40,8 +40,8 @@ export default function UserSearchFilters({
       <Card>
         <CardContent className="p-4">
           <ResponsiveShow on="mobile">
-            {/* Mobile Layout: Stack vertically */}
-            <div className="space-y-4">
+            {/* Mobile Layout: Compact */}
+            <div className="space-y-3">
               {/* Search Bar */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -49,43 +49,25 @@ export default function UserSearchFilters({
                   placeholder="Buscar por email..."
                   value={searchTerm}
                   onChange={(e) => onSearchChange(e.target.value)}
-                  className="pl-10 text-lg"
+                  className="pl-10"
                 />
               </div>
 
-              {/* Filters Row */}
-              <div className="grid grid-cols-2 gap-2">
+              {/* Filters Row - Single Row */}
+              <div className="flex gap-2">
                 <Select
                   value={filters.role}
                   onValueChange={(value: "all" | "admin" | "cajero") => 
                     onFiltersChange({ ...filters, role: value })
                   }
                 >
-                  <SelectTrigger>
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-4 h-4" />
-                      <SelectValue />
-                    </div>
+                  <SelectTrigger className="text-sm">
+                    <SelectValue placeholder="Rol" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4" />
-                        Todos los Roles
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="admin">
-                      <div className="flex items-center gap-2">
-                        <ShieldCheck className="w-4 h-4 text-purple-600" />
-                        Administradores
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="cajero">
-                      <div className="flex items-center gap-2">
-                        <Shield className="w-4 h-4 text-blue-600" />
-                        Cajeros
-                      </div>
-                    </SelectItem>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="cajero">Cajero</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -95,58 +77,38 @@ export default function UserSearchFilters({
                     onFiltersChange({ ...filters, status: value })
                   }
                 >
-                  <SelectTrigger>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
-                      <SelectValue />
-                    </div>
+                  <SelectTrigger className="text-sm">
+                    <SelectValue placeholder="Estado" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los Estados</SelectItem>
-                    <SelectItem value="verified">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                        Verificados
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="unverified">
-                      <div className="flex items-center gap-2">
-                        <AlertTriangle className="w-4 h-4 text-red-600" />
-                        Sin Verificar
-                      </div>
-                    </SelectItem>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="verified">Verificado</SelectItem>
+                    <SelectItem value="unverified">Sin verificar</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
 
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Select
-                    value={filters.activity}
-                    onValueChange={(value: "all" | "active" | "inactive") => 
-                      onFiltersChange({ ...filters, activity: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        <SelectValue />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Toda la Actividad</SelectItem>
-                      <SelectItem value="active">Activos (30d)</SelectItem>
-                      <SelectItem value="inactive">Inactivos</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Select
+                  value={filters.activity}
+                  onValueChange={(value: "all" | "active" | "inactive") => 
+                    onFiltersChange({ ...filters, activity: value })
+                  }
+                >
+                  <SelectTrigger className="text-sm">
+                    <SelectValue placeholder="Actividad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="active">Activo</SelectItem>
+                    <SelectItem value="inactive">Inactivo</SelectItem>
+                  </SelectContent>
+                </Select>
 
                 {hasActiveFilters && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={onClearFilters}
-                    className="px-3"
+                    className="px-3 shrink-0"
                   >
                     <X className="w-4 h-4" />
                   </Button>
@@ -154,13 +116,11 @@ export default function UserSearchFilters({
               </div>
 
               {/* Results Counter */}
-              <div className="text-sm text-gray-600 text-center py-2 border-t">
-                {filteredCount === totalCount ? (
-                  <span>Mostrando {totalCount} usuarios</span>
-                ) : (
-                  <span>Mostrando {filteredCount} de {totalCount} usuarios</span>
-                )}
-              </div>
+              {(hasActiveFilters || filteredCount !== totalCount) && (
+                <div className="text-xs text-gray-500 text-center">
+                  {filteredCount} de {totalCount} usuarios
+                </div>
+              )}
             </div>
           </ResponsiveShow>
 

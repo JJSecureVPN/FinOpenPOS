@@ -11,8 +11,6 @@ import {
   ShieldCheck, 
   Edit, 
   Trash2, 
-  Mail, 
-  Calendar, 
   Clock, 
   CheckCircle, 
   AlertTriangle,
@@ -30,116 +28,82 @@ interface UsersTableProps {
 
 export default function UsersTable({ users, currentUser, onEdit, onDelete }: UsersTableProps) {
   
-  const UserCard = ({ user }: { user: User }) => (
-    <Card className="mb-4 transition-all duration-200 hover:shadow-md">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-full ${user.role === 'admin' ? 'bg-purple-100' : 'bg-blue-100'}`}>
-              {user.role === 'admin' ? (
-                <ShieldCheck className="w-5 h-5 text-purple-600" />
-              ) : (
-                <Shield className="w-5 h-5 text-blue-600" />
+  const UserCard = ({ user }: { user: User }) => {
+    const isActive = user.last_sign_in_at && 
+      new Date(user.last_sign_in_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    
+    return (
+      <Card className="mb-3">
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between mb-3">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <div className={`p-1.5 rounded-full ${user.role === 'admin' ? 'bg-purple-100' : 'bg-blue-100'}`}>
+                  {user.role === 'admin' ? (
+                    <ShieldCheck className="w-4 h-4 text-purple-600" />
+                  ) : (
+                    <Shield className="w-4 h-4 text-blue-600" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{user.email}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant={user.role === 'admin' ? 'default' : 'secondary'} className="text-xs">
+                      {user.role === 'admin' ? 'Admin' : 'Cajero'}
+                    </Badge>
+                    {currentUser && user.id === currentUser.user_id && (
+                      <Badge variant="outline" className="text-xs">Tú</Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-4 text-xs text-gray-500">
+                <span className="flex items-center gap-1">
+                  {user.email_confirmed_at ? (
+                    <>
+                      <CheckCircle className="w-3 h-3 text-green-600" />
+                      Verificado
+                    </>
+                  ) : (
+                    <>
+                      <AlertTriangle className="w-3 h-3 text-red-600" />
+                      Sin verificar
+                    </>
+                  )}
+                </span>
+                <span className={`flex items-center gap-1 ${isActive ? 'text-green-600' : 'text-gray-400'}`}>
+                  <Clock className="w-3 h-3" />
+                  {isActive ? 'Activo' : 'Inactivo'}
+                </span>
+              </div>
+            </div>
+            
+            <div className="flex gap-1 ml-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onEdit(user)}
+                className="h-8 w-8 p-0"
+              >
+                <Edit className="w-4 h-4" />
+              </Button>
+              {currentUser && user.id !== currentUser.user_id && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onDelete(user)}
+                  className="h-8 w-8 p-0"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               )}
             </div>
-            <div>
-              <CardTitle className="text-lg flex items-center gap-2">
-                {user.email}
-                {currentUser && user.id === currentUser.user_id && (
-                  <Badge variant="outline" className="text-xs">Tú</Badge>
-                )}
-              </CardTitle>
-              <Badge variant={user.role === 'admin' ? 'default' : 'secondary'} className="mt-1">
-                {user.role === 'admin' ? (
-                  <>
-                    <ShieldCheck className="w-3 h-3 mr-1" />
-                    Administrador
-                  </>
-                ) : (
-                  <>
-                    <Shield className="w-3 h-3 mr-1" />
-                    Cajero
-                  </>
-                )}
-              </Badge>
-            </div>
           </div>
-          
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onEdit(user)}
-            >
-              <Edit className="w-4 h-4" />
-            </Button>
-            {currentUser && user.id !== currentUser.user_id && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onDelete(user)}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        {/* Status */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">Estado de verificación:</span>
-          <Badge variant={user.email_confirmed_at ? "default" : "destructive"}>
-            {user.email_confirmed_at ? (
-              <>
-                <CheckCircle className="w-3 h-3 mr-1" />
-                Verificado
-              </>
-            ) : (
-              <>
-                <AlertTriangle className="w-3 h-3 mr-1" />
-                Sin verificar
-              </>
-            )}
-          </Badge>
-        </div>
-
-        {/* Dates */}
-        <div className="space-y-2 text-sm">
-          <div className="flex items-center gap-2 text-gray-600">
-            <Calendar className="w-4 h-4" />
-            <span>Creado: {formatDate(user.created_at)}</span>
-          </div>
-          <div className="flex items-center gap-2 text-gray-600">
-            <Clock className="w-4 h-4" />
-            <span>
-              Último acceso: {user.last_sign_in_at ? formatDate(user.last_sign_in_at) : 'Nunca'}
-            </span>
-          </div>
-        </div>
-
-        {/* Activity Status */}
-        <div className="pt-3 border-t border-gray-100">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Actividad:</span>
-            <Badge variant="outline" className={
-              user.last_sign_in_at && 
-              new Date(user.last_sign_in_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-                ? "text-green-600 border-green-600" 
-                : "text-gray-600"
-            }>
-              {user.last_sign_in_at && 
-               new Date(user.last_sign_in_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-                ? "Activo (30d)" 
-                : "Inactivo"
-              }
-            </Badge>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div>
@@ -176,130 +140,105 @@ export default function UsersTable({ users, currentUser, onEdit, onDelete }: Use
                 <TableRow>
                   <TableHead>Usuario</TableHead>
                   <TableHead>Rol</TableHead>
-                  <TableHead>Creado</TableHead>
-                  <TableHead>Último acceso</TableHead>
                   <TableHead>Estado</TableHead>
+                  <TableHead>Último acceso</TableHead>
                   <TableHead className="text-center">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {users.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
+                    <TableCell colSpan={5} className="text-center py-8">
                       <Users className="w-12 h-12 mx-auto text-gray-300 mb-4" />
                       <p className="text-gray-500">No hay usuarios registrados</p>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-full ${user.role === 'admin' ? 'bg-purple-100' : 'bg-blue-100'}`}>
-                            {user.role === 'admin' ? (
-                              <ShieldCheck className="w-4 h-4 text-purple-600" />
-                            ) : (
-                              <Shield className="w-4 h-4 text-blue-600" />
-                            )}
-                          </div>
-                          <div>
-                            <div className="font-medium flex items-center gap-2">
-                              {user.email}
-                              {currentUser && user.id === currentUser.user_id && (
-                                <Badge variant="outline" className="text-xs">Tú</Badge>
+                  users.map((user) => {
+                    const isActive = user.last_sign_in_at && 
+                      new Date(user.last_sign_in_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+                    
+                    return (
+                      <TableRow key={user.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-full ${user.role === 'admin' ? 'bg-purple-100' : 'bg-blue-100'}`}>
+                              {user.role === 'admin' ? (
+                                <ShieldCheck className="w-4 h-4 text-purple-600" />
+                              ) : (
+                                <Shield className="w-4 h-4 text-blue-600" />
                               )}
                             </div>
-                            <div className="text-sm text-gray-500">ID: {user.id.slice(0, 8)}...</div>
+                            <div>
+                              <div className="font-medium flex items-center gap-2">
+                                {user.email}
+                                {currentUser && user.id === currentUser.user_id && (
+                                  <Badge variant="outline" className="text-xs">Tú</Badge>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell>
-                        <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                          {user.role === 'admin' ? (
-                            <>
-                              <ShieldCheck className="w-3 h-3 mr-1" />
-                              Admin
-                            </>
-                          ) : (
-                            <>
-                              <Shield className="w-3 h-3 mr-1" />
-                              Cajero
-                            </>
-                          )}
-                        </Badge>
-                      </TableCell>
-                      
-                      <TableCell>
-                        <div className="flex items-center gap-1 text-sm">
-                          <Calendar className="w-3 h-3 text-gray-400" />
-                          <span>{formatDate(user.created_at)}</span>
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell>
-                        <div className="flex items-center gap-1 text-sm">
-                          <Clock className="w-3 h-3 text-gray-400" />
-                          <span>
-                            {user.last_sign_in_at ? formatDate(user.last_sign_in_at) : 'Nunca'}
-                          </span>
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell>
-                        <div className="space-y-1">
-                          <Badge variant={user.email_confirmed_at ? "default" : "destructive"} className="text-xs">
-                            {user.email_confirmed_at ? (
-                              <>
-                                <CheckCircle className="w-3 h-3 mr-1" />
-                                Verificado
-                              </>
-                            ) : (
-                              <>
-                                <AlertTriangle className="w-3 h-3 mr-1" />
-                                Sin verificar
-                              </>
-                            )}
+                        </TableCell>
+                        
+                        <TableCell>
+                          <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
+                            {user.role === 'admin' ? 'Admin' : 'Cajero'}
                           </Badge>
-                          <br />
-                          <Badge variant="outline" className={`text-xs ${
-                            user.last_sign_in_at && 
-                            new Date(user.last_sign_in_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-                              ? "text-green-600 border-green-600" 
-                              : "text-gray-600"
-                          }`}>
-                            {user.last_sign_in_at && 
-                             new Date(user.last_sign_in_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-                              ? "Activo" 
-                              : "Inactivo"
-                            }
-                          </Badge>
-                        </div>
-                      </TableCell>
-                      
-                      <TableCell>
-                        <div className="flex items-center justify-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onEdit(user)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          
-                          {currentUser && user.id !== currentUser.user_id && (
+                        </TableCell>
+                        
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={user.email_confirmed_at ? "default" : "destructive"} className="text-xs">
+                              {user.email_confirmed_at ? (
+                                <>
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  Verificado
+                                </>
+                              ) : (
+                                <>
+                                  <AlertTriangle className="w-3 h-3 mr-1" />
+                                  Sin verificar
+                                </>
+                              )}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className={`flex items-center gap-1 text-sm ${isActive ? 'text-green-600' : 'text-gray-400'}`}>
+                              <Clock className="w-3 h-3" />
+                              <span>
+                                {user.last_sign_in_at ? formatDate(user.last_sign_in_at) : 'Nunca'}
+                              </span>
+                            </div>
+                          </div>
+                        </TableCell>
+                        
+                        <TableCell>
+                          <div className="flex items-center justify-center gap-1">
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => onDelete(user)}
+                              onClick={() => onEdit(user)}
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Edit className="w-4 h-4" />
                             </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                            
+                            {currentUser && user.id !== currentUser.user_id && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => onDelete(user)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
