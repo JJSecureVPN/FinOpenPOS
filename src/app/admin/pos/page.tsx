@@ -1,45 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Search, ShoppingCart, Package, Receipt, Calculator } from "lucide-react";
+import { Receipt } from "lucide-react";
 import { configService, getEnabledPaymentMethods, type PaymentMethod } from "@/lib/config";
-
-type Product = {
-  id: number;
-  name: string;
-  price: number;
-  category: string;
-  in_stock: number;
-};
-
-type Customer = {
-  id: number;
-  name: string;
-};
-
-interface CartItem extends Product {
-  quantity: number;
-  subtotal: number;
-}
+import type { Product, CartItem } from "./types";
+import ProductsGrid from "./ProductsGrid";
+import CartPanel from "./CartPanel";
+import SearchHeader from "./SearchHeader";
 
 export default function POSPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -87,7 +54,6 @@ export default function POSPage() {
       setIsLoading(true);
       const response = await fetch("/api/products");
       if (response.status === 401) {
-        // Usuario no autenticado, redirigir al login
         window.location.href = "/login";
         return;
       }
@@ -96,59 +62,46 @@ export default function POSPage() {
       setProducts(data);
     } catch (error) {
       console.error("Error fetching products:", error);
-      // Si hay un error, mostrar productos de ejemplo para la demo
-      setProducts([
-        { id: 1, name: "Arroz Blanco 1kg", price: 2.50, category: "comestibles", in_stock: 50 },
-        { id: 2, name: "Coca Cola 2L", price: 3.25, category: "bebidas", in_stock: 30 },
-        { id: 3, name: "Pan Integral", price: 1.80, category: "comestibles", in_stock: 20 },
-        { id: 4, name: "Detergente Líquido", price: 4.50, category: "limpieza", in_stock: 15 },
-        { id: 5, name: "Champú 400ml", price: 6.75, category: "higiene", in_stock: 25 }
-      ]);
+      setProducts([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const filterProducts = React.useCallback(() => {
-    if (!searchTerm.trim()) {
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
       setFilteredProducts(products);
-      return;
+    } else {
+      const filtered = products.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredProducts(filtered);
     }
-    
-    const filtered = products.filter(product => 
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredProducts(filtered);
   }, [products, searchTerm]);
 
-  useEffect(() => {
-    filterProducts();
-  }, [filterProducts]);
-
   const addToCart = (product: Product) => {
-    const existingItem = cart.find(item => item.id === product.id);
-    
-    if (existingItem) {
-      setCart(cart.map(item => 
-        item.id === product.id 
-          ? { 
-              ...item, 
-              quantity: item.quantity + 1,
-              subtotal: (item.quantity + 1) * item.price
-            }
-          : item
-      ));
-    } else {
-      setCart([...cart, {
-        ...product,
-        quantity: 1,
-        subtotal: product.price
-      }]);
+    if (product.in_stock === 0) {
+      alert("❌ Producto agotado");
+      return;
     }
-    
-    // Limpiar búsqueda después de agregar
-    setSearchTerm("");
+
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.id === product.id);
+      if (existingItem) {
+        if (existingItem.quantity >= product.in_stock) {
+          alert(`❌ No hay suficiente stock. Stock disponible: ${product.in_stock}`);
+          return prevCart;
+        }
+        return prevCart.map(item =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1, subtotal: (item.quantity + 1) * item.price }
+            : item
+        );
+      } else {
+        return [...prevCart, { ...product, quantity: 1, subtotal: product.price }];
+      }
+    });
   };
 
   const updateQuantity = (productId: number, newQuantity: number) => {
@@ -156,16 +109,20 @@ export default function POSPage() {
       removeFromCart(productId);
       return;
     }
-    
-    setCart(cart.map(item => 
-      item.id === productId 
-        ? { 
-            ...item, 
-            quantity: newQuantity,
-            subtotal: newQuantity * item.price
-          }
-        : item
-    ));
+
+    const product = products.find(p => p.id === productId);
+    if (product && newQuantity > product.in_stock) {
+      alert(`❌ No hay suficiente stock. Stock disponible: ${product.in_stock}`);
+      return;
+    }
+
+    setCart(prevCart =>
+      prevCart.map(item =>
+        item.id === productId
+          ? { ...item, quantity: newQuantity, subtotal: newQuantity * item.price }
+          : item
+      )
+    );
   };
 
   const removeFromCart = (productId: number) => {
@@ -174,364 +131,146 @@ export default function POSPage() {
 
   const clearCart = () => {
     setCart([]);
-    setShowPayment(false);
     setPaymentReceived("");
-    setSelectedPaymentMethod("");
+    setShowPayment(false);
   };
 
-  const total = cart.reduce((sum, item) => sum + item.subtotal, 0);
-  const change = parseFloat(paymentReceived) - total;
-
-  const handleProcessSale = async () => {
-    if (cart.length === 0 || !selectedPaymentMethod) return;
-    
-    // Validar pago según el método seleccionado
-    const selectedMethod = availablePaymentMethods.find(m => m.id === selectedPaymentMethod);
-    if (!selectedMethod) {
-      alert("❌ Método de pago no válido");
+  const handleSale = async () => {
+    if (cart.length === 0) {
+      alert("❌ El carrito está vacío");
       return;
     }
 
-    // Para efectivo, validar que se haya ingresado el monto
-    if (selectedMethod.type === 'cash' && (!paymentReceived || parseFloat(paymentReceived) < total)) {
-      alert("❌ El monto recibido debe ser mayor o igual al total");
+    if (!selectedPaymentMethod) {
+      alert("❌ Selecciona un método de pago");
       return;
     }
+
+    const total = cart.reduce((sum, item) => sum + item.subtotal, 0);
+    const received = parseFloat(paymentReceived) || 0;
     
+    if (selectedPaymentMethod === 'cash' && received < total) {
+      alert("❌ El monto recibido es insuficiente");
+      return;
+    }
+
     try {
-      console.log("Procesando venta:", {
-        paymentMethod: selectedMethod.name,
-        paymentMethodId: selectedMethod.id,
-        products: cart.map(item => ({ 
-          id: item.id, 
-          quantity: item.quantity, 
-          price: item.price 
-        })),
-        total,
-      });
-
-      const response = await fetch("/api/orders", {
+      const saleResponse = await fetch("/api/sales", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          // No enviamos customerId para ventas normales
-          paymentMethodId: 3, // Mapear a ID de BD según corresponda
-          paymentMethod: selectedMethod.name,
-          products: cart.map(item => ({ 
-            id: item.id, 
-            quantity: item.quantity, 
-            price: item.price 
+          items: cart.map(item => ({
+            product_id: item.id,
+            quantity: item.quantity,
+            unit_price: item.price,
+            subtotal: item.subtotal
           })),
-          total,
+          total_amount: total,
+          payment_method: selectedPaymentMethod,
+          payment_received: selectedPaymentMethod === 'cash' ? received : total,
+          change_given: selectedPaymentMethod === 'cash' ? Math.max(0, received - total) : 0
         }),
       });
 
-      const responseData = await response.json();
-      console.log("Respuesta del servidor:", responseData);
-
-      if (!response.ok) {
-        throw new Error(responseData.error || `Error del servidor: ${response.status}`);
+      if (!saleResponse.ok) {
+        const errorData = await saleResponse.json();
+        throw new Error(errorData.error || "Error al procesar la venta");
       }
 
-      // Actualizar stock local de productos vendidos
-      setProducts(prevProducts => 
-        prevProducts.map(product => {
-          const soldItem = cart.find(item => item.id === product.id);
-          if (soldItem) {
-            return {
-              ...product,
-              in_stock: Math.max(0, product.in_stock - soldItem.quantity)
-            };
-          }
-          return product;
-        })
-      );
+      const saleData = await saleResponse.json();
 
-      // Resetear todo
+      for (const item of cart) {
+        const updateResponse = await fetch(`/api/products/${item.id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            in_stock: item.in_stock - item.quantity
+          }),
+        });
+
+        if (!updateResponse.ok) {
+          console.error(`Error actualizando stock del producto ${item.id}`);
+        }
+      }
+
+      await fetchProducts();
+
+      const paymentMethodName = availablePaymentMethods.find(m => m.id === selectedPaymentMethod)?.name || selectedPaymentMethod;
+      
+      if (selectedPaymentMethod === 'cash') {
+        const change = Math.max(0, received - total);
+        alert(`✅ Venta procesada exitosamente!\n\nTotal: $${total.toFixed(2)}\nRecibido: $${received.toFixed(2)}\nCambio: $${change.toFixed(2)}\nMétodo: ${paymentMethodName}\nVenta #${saleData.id}`);
+      } else {
+        alert(`✅ Venta procesada exitosamente!\n\nTotal: $${total.toFixed(2)}\nMétodo: ${paymentMethodName}\nVenta #${saleData.id}`);
+      }
+      
       clearCart();
-      setSelectedPaymentMethod(availablePaymentMethods[0]?.id || "");
-      
-      // Mostrar mensaje diferente según el método de pago
-      let successMessage = `🎉 ¡Venta procesada exitosamente!\n\nTotal: $${total.toFixed(2)}\nMétodo: ${selectedMethod.name}`;
-      
-      if (selectedMethod.type === 'cash') {
-        successMessage += `\nPagado: $${paymentReceived}\nCambio: $${change.toFixed(2)}`;
-      }
-      
-      alert(successMessage);
-      
     } catch (error) {
       console.error("Error procesando venta:", error);
       alert(`❌ Error al procesar la venta:\n${error instanceof Error ? error.message : 'Error desconocido'}\n\nRevisa la consola para más detalles.`);
     }
   };
 
-  const getCategoryColor = (category: string) => {
-    const colors: { [key: string]: string } = {
-      comestibles: "bg-green-100 text-green-800",
-      snacks: "bg-yellow-100 text-yellow-800",
-      bebidas: "bg-blue-100 text-blue-800",
-      dulces: "bg-pink-100 text-pink-800",
-      limpieza: "bg-purple-100 text-purple-800",
-      higiene: "bg-teal-100 text-teal-800"
-    };
-    return colors[category] || "bg-gray-100 text-gray-800";
-  };
+  if (isLoading) {
+    return (
+      <div className="h-[60vh] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Cargando productos...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="fixed inset-0 top-14 left-16 bg-background overflow-hidden p-4">
-      {isLoading ? (
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Cargando productos...</p>
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center space-x-3">
+        <Receipt className="h-8 w-8 text-primary" />
+        <h1 className="text-3xl font-bold">Punto de Venta</h1>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        {/* Panel de Productos */}
+        <div className="xl:col-span-3">
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+            <div className="p-6">
+              <SearchHeader
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                productsCount={filteredProducts.length}
+              />
+              
+              <ProductsGrid
+                products={filteredProducts}
+                onAddToCart={addToCart}
+              />
+            </div>
           </div>
         </div>
-      ) : (
-        <div className="h-full overflow-auto">
-        {/* Header compacto */}
-        <div className="bg-background rounded-lg shadow-sm p-3 mb-4">
-          <div className="flex items-center space-x-2">
-            <Receipt className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-bold">POS</h1>
-          </div>
+
+        {/* Panel del Carrito */}
+        <div className="xl:col-span-1">
+          <CartPanel
+            cart={cart}
+            onUpdateQuantity={updateQuantity}
+            onRemoveFromCart={removeFromCart}
+            onClearCart={clearCart}
+            showPayment={showPayment}
+            onShowPayment={setShowPayment}
+            onProcessSale={handleSale}
+            paymentReceived={paymentReceived}
+            onPaymentReceivedChange={setPaymentReceived}
+            selectedPaymentMethod={selectedPaymentMethod}
+            onPaymentMethodChange={setSelectedPaymentMethod}
+            availablePaymentMethods={availablePaymentMethods}
+          />
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-8rem)]">
-          {/* Panel de Productos */}
-          <div className="lg:col-span-2 flex flex-col min-h-0">
-            <Card className="flex-1 flex flex-col">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center text-lg">
-                  <Package className="h-4 w-4 mr-2" />
-                  Productos
-                </CardTitle>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar productos..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </CardHeader>
-              <CardContent className="flex-1 overflow-auto">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {filteredProducts.map((product) => (
-                    <div 
-                      key={product.id}
-                      onClick={() => addToCart(product)}
-                      className="bg-white border rounded-lg p-4 cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-all"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-medium text-sm text-gray-900 line-clamp-2">
-                          {product.name}
-                        </h3>
-                        <Badge className={`text-xs ${getCategoryColor(product.category)}`}>
-                          {product.category}
-                        </Badge>
-                      </div>
-                      <div className="text-lg font-bold text-green-600">
-                        ${product.price.toFixed(2)}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        Stock: {product.in_stock || 0}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Panel del Carrito */}
-          <div className="lg:col-span-1 flex flex-col min-h-0">
-            <Card className="flex-1 flex flex-col">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center justify-between text-lg">
-                  <div className="flex items-center">
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Carrito ({cart.length})
-                  </div>
-                  {cart.length > 0 && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={clearCart}
-                    >
-                      Limpiar
-                    </Button>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col">
-                {/* Lista del carrito */}
-                <div className="flex-1 overflow-auto space-y-2 mb-4">
-                  {cart.length === 0 ? (
-                    <div className="text-center text-muted-foreground py-8">
-                      <ShoppingCart className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">Carrito vacío</p>
-                    </div>
-                  ) : (
-                    cart.map((item) => (
-                      <div key={item.id} className="flex items-center justify-between bg-gray-50 p-3 rounded">
-                        <div className="flex-1">
-                          <div className="font-medium text-sm">{item.name}</div>
-                          <div className="text-green-600 font-semibold">
-                            ${item.price.toFixed(2)} × {item.quantity}
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          >
-                            -
-                          </Button>
-                          <span className="w-8 text-center">{item.quantity}</span>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          >
-                            +
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => removeFromCart(item.id)}
-                          >
-                            ×
-                          </Button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                {/* Total */}
-                {cart.length > 0 && (
-                  <>
-                    <div className="border-t pt-4 mb-4">
-                      <div className="flex justify-between items-center text-xl font-bold">
-                        <span>TOTAL:</span>
-                        <span className="text-green-600">${total.toFixed(2)}</span>
-                      </div>
-                    </div>
-
-                    {/* Pago */}
-                    {!showPayment ? (
-                      <Button 
-                        onClick={() => setShowPayment(true)}
-                        className="w-full bg-green-600 hover:bg-green-700"
-                        size="lg"
-                      >
-                        <Calculator className="h-4 w-4 mr-2" />
-                        Procesar Pago
-                      </Button>
-                    ) : (
-                      <div className="space-y-3">
-                        {/* Selección de método de pago */}
-                        <div>
-                          <label className="text-sm font-medium text-gray-700">Método de Pago:</label>
-                          <select
-                            value={selectedPaymentMethod}
-                            onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                            className="mt-1 w-full p-2 border border-gray-300 rounded-md text-lg"
-                          >
-                            <option value="">Seleccionar método</option>
-                            {availablePaymentMethods.map(method => (
-                              <option key={method.id} value={method.id}>
-                                {method.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        {/* Input condicional según método de pago */}
-                        {selectedPaymentMethod === 'cash' && (
-                          <div>
-                            <label className="text-sm font-medium text-gray-700">Efectivo Recibido:</label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={paymentReceived}
-                              onChange={(e) => setPaymentReceived(e.target.value)}
-                              placeholder="0.00"
-                              className="mt-1 text-lg"
-                            />
-                          </div>
-                        )}
-
-                        {selectedPaymentMethod === 'card' && (
-                          <div className="bg-blue-50 p-3 rounded">
-                            <div className="text-sm font-medium text-blue-800">
-                              💳 Tarjeta: ${total.toFixed(2)}
-                            </div>
-                            <div className="text-xs text-blue-600 mt-1">
-                              Confirme el pago en el terminal de tarjeta
-                            </div>
-                          </div>
-                        )}
-
-                        {selectedPaymentMethod === 'transfer' && (
-                          <div className="bg-purple-50 p-3 rounded">
-                            <div className="text-sm font-medium text-purple-800">
-                              🏦 Transferencia: ${total.toFixed(2)}
-                            </div>
-                            <div className="text-xs text-purple-600 mt-1">
-                              Confirme la transferencia bancaria
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Mostrar cambio solo para efectivo */}
-                        {selectedPaymentMethod === 'cash' && paymentReceived && parseFloat(paymentReceived) >= total && (
-                          <div className="bg-green-50 p-3 rounded">
-                            <div className="text-sm font-medium text-green-800">
-                              Cambio: <span className="text-lg">${change.toFixed(2)}</span>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="flex space-x-2">
-                          <Button 
-                            onClick={() => {
-                              setShowPayment(false);
-                              setSelectedPaymentMethod("");
-                              setPaymentReceived("");
-                            }}
-                            variant="outline"
-                            className="flex-1"
-                          >
-                            Cancelar
-                          </Button>
-                          <Button 
-                            onClick={handleProcessSale}
-                            disabled={
-                              !selectedPaymentMethod || 
-                              (selectedPaymentMethod === 'cash' && (!paymentReceived || parseFloat(paymentReceived) < total))
-                            }
-                            className="flex-1 bg-green-600 hover:bg-green-700"
-                          >
-                            <Receipt className="h-4 w-4 mr-2" />
-                            Finalizar
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
