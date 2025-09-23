@@ -406,15 +406,15 @@ export default function POSPage() {
         </div>
       </div>
 
-      {/* Panel deslizante del carrito */}
+      {/* Carrito como modal centrado */}
       {showCart && (
-        <div className="fixed inset-y-0 left-0 md:left-16 right-0 bg-black bg-opacity-50 z-50" onClick={() => setShowCart(false)}>
+        <div className="fixed inset-y-0 left-0 md:left-16 right-0 z-50 bg-black/50 flex items-end md:items-center justify-center p-4" onClick={() => setShowCart(false)}>
           <div
-            className="fixed bottom-0 right-0 left-0 md:left-auto w-full md:w-[640px] bg-card rounded-t-lg shadow-xl max-h-[80vh] overflow-hidden border"
+            className="w-full max-w-3xl bg-card rounded-lg shadow-xl border overflow-hidden flex flex-col max-h-[85vh]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header del carrito */}
-            <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center justify-between p-4 border-b bg-background">
               <Typography variant="h3">Carrito de Compras</Typography>
               <Button
                 variant="ghost"
@@ -427,7 +427,7 @@ export default function POSPage() {
             </div>
 
             {/* Lista de productos */}
-            <div className="flex-1 overflow-y-auto p-4 max-h-[50vh]">
+            <div className="flex-1 overflow-y-auto p-4">
               {cart.length === 0 ? (
                 <div className="text-center py-8">
                   <ShoppingCart className="h-12 w-12 mx-auto mb-4 text-gray-300" />
@@ -491,7 +491,7 @@ export default function POSPage() {
 
             {/* Footer del carrito con total y pago */}
             {cart.length > 0 && (
-              <div className="border-t p-4 space-y-4">
+              <div className="border-t p-4 space-y-4 bg-background">
                 <div className="flex justify-between items-center">
                   <Typography variant="h3">Total:</Typography>
                   <Typography variant="h3" className="text-primary">
