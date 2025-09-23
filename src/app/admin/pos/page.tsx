@@ -290,21 +290,21 @@ export default function POSPage() {
           </div>
         </div>
       ) : (
-        <div className="max-w-7xl mx-auto p-4">
-        {/* Header */}
-        <div className="mb-6">
+        <div className="h-[calc(100vh-4rem)] p-4 max-w-none">
+        {/* Header más compacto */}
+        <div className="mb-4">
           <div className="flex items-center space-x-3">
-            <Receipt className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">Caja Registradora</h1>
+            <Receipt className="h-6 w-6 text-primary" />
+            <h1 className="text-2xl font-bold text-foreground">Caja Registradora</h1>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Panel de Productos */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 h-[calc(100%-4rem)]">
+          {/* Panel de Productos - Más espacio en pantallas grandes */}
+          <div className="xl:col-span-3">
+            <Card className="h-full flex flex-col">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center text-lg">
                   <Package className="h-5 w-5 mr-2" />
                   Productos Disponibles
                 </CardTitle>
@@ -314,31 +314,33 @@ export default function POSPage() {
                     placeholder="Buscar producto por nombre o categoría..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 text-base"
                   />
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
+              <CardContent className="flex-1 overflow-hidden">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 h-full overflow-y-auto">
                   {filteredProducts.map((product) => (
                     <div 
                       key={product.id}
                       onClick={() => addToCart(product)}
-                      className="bg-card border rounded-lg p-4 cursor-pointer hover:bg-card/80 hover:border-border transition-all hover:shadow-sm"
+                      className="bg-card border rounded-lg p-4 cursor-pointer hover:bg-card/80 hover:border-border transition-all hover:shadow-sm h-fit"
                     >
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-medium text-sm text-foreground line-clamp-2">
-                          {product.name}
-                        </h3>
-                        <Badge className={`text-xs ${getCategoryColor(product.category)}`}>
+                      <div className="flex flex-col space-y-2">
+                        <div className="flex justify-between items-start">
+                          <h3 className="font-medium text-sm text-foreground line-clamp-2 flex-1">
+                            {product.name}
+                          </h3>
+                        </div>
+                        <Badge className={`text-xs w-fit ${getCategoryColor(product.category)}`}>
                           {product.category}
                         </Badge>
-                      </div>
-                      <div className="text-lg font-bold text-primary">
-                        ${product.price.toFixed(2)}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Stock: {product.in_stock || 0}
+                        <div className="text-xl font-bold text-primary">
+                          ${product.price.toFixed(2)}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Stock: {product.in_stock || 0}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -347,11 +349,11 @@ export default function POSPage() {
             </Card>
           </div>
 
-          {/* Panel del Carrito */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-4">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
+          {/* Panel del Carrito - Más ancho en pantallas grandes */}
+          <div className="xl:col-span-1">
+            <Card className="h-full flex flex-col">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center justify-between text-lg">
                   <div className="flex items-center">
                     <ShoppingCart className="h-5 w-5 mr-2" />
                     Carrito ({cart.length})
@@ -367,37 +369,39 @@ export default function POSPage() {
                   )}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-1 flex flex-col">
                 {/* Lista del carrito */}
-                <div className="space-y-2 max-h-64 overflow-y-auto mb-4">
+                <div className="space-y-2 flex-1 overflow-y-auto mb-4 min-h-0">
                   {cart.length === 0 ? (
-                    <div className="text-center text-muted-foreground py-8">
-                      <ShoppingCart className="h-12 w-12 mx-auto mb-2 text-muted-foreground/50" />
-                      <p>Carrito vacío</p>
+                    <div className="text-center text-muted-foreground py-8 flex flex-col items-center justify-center h-full">
+                      <ShoppingCart className="h-12 w-12 mb-2 text-muted-foreground/50" />
+                      <p className="font-medium">Carrito vacío</p>
                       <p className="text-sm">Selecciona productos para agregar</p>
                     </div>
                   ) : (
                     cart.map((item) => (
                       <div key={item.id} className="flex items-center justify-between bg-muted p-3 rounded">
-                        <div className="flex-1">
-                          <div className="font-medium text-sm text-foreground">{item.name}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm text-foreground truncate">{item.name}</div>
                           <div className="text-primary font-semibold">
                             ${item.price.toFixed(2)} × {item.quantity}
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-1 ml-2">
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            className="h-7 w-7 p-0"
                           >
                             -
                           </Button>
-                          <span className="w-8 text-center">{item.quantity}</span>
+                          <span className="w-8 text-center text-sm">{item.quantity}</span>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            className="h-7 w-7 p-0"
                           >
                             +
                           </Button>
@@ -405,6 +409,7 @@ export default function POSPage() {
                             size="sm"
                             variant="destructive"
                             onClick={() => removeFromCart(item.id)}
+                            className="h-7 w-7 p-0"
                           >
                             ×
                           </Button>
@@ -414,14 +419,12 @@ export default function POSPage() {
                   )}
                 </div>
 
-                {/* Total */}
+                {/* Total y Pago - Fijo en la parte inferior */}
                 {cart.length > 0 && (
-                  <>
-                    <div className="border-t pt-4 mb-4">
-                      <div className="flex justify-between items-center text-xl font-bold">
-                        <span>TOTAL:</span>
-                        <span className="text-primary">${total.toFixed(2)}</span>
-                      </div>
+                  <div className="border-t pt-4 space-y-4">
+                    <div className="flex justify-between items-center text-xl font-bold">
+                      <span>TOTAL:</span>
+                      <span className="text-primary">${total.toFixed(2)}</span>
                     </div>
 
                     {/* Pago */}
@@ -442,7 +445,7 @@ export default function POSPage() {
                           <select
                             value={selectedPaymentMethod}
                             onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                            className="mt-1 w-full p-2 border border-border rounded-md text-lg bg-background text-foreground"
+                            className="mt-1 w-full p-2 border border-border rounded-md text-base bg-background text-foreground"
                           >
                             <option value="">Seleccionar método</option>
                             {availablePaymentMethods.map(method => (
@@ -463,7 +466,7 @@ export default function POSPage() {
                               value={paymentReceived}
                               onChange={(e) => setPaymentReceived(e.target.value)}
                               placeholder="0.00"
-                              className="mt-1 text-lg"
+                              className="mt-1 text-base"
                             />
                           </div>
                         )}
@@ -525,7 +528,7 @@ export default function POSPage() {
                         </div>
                       </div>
                     )}
-                  </>
+                  </div>
                 )}
               </CardContent>
             </Card>
