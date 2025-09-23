@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, Loader2Icon, ChevronLeft, ChevronRight } from "lucide-react";
+import { ResponsiveContainer, MobileAdaptive, ResponsiveShow } from "@/components/responsive";
 import StatsCards from "./StatsCards";
 import FiltersDropdown from "./FiltersDropdown";
 import ProductsTable from "./ProductsTable";
@@ -144,80 +145,121 @@ export default function Products() {
   }
 
   return (
-    <>
+    <ResponsiveContainer variant="page" padding="md">
       <StatsCards totalValue={stats.totalValue} totalUnits={stats.totalUnits} totalSkus={stats.totalProducts} />
 
-      <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Input
-              type="text"
-              placeholder="Buscar productos..."
-              value={searchTerm}
-              onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-              className="w-full sm:w-64"
-            />
-            <FiltersDropdown
-              categories={categories}
-              filters={filters}
-              onChange={handleFiltersChange}
-            />
-          </div>
-          <Button size="sm" onClick={() => { setEditingProduct(null); setIsProductDialogOpen(true); }}>
-            <PlusIcon className="w-4 h-4 mr-2" />
-            Agregar Producto
-          </Button>
-        </div>
-
-        <ProductsTable
-          products={currentProducts}
-          onEdit={(p) => { setEditingProduct(p); setIsProductDialogOpen(true); }}
-          onDelete={(p) => { setProductToDelete(p); setIsDeleteConfirmationOpen(true); }}
-        />
-
-        {/* Controles de Paginación */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-4">
-            <div className="text-sm text-muted-foreground">
-              Mostrando {indexOfFirstProduct + 1} a {Math.min(indexOfLastProduct, filteredProducts.length)} de {filteredProducts.length} productos
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Anterior
-              </Button>
-              
-              <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handlePageChange(page)}
-                    className="min-w-[32px]"
-                  >
-                    {page}
-                  </Button>
-                ))}
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+        <div className="p-4 sm:p-6">
+          <MobileAdaptive
+            mobileLayout="stack"
+            breakpoint="sm"
+            className="mb-6"
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2 w-full sm:w-auto">
+                <Input
+                  type="text"
+                  placeholder="Buscar productos..."
+                  value={searchTerm}
+                  onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                  className="w-full sm:w-64"
+                />
+                <FiltersDropdown
+                  categories={categories}
+                  filters={filters}
+                  onChange={handleFiltersChange}
+                />
               </div>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
+              <Button 
+                size="sm" 
+                onClick={() => { setEditingProduct(null); setIsProductDialogOpen(true); }}
+                className="w-full sm:w-auto"
               >
-                Siguiente
-                <ChevronRight className="h-4 w-4 ml-1" />
+                <PlusIcon className="w-4 h-4 mr-2" />
+                <ResponsiveShow on="mobile">
+                  Agregar
+                </ResponsiveShow>
+                <ResponsiveShow on="tablet-desktop">
+                  Agregar Producto
+                </ResponsiveShow>
               </Button>
             </div>
-          </div>
-        )}
+          </MobileAdaptive>
+
+          <ProductsTable
+            products={currentProducts}
+            onEdit={(p) => { setEditingProduct(p); setIsProductDialogOpen(true); }}
+            onDelete={(p) => { setProductToDelete(p); setIsDeleteConfirmationOpen(true); }}
+          />
+
+          {/* Controles de Paginación */}
+          {totalPages > 1 && (
+            <MobileAdaptive
+              mobileLayout="stack"
+              breakpoint="sm"
+              className="mt-6 gap-4"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="text-sm text-muted-foreground text-center sm:text-left">
+                  Mostrando {indexOfFirstProduct + 1} a {Math.min(indexOfLastProduct, filteredProducts.length)} de {filteredProducts.length} productos
+                </div>
+                <div className="flex items-center justify-center gap-2 overflow-x-auto">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="shrink-0"
+                  >
+                    <ChevronLeft className="h-4 w-4 sm:mr-1" />
+                    <ResponsiveShow on="tablet-desktop">
+                      Anterior
+                    </ResponsiveShow>
+                  </Button>
+                  
+                  <div className="flex items-center gap-1 max-w-full overflow-x-auto">
+                    {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                      let page;
+                      if (totalPages <= 5) {
+                        page = i + 1;
+                      } else if (currentPage <= 3) {
+                        page = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        page = totalPages - 4 + i;
+                      } else {
+                        page = currentPage - 2 + i;
+                      }
+                      return (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageChange(page)}
+                          className="min-w-[32px] shrink-0"
+                        >
+                          {page}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="shrink-0"
+                  >
+                    <ResponsiveShow on="tablet-desktop">
+                      Siguiente
+                    </ResponsiveShow>
+                    <ChevronRight className="h-4 w-4 sm:ml-1" />
+                  </Button>
+                </div>
+              </div>
+            </MobileAdaptive>
+          )}
+        </div>
       </div>
 
       <ProductFormDialog
@@ -243,6 +285,6 @@ export default function Products() {
           }
         }}
       />
-    </>
+    </ResponsiveContainer>
   );
 }
