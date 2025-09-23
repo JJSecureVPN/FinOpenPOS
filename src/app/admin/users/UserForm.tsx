@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ResponsiveContainer, ResponsiveShow } from "@/components/responsive";
+import { Typography } from "@/components/ui/typography";
 import { User, Mail, Lock, Shield, ShieldCheck, Eye, EyeOff } from "lucide-react";
 import type { NewUser } from "./types";
 
@@ -102,7 +103,7 @@ export default function UserForm({
               className={`text-lg ${errors.email ? 'border-red-500' : ''}`}
             />
             {errors.email && (
-              <p className="text-sm text-red-600">{errors.email}</p>
+              <Typography variant="body-sm" className="text-red-600">{errors.email}</Typography>
             )}
           </div>
 
@@ -132,7 +133,7 @@ export default function UserForm({
               </Button>
             </div>
             {errors.password && (
-              <p className="text-sm text-red-600">{errors.password}</p>
+              <Typography variant="body-sm" className="text-red-600">{errors.password}</Typography>
             )}
           </div>
 
@@ -162,7 +163,7 @@ export default function UserForm({
               </Button>
             </div>
             {errors.confirmPassword && (
-              <p className="text-sm text-red-600">{errors.confirmPassword}</p>
+              <Typography variant="body-sm" className="text-red-600">{errors.confirmPassword}</Typography>
             )}
           </div>
 
@@ -198,11 +199,11 @@ export default function UserForm({
           <div className="flex flex-col space-y-2 pt-2">
             <Button type="submit" className="w-full">
               <User className="w-4 h-4 mr-2" />
-              {submitText}
+              <Typography variant="button">{submitText}</Typography>
             </Button>
             {onCancel && (
               <Button type="button" variant="outline" onClick={onCancel} className="w-full">
-                Cancelar
+                <Typography variant="button">Cancelar</Typography>
               </Button>
             )}
           </div>
@@ -215,7 +216,9 @@ export default function UserForm({
             // Compact layout for inline forms
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">
+                  <Typography variant="body-sm" weight="medium">Email</Typography>
+                </Label>
                 <Input
                   id="email"
                   type="email"
@@ -226,12 +229,14 @@ export default function UserForm({
                   className={errors.email ? 'border-red-500' : ''}
                 />
                 {errors.email && (
-                  <p className="text-sm text-red-600">{errors.email}</p>
+                  <Typography variant="body-sm" className="text-red-600">{errors.email}</Typography>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="role">Rol</Label>
+                <Label htmlFor="role">
+                  <Typography variant="body-sm" weight="medium">Rol</Typography>
+                </Label>
                 <Select
                   value={formData.role}
                   onValueChange={(value: "admin" | "cajero") => handleInputChange("role", value)}
@@ -240,14 +245,20 @@ export default function UserForm({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="cajero">Cajero</SelectItem>
-                    <SelectItem value="admin">Administrador</SelectItem>
+                    <SelectItem value="cajero">
+                      <Typography variant="body-sm">Cajero</Typography>
+                    </SelectItem>
+                    <SelectItem value="admin">
+                      <Typography variant="body-sm">Administrador</Typography>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Contraseña</Label>
+                <Label htmlFor="password">
+                  <Typography variant="body-sm" weight="medium">Contraseña</Typography>
+                </Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -269,12 +280,14 @@ export default function UserForm({
                   </Button>
                 </div>
                 {errors.password && (
-                  <p className="text-sm text-red-600">{errors.password}</p>
+                  <Typography variant="body-sm" className="text-red-600">{errors.password}</Typography>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmar</Label>
+                <Label htmlFor="confirmPassword">
+                  <Typography variant="body-sm" weight="medium">Confirmar</Typography>
+                </Label>
                 <div className="relative">
                   <Input
                     id="confirmPassword"
@@ -296,19 +309,19 @@ export default function UserForm({
                   </Button>
                 </div>
                 {errors.confirmPassword && (
-                  <p className="text-sm text-red-600">{errors.confirmPassword}</p>
+                  <Typography variant="body-sm" className="text-red-600">{errors.confirmPassword}</Typography>
                 )}
               </div>
 
               <div className="col-span-2 flex justify-end gap-2 pt-2">
                 {onCancel && (
                   <Button type="button" variant="outline" onClick={onCancel}>
-                    Cancelar
+                    <Typography variant="button">Cancelar</Typography>
                   </Button>
                 )}
                 <Button type="submit">
                   <User className="w-4 h-4 mr-2" />
-                  {submitText}
+                  <Typography variant="button">{submitText}</Typography>
                 </Button>
               </div>
             </div>
@@ -449,7 +462,9 @@ export default function UserForm({
     <ResponsiveContainer>
       <Card>
         <CardHeader>
-          <CardTitle>Nuevo Usuario</CardTitle>
+          <CardTitle>
+            <Typography variant="h3" weight="semibold">Nuevo Usuario</Typography>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <FormContent />

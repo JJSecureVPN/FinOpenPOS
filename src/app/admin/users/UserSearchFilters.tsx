@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ResponsiveContainer, ResponsiveShow } from "@/components/responsive";
+import { Typography } from "@/components/ui/typography";
 import { Search, Filter, X, Shield, ShieldCheck, Users } from "lucide-react";
 import type { UserFilters } from "./types";
 
@@ -83,9 +84,9 @@ export default function UserSearchFilters({
 
               {/* Results Counter */}
               {(hasActiveFilters || filteredCount !== totalCount) && (
-                <div className="text-xs text-gray-500 text-center">
+                <Typography variant="caption" className="text-gray-500 text-center block">
                   {filteredCount} de {totalCount} usuarios
-                </div>
+                </Typography>
               )}
             </div>
           </ResponsiveShow>
@@ -150,26 +151,26 @@ export default function UserSearchFilters({
                     className="flex items-center gap-2"
                   >
                     <X className="w-4 h-4" />
-                    Limpiar
+                    <Typography variant="button">Limpiar</Typography>
                   </Button>
                 )}
               </div>
 
               {/* Results Counter */}
-              <div className="flex justify-between items-center text-sm text-gray-600 border-t pt-3">
-                <div>
+              <div className="flex justify-between items-center border-t pt-3">
+                <Typography variant="body-sm" className="text-gray-600">
                   {filteredCount === totalCount ? (
-                    <span>Mostrando todos los {totalCount} usuarios</span>
+                    <>Mostrando todos los {totalCount} usuarios</>
                   ) : (
-                    <span>Mostrando {filteredCount} de {totalCount} usuarios</span>
+                    <>Mostrando {filteredCount} de {totalCount} usuarios</>
                   )}
-                </div>
+                </Typography>
                 
                 {hasActiveFilters && (
-                  <div className="text-blue-600">
-                    <Filter className="w-4 h-4 inline mr-1" />
+                  <Typography variant="body-sm" className="text-blue-600 flex items-center gap-1">
+                    <Filter className="w-4 h-4" />
                     Filtros activos
-                  </div>
+                  </Typography>
                 )}
               </div>
             </div>

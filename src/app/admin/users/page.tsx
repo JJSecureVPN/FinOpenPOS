@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ResponsiveContainer, ResponsiveShow } from "@/components/responsive";
+import { Typography } from "@/components/ui/typography";
 import { UserPlus, Users, AlertTriangle, Loader2Icon } from "lucide-react";
 import { useAlert } from "@/components/ui/alert-modal";
 
@@ -210,10 +211,10 @@ export default function UsersManagement() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertTriangle className="h-16 w-16 text-red-500 mb-4" />
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Acceso Denegado</h2>
-            <p className="text-gray-600 text-center">
+            <Typography variant="h2" weight="semibold" className="text-gray-900 mb-2">Acceso Denegado</Typography>
+            <Typography variant="body" className="text-gray-600 text-center">
               Solo los administradores pueden acceder a la gestión de usuarios.
-            </p>
+            </Typography>
           </CardContent>
         </Card>
       </ResponsiveContainer>
@@ -226,10 +227,10 @@ export default function UsersManagement() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertTriangle className="h-16 w-16 text-red-500 mb-4" />
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Error</h2>
-            <p className="text-red-600 text-center mb-4">{error}</p>
+            <Typography variant="h2" weight="semibold" className="text-gray-900 mb-2">Error</Typography>
+            <Typography variant="body" className="text-red-600 text-center mb-4">{error}</Typography>
             <Button onClick={() => window.location.reload()}>
-              Reintentar
+              <Typography variant="button">Reintentar</Typography>
             </Button>
           </CardContent>
         </Card>
@@ -246,13 +247,13 @@ export default function UsersManagement() {
             <div className="flex items-center gap-3">
               <Users className="h-8 w-8 text-blue-600" />
               <div>
-                <h1 className="text-2xl font-bold">Gestión de Usuarios</h1>
-                <p className="text-gray-600">Administra usuarios</p>
+                <Typography variant="h1" weight="bold">Gestión de Usuarios</Typography>
+                <Typography variant="body" className="text-gray-600">Administra usuarios</Typography>
               </div>
             </div>
             <Button onClick={() => setShowCreateDialog(true)} className="w-full">
               <UserPlus className="w-4 h-4 mr-2" />
-              Crear Usuario
+              <Typography variant="button">Crear Usuario</Typography>
             </Button>
           </div>
         </ResponsiveShow>
@@ -262,13 +263,13 @@ export default function UsersManagement() {
             <div className="flex items-center gap-3">
               <Users className="h-8 w-8 text-blue-600" />
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
-                <p className="text-gray-600">Administra los usuarios del sistema</p>
+                <Typography variant="h1" weight="bold" className="text-gray-900">Gestión de Usuarios</Typography>
+                <Typography variant="body" className="text-gray-600">Administra los usuarios del sistema</Typography>
               </div>
             </div>
             <Button onClick={() => setShowCreateDialog(true)}>
               <UserPlus className="w-4 h-4 mr-2" />
-              Crear Usuario
+              <Typography variant="button">Crear Usuario</Typography>
             </Button>
           </div>
         </ResponsiveShow>
@@ -299,9 +300,13 @@ export default function UsersManagement() {
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Crear Nuevo Usuario</DialogTitle>
+              <DialogTitle>
+                <Typography variant="h3" weight="semibold">Crear Nuevo Usuario</Typography>
+              </DialogTitle>
               <DialogDescription>
-                Complete la información del nuevo usuario del sistema
+                <Typography variant="body-sm" className="text-gray-600">
+                  Complete la información del nuevo usuario del sistema
+                </Typography>
               </DialogDescription>
             </DialogHeader>
             <UserForm
@@ -316,23 +321,27 @@ export default function UsersManagement() {
         <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Editar Rol de Usuario</DialogTitle>
+              <DialogTitle>
+                <Typography variant="h3" weight="semibold">Editar Rol de Usuario</Typography>
+              </DialogTitle>
               <DialogDescription>
-                Modifica el rol del usuario seleccionado
+                <Typography variant="body-sm" className="text-gray-600">
+                  Modifica el rol del usuario seleccionado
+                </Typography>
               </DialogDescription>
             </DialogHeader>
             {userToEdit && (
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Email</label>
-                  <p className="mt-1 p-2 bg-gray-50 rounded border">{userToEdit.email}</p>
+                  <Typography variant="body-sm" weight="medium" className="text-gray-700" as="label">Email</Typography>
+                  <Typography variant="body" className="mt-1 p-2 bg-gray-50 rounded border block">{userToEdit.email}</Typography>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Rol</label>
+                  <Typography variant="body-sm" weight="medium" className="text-gray-700" as="label">Rol</Typography>
                   <select
                     value={userToEdit.role}
                     onChange={(e) => setUserToEdit({ ...userToEdit, role: e.target.value as 'admin' | 'cajero' })}
-                    className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 text-sm"
                   >
                     <option value="cajero">Cajero</option>
                     <option value="admin">Administrador</option>
@@ -348,10 +357,10 @@ export default function UsersManagement() {
                   setUserToEdit(null);
                 }}
               >
-                Cancelar
+                <Typography variant="button">Cancelar</Typography>
               </Button>
               <Button onClick={handleEditUser}>
-                Actualizar Rol
+                <Typography variant="button">Actualizar Rol</Typography>
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -361,18 +370,24 @@ export default function UsersManagement() {
         <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Eliminar Usuario</DialogTitle>
+              <DialogTitle>
+                <Typography variant="h3" weight="semibold">Eliminar Usuario</Typography>
+              </DialogTitle>
               <DialogDescription>
-                Esta acción no se puede deshacer
+                <Typography variant="body-sm" className="text-gray-600">
+                  Esta acción no se puede deshacer
+                </Typography>
               </DialogDescription>
             </DialogHeader>
             {userToDelete && (
               <div className="space-y-4">
-                <p>¿Estás seguro de que deseas eliminar al usuario <strong>{userToDelete.email}</strong>?</p>
+                <Typography variant="body">
+                  ¿Estás seguro de que deseas eliminar al usuario <strong>{userToDelete.email}</strong>?
+                </Typography>
                 <div className="p-3 bg-red-50 border border-red-200 rounded">
-                  <p className="text-sm text-red-600">
+                  <Typography variant="body-sm" className="text-red-600">
                     ⚠️ Esta acción eliminará permanentemente al usuario y no se puede deshacer.
-                  </p>
+                  </Typography>
                 </div>
               </div>
             )}
@@ -384,10 +399,10 @@ export default function UsersManagement() {
                   setUserToDelete(null);
                 }}
               >
-                Cancelar
+                <Typography variant="button">Cancelar</Typography>
               </Button>
               <Button variant="destructive" onClick={handleDeleteUser}>
-                Eliminar Usuario
+                <Typography variant="button">Eliminar Usuario</Typography>
               </Button>
             </DialogFooter>
           </DialogContent>

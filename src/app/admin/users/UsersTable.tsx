@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ResponsiveShow } from "@/components/responsive";
+import { Typography } from "@/components/ui/typography";
 import { 
   Shield, 
   ShieldCheck, 
@@ -46,7 +47,7 @@ export default function UsersTable({ users, currentUser, onEdit, onDelete }: Use
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium truncate">{user.email}</p>
+                  <Typography variant="body-sm" weight="medium" className="truncate">{user.email}</Typography>
                   <div className="flex items-center gap-2 mt-1">
                     <Badge variant={user.role === 'admin' ? 'default' : 'secondary'} className="text-xs">
                       {user.role === 'admin' ? 'Admin' : 'Cajero'}
@@ -58,24 +59,24 @@ export default function UsersTable({ users, currentUser, onEdit, onDelete }: Use
                 </div>
               </div>
               
-              <div className="flex items-center gap-4 text-xs text-gray-500">
-                <span className="flex items-center gap-1">
+              <div className="flex items-center gap-4">
+                <Typography variant="caption" className={`flex items-center gap-1 ${user.email_confirmed_at ? 'text-green-600' : 'text-red-600'}`}>
                   {user.email_confirmed_at ? (
                     <>
-                      <CheckCircle className="w-3 h-3 text-green-600" />
+                      <CheckCircle className="w-3 h-3" />
                       Verificado
                     </>
                   ) : (
                     <>
-                      <AlertTriangle className="w-3 h-3 text-red-600" />
+                      <AlertTriangle className="w-3 h-3" />
                       Sin verificar
                     </>
                   )}
-                </span>
-                <span className={`flex items-center gap-1 ${isActive ? 'text-green-600' : 'text-gray-400'}`}>
+                </Typography>
+                <Typography variant="caption" className={`flex items-center gap-1 ${isActive ? 'text-green-600' : 'text-gray-400'}`}>
                   <Clock className="w-3 h-3" />
                   {isActive ? 'Activo' : 'Inactivo'}
-                </span>
+                </Typography>
               </div>
             </div>
             
@@ -114,7 +115,7 @@ export default function UsersTable({ users, currentUser, onEdit, onDelete }: Use
             <Card>
               <CardContent className="py-8 text-center">
                 <Users className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-                <p className="text-gray-500">No hay usuarios registrados</p>
+                <Typography variant="body" className="text-gray-500">No hay usuarios registrados</Typography>
               </CardContent>
             </Card>
           ) : (
@@ -131,7 +132,7 @@ export default function UsersTable({ users, currentUser, onEdit, onDelete }: Use
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="w-5 h-5" />
-              Usuarios del Sistema
+              <Typography variant="h3" weight="semibold">Usuarios del Sistema</Typography>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -150,7 +151,7 @@ export default function UsersTable({ users, currentUser, onEdit, onDelete }: Use
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8">
                       <Users className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-                      <p className="text-gray-500">No hay usuarios registrados</p>
+                      <Typography variant="body" className="text-gray-500">No hay usuarios registrados</Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -170,8 +171,8 @@ export default function UsersTable({ users, currentUser, onEdit, onDelete }: Use
                               )}
                             </div>
                             <div>
-                              <div className="font-medium flex items-center gap-2">
-                                {user.email}
+                              <div className="flex items-center gap-2">
+                                <Typography variant="body-sm" weight="medium">{user.email}</Typography>
                                 {currentUser && user.id === currentUser.user_id && (
                                   <Badge variant="outline" className="text-xs">Tú</Badge>
                                 )}
@@ -206,12 +207,10 @@ export default function UsersTable({ users, currentUser, onEdit, onDelete }: Use
                         
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <div className={`flex items-center gap-1 text-sm ${isActive ? 'text-green-600' : 'text-gray-400'}`}>
+                            <Typography variant="body-sm" className={`flex items-center gap-1 ${isActive ? 'text-green-600' : 'text-gray-400'}`}>
                               <Clock className="w-3 h-3" />
-                              <span>
-                                {user.last_sign_in_at ? formatDate(user.last_sign_in_at) : 'Nunca'}
-                              </span>
-                            </div>
+                              {user.last_sign_in_at ? formatDate(user.last_sign_in_at) : 'Nunca'}
+                            </Typography>
                           </div>
                         </TableCell>
                         

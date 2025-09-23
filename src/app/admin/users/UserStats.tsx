@@ -4,6 +4,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ResponsiveGrid } from "@/components/responsive";
+import { Typography } from "@/components/ui/typography";
 import { Users, Shield, ShieldCheck } from "lucide-react";
 import type { User } from "./types";
 
@@ -58,11 +59,11 @@ export default function UserStats({ users }: UserStatsProps) {
                 <stat.icon className={`w-5 h-5 ${stat.color}`} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-600 truncate">{stat.title}</p>
-                <p className={`text-lg font-bold ${stat.color} truncate`}>
+                <Typography variant="body-sm" className="text-gray-600 truncate">{stat.title}</Typography>
+                <Typography variant="h2" weight="bold" className={`${stat.color} truncate`}>
                   {stat.value}
-                </p>
-                <p className="text-xs text-gray-500 truncate">{stat.description}</p>
+                </Typography>
+                <Typography variant="caption" className="text-gray-500 truncate">{stat.description}</Typography>
               </div>
             </div>
           </CardContent>

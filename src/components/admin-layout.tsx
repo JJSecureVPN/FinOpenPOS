@@ -16,6 +16,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import { Typography } from "@/components/ui/typography";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import {
@@ -109,12 +110,12 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 pl-16">
         <Link
           href="/admin"
-          className="flex items-center gap-2 text-lg font-semibold"
+          className="flex items-center gap-2"
         >
           <Package2Icon className="h-6 w-6" />
           <span className="sr-only">Panel de Administración</span>
         </Link>
-        <h1 className="text-xl font-bold">{pageNames[pathname]}</h1>
+        <Typography variant="h2" weight="semibold" className="ml-2">{pageNames[pathname]}</Typography>
         <div className="relative ml-auto flex-1 md:grow-0">
           <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -140,7 +141,9 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
+            <DropdownMenuLabel>
+              <Typography variant="body-sm" weight="medium">Mi Cuenta</Typography>
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <ConfirmationModal
               title="Cerrar Sesión"
@@ -156,7 +159,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                 className="cursor-pointer text-red-600 focus:text-red-600"
               >
                 <LogOutIcon className="w-4 h-4 mr-2" />
-                Cerrar Sesión
+                <Typography variant="body-sm">Cerrar Sesión</Typography>
               </DropdownMenuItem>
             </ConfirmationModal>
           </DropdownMenuContent>
@@ -189,13 +192,13 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                       <span className="sr-only">{item.label}</span>
                     </Link>
                   </TooltipTrigger>
-                  <TooltipContent side="right" className="font-medium">
+                  <TooltipContent side="right">
                     <div className="flex items-center gap-2">
-                      {item.label}
+                      <Typography variant="body-sm" weight="medium">{item.label}</Typography>
                       {isActive(item.href) && (
-                        <span className="px-1.5 py-0.5 text-xs bg-gray-600 text-white rounded">
+                        <Typography variant="caption" className="px-1.5 py-0.5 bg-gray-600 text-white rounded">
                           •
-                        </span>
+                        </Typography>
                       )}
                     </div>
                   </TooltipContent>
