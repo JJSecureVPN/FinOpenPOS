@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Typography } from "@/components/ui";
+import FiltersDropdown from "../products/FiltersDropdown";
+import type { Filters } from "../products/types";
 import type { Product, CartItem } from "./types";
 
 export default function POSPage() {
@@ -16,7 +18,7 @@ export default function POSPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [filters, setFilters] = useState<Filters>({ category: "all", inStock: "all" });
   const [paymentReceived, setPaymentReceived] = useState<string>("");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
   const [showCart, setShowCart] = useState(false);
@@ -75,7 +77,7 @@ export default function POSPage() {
 
   // Búsqueda y filtrado de productos
   useEffect(() => {
-    if (searchTerm.trim() === "" && selectedCategory === "all") {
+    if (searchTerm.trim() === "" && filters.category === "all" && filters.inStock === "all") {
       setSearchResults([]);
       return;
     }
@@ -83,10 +85,17 @@ export default function POSPage() {
     let filtered = products;
     
     // Filtrar por categoría
-    if (selectedCategory !== "all") {
+    if (filters.category !== "all") {
       filtered = filtered.filter(product => 
-        product.category.toLowerCase() === selectedCategory.toLowerCase()
+        product.category.toLowerCase() === filters.category.toLowerCase()
       );
+    }
+    // Filtrar por stock
+    if (filters.inStock === "in-stock") {
+      filtered = filtered.filter(product => (product.in_stock ?? 0) > 0);
+    }
+    if (filters.inStock === "out-of-stock") {
+      filtered = filtered.filter(product => (product.in_stock ?? 0) <= 0);
     }
     
     // Filtrar por término de búsqueda
@@ -98,7 +107,7 @@ export default function POSPage() {
     }
     
     setSearchResults(filtered);
-  }, [products, searchTerm, selectedCategory]);
+  }, [products, searchTerm, filters]);
 
   // Obtener categorías únicas (memoizado)
   const categories = useMemo(
@@ -354,7 +363,7 @@ export default function POSPage() {
   // Cart sidebar para desktop
   const CartSidebar = () => (
     <aside className="hidden lg:block lg:col-span-4 xl:col-span-3">
-      <div className="bg-card border rounded-lg shadow-sm sticky top-20 max-h-[calc(100vh-160px)] flex flex-col">
+      <div className="bg-card border rounded-lg shadow-sm sticky top-14 max-h-[calc(100vh-72px)] flex flex-col">
         <div className="flex items-center justify-between p-4 border-b bg-background rounded-t-lg">
           <div className="flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
@@ -455,51 +464,35 @@ export default function POSPage() {
 
   {/* Área principal de búsqueda (sin contenedor oscuro, sin scroll extra) */}
   {/* min-h = 100vh - header global (56) - header POS (56) - footer (56) = 100vh - 168px */}
-  <div className="px-4 pt-4 pb-[56px] lg:pb-4 min-h-[calc(100vh-168px)]">
-          {/* Buscador y filtros */}
+  <div className="px-4 pt-4 pb-[56px] lg:pb-6 min-h-[calc(100vh-168px)]">
+          {/* Buscador + Filtros (dropdown) */}
           <div className="space-y-4 mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Buscar productos por nombre..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-12 text-base"
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Buscar productos por nombre..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 h-12 text-base"
+                />
+              </div>
+              <FiltersDropdown
+                categories={categories}
+                filters={filters}
+                onChange={(next) => setFilters(next)}
               />
-            </div>
-            
-            {/* Selector de categorías */}
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant={selectedCategory === "all" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory("all")}
-                className="rounded-full"
-              >
-                Todas
-              </Button>
-              {categories.map((category) => (
-                <Button
-                  key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category)}
-                  className="rounded-full"
-                >
-                  {category}
-                </Button>
-              ))}
             </div>
           </div>
 
           {/* Layout responsive: móvil 1 columna, desktop 2 columnas (izq: búsqueda, der: carrito) */}
           <div className="lg:grid lg:grid-cols-12 lg:gap-6">
             <div className="space-y-2 lg:col-span-8 xl:col-span-9">
-            {searchResults.length === 0 && (searchTerm.trim() !== "" || selectedCategory !== "all") && (
+            {searchResults.length === 0 && (searchTerm.trim() !== "" || filters.category !== "all" || filters.inStock !== "all") && (
               <EmptyState title="No se encontraron productos" />
             )}
-            {searchResults.length === 0 && searchTerm.trim() === "" && selectedCategory === "all" && (
+            {searchResults.length === 0 && searchTerm.trim() === "" && filters.category === "all" && filters.inStock === "all" && (
               <EmptyState
                 title="Busca productos por nombre o categoría"
                 subtitle="Usa la barra de búsqueda o selecciona una categoría para comenzar"
