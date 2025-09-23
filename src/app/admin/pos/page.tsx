@@ -290,7 +290,7 @@ export default function POSPage() {
           </div>
         </div>
       ) : (
-        <div className="h-screen flex flex-col p-4 bg-background">
+        <div className="h-screen flex flex-col p-4 bg-background overflow-hidden">
           {/* Header compacto */}
           <div className="flex items-center justify-between mb-4 flex-shrink-0">
             <div className="flex items-center space-x-3">
@@ -307,12 +307,12 @@ export default function POSPage() {
             </div>
           </div>
 
-          {/* Layout principal */}
-          <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
+          {/* Layout principal - ocupa todo el espacio restante */}
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-hidden">
             {/* Panel de Productos */}
-            <div className="flex flex-col min-h-0">
-              <Card className="flex-1 flex flex-col">
-                <CardHeader className="pb-3">
+            <div className="flex flex-col overflow-hidden">
+              <Card className="flex-1 flex flex-col overflow-hidden">
+                <CardHeader className="pb-3 flex-shrink-0">
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center text-lg">
                       <Package className="h-5 w-5 mr-2" />
@@ -332,11 +332,8 @@ export default function POSPage() {
                     />
                   </div>
                 </CardHeader>
-                <CardContent className="flex-1 p-0">
-                  <div 
-                    className="h-full overflow-y-auto p-4"
-                    style={{ maxHeight: 'calc(100vh - 280px)' }}
-                  >
+                <CardContent className="flex-1 p-0 overflow-hidden">
+                  <div className="h-full overflow-y-auto p-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                       {filteredProducts.map((product) => (
                         <div 
@@ -389,9 +386,9 @@ export default function POSPage() {
             </div>
 
             {/* Panel del Carrito */}
-            <div className="flex flex-col min-h-0">
-              <Card className="flex-1 flex flex-col">
-                <CardHeader className="pb-3">
+            <div className="flex flex-col overflow-hidden">
+              <Card className="flex-1 flex flex-col overflow-hidden">
+                <CardHeader className="pb-3 flex-shrink-0">
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center text-lg">
                       <ShoppingCart className="h-5 w-5 mr-2" />
@@ -415,12 +412,9 @@ export default function POSPage() {
                   </div>
                 </CardHeader>
                 
-                <CardContent className="flex-1 flex flex-col p-0">
+                <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
                   {/* Lista del carrito */}
-                  <div 
-                    className="flex-1 overflow-y-auto px-4"
-                    style={{ maxHeight: 'calc(100vh - 400px)' }}
-                  >
+                  <div className="flex-1 overflow-y-auto px-4">
                     {cart.length === 0 ? (
                       <div className="text-center text-muted-foreground py-12 flex flex-col items-center justify-center h-full">
                         <ShoppingCart className="h-16 w-16 mb-4 text-muted-foreground/30" />
@@ -486,7 +480,7 @@ export default function POSPage() {
 
                   {/* Total y Pago - Fijo en la parte inferior */}
                   {cart.length > 0 && (
-                    <div className="border-t bg-card p-4 space-y-4">
+                    <div className="border-t bg-card p-4 space-y-4 flex-shrink-0">
                       {/* Resumen */}
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
