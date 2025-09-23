@@ -263,8 +263,8 @@ export default function POSPage() {
       </div>
 
       {/* Área principal de búsqueda */}
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full p-4 pb-24">
+      <div className="flex-1 overflow-auto">
+        <div className="p-4 pb-28">
           {/* Buscador y filtros */}
           <div className="space-y-4 mb-6">
             <div className="relative">
@@ -408,7 +408,7 @@ export default function POSPage() {
 
       {/* Carrito como bottom sheet desde el footer (respeta sidebar) */}
       {showCart && (
-        <div className="fixed inset-y-0 left-16 right-0 z-50 bg-black/50" onClick={() => setShowCart(false)}>
+        <div className="fixed inset-y-0 left-16 right-0 z-50 bg-transparent" onClick={() => setShowCart(false)}>
           <div
             className="fixed bottom-0 left-16 right-0 bg-card rounded-t-lg shadow-xl border overflow-hidden max-h-[80vh]"
             onClick={(e) => e.stopPropagation()}
