@@ -1,0 +1,300 @@
+"use client";
+
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ResponsiveContainer, ResponsiveShow } from "@/components/responsive";
+import { Plus, X, User, Mail, Phone, UserCheck } from "lucide-react";
+import type { NewCustomerForm } from "./types";
+
+interface CustomerFormProps {
+  onSubmit: (customer: NewCustomerForm) => void;
+  onCancel?: () => void;
+  initialData?: Partial<NewCustomerForm>;
+  isCompact?: boolean;
+}
+
+export default function CustomerForm({ onSubmit, onCancel, initialData, isCompact = false }: CustomerFormProps) {
+  const [formData, setFormData] = useState<NewCustomerForm>({
+    name: initialData?.name || "",
+    email: initialData?.email || "",
+    phone: initialData?.phone || "",
+    status: initialData?.status || "active"
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.name && formData.email && formData.phone) {
+      onSubmit(formData);
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        status: "active"
+      });
+    }
+  };
+
+  const handleInputChange = (field: keyof NewCustomerForm, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const FormContent = () => (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <ResponsiveShow on="mobile">
+        <div className="space-y-4">
+          {/* Mobile: Stack all fields vertically */}
+          <div className="space-y-2">
+            <Label htmlFor="name" className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              Nombre Completo
+            </Label>
+            <Input
+              id="name"
+              placeholder="Ej: Juan Pérez"
+              value={formData.name}
+              onChange={(e) => handleInputChange("name", e.target.value)}
+              required
+              className="text-lg"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email" className="flex items-center gap-2">
+              <Mail className="w-4 h-4" />
+              Correo Electrónico
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="juan@ejemplo.com"
+              value={formData.email}
+              onChange={(e) => handleInputChange("email", e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone" className="flex items-center gap-2">
+              <Phone className="w-4 h-4" />
+              Teléfono
+            </Label>
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="0999-999-999"
+              value={formData.phone}
+              onChange={(e) => handleInputChange("phone", e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="status" className="flex items-center gap-2">
+              <UserCheck className="w-4 h-4" />
+              Estado
+            </Label>
+            <Select
+              value={formData.status}
+              onValueChange={(value: "active" | "inactive") => handleInputChange("status", value)}
+            >
+              <SelectTrigger id="status">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Activo</SelectItem>
+                <SelectItem value="inactive">Inactivo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col space-y-2 pt-2">
+            <Button type="submit" className="w-full">
+              <Plus className="w-4 h-4 mr-2" />
+              {initialData ? "Actualizar Cliente" : "Agregar Cliente"}
+            </Button>
+            {onCancel && (
+              <Button type="button" variant="outline" onClick={onCancel} className="w-full">
+                <X className="w-4 h-4 mr-2" />
+                Cancelar
+              </Button>
+            )}
+          </div>
+        </div>
+      </ResponsiveShow>
+
+      <ResponsiveShow on="tablet-desktop">
+        <div className="space-y-4">
+          {/* Desktop: Optimize layout based on space */}
+          {isCompact ? (
+            // Compact horizontal layout
+            <div className="flex flex-wrap gap-3 items-end">
+              <div className="flex-1 min-w-[150px]">
+                <Label htmlFor="name">Nombre</Label>
+                <Input
+                  id="name"
+                  placeholder="Nombre completo..."
+                  value={formData.name}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="flex-1 min-w-[150px]">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="email@ejemplo.com"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="flex-1 min-w-[120px]">
+                <Label htmlFor="phone">Teléfono</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="0999-999-999"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="flex-1 min-w-[100px]">
+                <Label htmlFor="status">Estado</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value: "active" | "inactive") => handleInputChange("status", value)}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Activo</SelectItem>
+                    <SelectItem value="inactive">Inactivo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex gap-2">
+                <Button type="submit">
+                  <Plus className="w-4 h-4 mr-2" />
+                  {initialData ? "Actualizar" : "Agregar"}
+                </Button>
+                {onCancel && (
+                  <Button type="button" variant="outline" onClick={onCancel}>
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          ) : (
+            // Full desktop layout for modal forms
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  Nombre Completo
+                </Label>
+                <Input
+                  id="name"
+                  placeholder="Ej: Juan Pérez"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  required
+                  className="text-lg"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="status" className="flex items-center gap-2">
+                  <UserCheck className="w-4 h-4" />
+                  Estado
+                </Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value: "active" | "inactive") => handleInputChange("status", value)}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Activo</SelectItem>
+                    <SelectItem value="inactive">Inactivo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email" className="flex items-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  Correo Electrónico
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="juan@ejemplo.com"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="flex items-center gap-2">
+                  <Phone className="w-4 h-4" />
+                  Teléfono
+                </Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="0999-999-999"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="col-span-2 flex justify-end gap-2 pt-4">
+                {onCancel && (
+                  <Button type="button" variant="outline" onClick={onCancel}>
+                    <X className="w-4 h-4 mr-2" />
+                    Cancelar
+                  </Button>
+                )}
+                <Button type="submit">
+                  <Plus className="w-4 h-4 mr-2" />
+                  {initialData ? "Actualizar Cliente" : "Agregar Cliente"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </ResponsiveShow>
+    </form>
+  );
+
+  if (isCompact) {
+    return <FormContent />;
+  }
+
+  return (
+    <ResponsiveContainer>
+      <Card>
+        <CardHeader>
+          <CardTitle>{initialData ? "Editar Cliente" : "Nuevo Cliente"}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <FormContent />
+        </CardContent>
+      </Card>
+    </ResponsiveContainer>
+  );
+}
