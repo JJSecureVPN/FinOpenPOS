@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Search, ShoppingCart, X, Plus, Minus, Trash2, CreditCard, DollarSign } from "lucide-react";
 import { getEnabledPaymentMethods, type PaymentMethod } from "@/lib/config";
 import { Button } from "@/components/ui/button";
@@ -100,8 +100,11 @@ export default function POSPage() {
     setSearchResults(filtered);
   }, [products, searchTerm, selectedCategory]);
 
-  // Obtener categorías únicas
-  const categories = Array.from(new Set(products.map(p => p.category))).sort();
+  // Obtener categorías únicas (memoizado)
+  const categories = useMemo(
+    () => Array.from(new Set(products.map(p => p.category))).sort(),
+    [products]
+  );
 
   const addToCart = (product: Product) => {
     if (product.in_stock === 0) {
@@ -248,21 +251,117 @@ export default function POSPage() {
     );
   }
 
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const totalAmount = cart.reduce((sum, item) => sum + item.subtotal, 0);
+  const totalItems = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
+  const totalAmount = useMemo(() => cart.reduce((sum, item) => sum + item.subtotal, 0), [cart]);
+
+  // Subcomponentes internos para reducir duplicación
+  const PaymentMethodIcon = ({ id }: { id: string }) => {
+    if (id === 'cash') return <DollarSign className="h-4 w-4" />;
+    if (id === 'credit-card' || id === 'debit-card' || id === 'transfer') return <CreditCard className="h-4 w-4" />;
+    return null;
+  };
+
+  const EmptyState = ({ title, subtitle }: { title: string; subtitle?: string }) => (
+    <div className="text-center py-12 text-gray-500">
+      <Search className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+      <Typography variant="body">{title}</Typography>
+      {subtitle && (
+        <Typography variant="body-sm" className="mt-2">{subtitle}</Typography>
+      )}
+    </div>
+  );
+
+  const ProductCard = ({ product, onAdd }: { product: Product; onAdd: (p: Product) => void }) => (
+    <Card className="p-4 hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <Typography variant="body" className="font-medium">
+            {product.name}
+          </Typography>
+          <div className="flex items-center gap-2 mt-1">
+            <Badge variant="secondary" className="text-xs">
+              {product.category}
+            </Badge>
+            <Typography variant="body-sm" className="text-gray-500">
+              Stock: {product.in_stock}
+            </Typography>
+          </div>
+          <Typography variant="body" className="font-semibold text-primary mt-1">
+            ${product.price.toFixed(2)}
+          </Typography>
+        </div>
+        <Button
+          onClick={() => onAdd(product)}
+          disabled={product.in_stock === 0}
+          size="sm"
+          className="ml-4"
+        >
+          Agregar
+        </Button>
+      </div>
+    </Card>
+  );
+
+  const CartItemRow = ({ item }: { item: CartItem }) => (
+    <Card className="p-3">
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <Typography variant="body" className="font-medium">
+            {item.name}
+          </Typography>
+          <Typography variant="body-sm" className="text-gray-500">
+            ${item.price.toFixed(2)} c/u
+          </Typography>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+            className="h-8 w-8 p-0"
+          >
+            <Minus className="h-3 w-3" />
+          </Button>
+          <Typography variant="body" className="w-8 text-center">
+            {item.quantity}
+          </Typography>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+            className="h-8 w-8 p-0"
+          >
+            <Plus className="h-3 w-3" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => removeFromCart(item.id)}
+            className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        </div>
+      </div>
+      <div className="mt-2 text-right">
+        <Typography variant="body" className="font-semibold">
+          ${item.subtotal.toFixed(2)}
+        </Typography>
+      </div>
+    </Card>
+  );
 
   return (
-    <div className="relative min-h-screen bg-background">
-      {/* Header con título dentro del flujo de contenido */}
-      <div className="px-4 py-3 border-b sticky top-0 z-20 bg-background">
-        <div className="flex items-center">
-          <ShoppingCart className="h-6 w-6 text-primary mr-2" />
-          <Typography variant="h2">Punto de Venta</Typography>
-        </div>
+    <div className="relative bg-background">
+      {/* Header del POS con altura fija (56px) */}
+      <div className="h-14 px-4 border-b sticky top-0 z-20 bg-background flex items-center">
+        <ShoppingCart className="h-6 w-6 text-primary mr-2" />
+        <Typography variant="h2">Punto de Venta</Typography>
       </div>
 
   {/* Área principal de búsqueda (sin contenedor oscuro, sin scroll extra) */}
-  <div className="px-4 pt-4 pb-24">
+  {/* min-h = 100vh - header global (56) - header POS (56) - footer (56) = 100vh - 168px */}
+  <div className="px-4 pt-4 pb-[56px] min-h-[calc(100vh-168px)]">
           {/* Buscador y filtros */}
           <div className="space-y-4 mb-6">
             <div className="relative">
@@ -303,51 +402,16 @@ export default function POSPage() {
           {/* Resultados de búsqueda */}
           <div className="space-y-2">
             {searchResults.length === 0 && (searchTerm.trim() !== "" || selectedCategory !== "all") && (
-              <div className="text-center py-12 text-gray-500">
-                <Search className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <Typography variant="body">No se encontraron productos</Typography>
-              </div>
+              <EmptyState title="No se encontraron productos" />
             )}
-            
             {searchResults.length === 0 && searchTerm.trim() === "" && selectedCategory === "all" && (
-              <div className="text-center py-12 text-gray-500">
-                <Search className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <Typography variant="body">Busca productos por nombre o categoría</Typography>
-                <Typography variant="body-sm" className="mt-2">
-                  Usa la barra de búsqueda o selecciona una categoría para comenzar
-                </Typography>
-              </div>
+              <EmptyState
+                title="Busca productos por nombre o categoría"
+                subtitle="Usa la barra de búsqueda o selecciona una categoría para comenzar"
+              />
             )}
-
             {searchResults.map((product) => (
-              <Card key={product.id} className="p-4 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <Typography variant="body" className="font-medium">
-                      {product.name}
-                    </Typography>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="secondary" className="text-xs">
-                        {product.category}
-                      </Badge>
-                      <Typography variant="body-sm" className="text-gray-500">
-                        Stock: {product.in_stock}
-                      </Typography>
-                    </div>
-                    <Typography variant="body" className="font-semibold text-primary mt-1">
-                      ${product.price.toFixed(2)}
-                    </Typography>
-                  </div>
-                  <Button
-                    onClick={() => addToCart(product)}
-                    disabled={product.in_stock === 0}
-                    size="sm"
-                    className="ml-4"
-                  >
-                    Agregar
-                  </Button>
-                </div>
-              </Card>
+              <ProductCard key={product.id} product={product} onAdd={addToCart} />
             ))}
           </div>
         </div>
@@ -435,52 +499,7 @@ export default function POSPage() {
               ) : (
                 <div className="space-y-3">
                   {cart.map((item) => (
-                    <Card key={item.id} className="p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <Typography variant="body" className="font-medium">
-                            {item.name}
-                          </Typography>
-                          <Typography variant="body-sm" className="text-gray-500">
-                            ${item.price.toFixed(2)} c/u
-                          </Typography>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Minus className="h-3 w-3" />
-                          </Button>
-                          <Typography variant="body" className="w-8 text-center">
-                            {item.quantity}
-                          </Typography>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeFromCart(item.id)}
-                            className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="mt-2 text-right">
-                        <Typography variant="body" className="font-semibold">
-                          ${item.subtotal.toFixed(2)}
-                        </Typography>
-                      </div>
-                    </Card>
+                    <CartItemRow key={item.id} item={item} />
                   ))}
                 </div>
               )}
@@ -509,8 +528,7 @@ export default function POSPage() {
                       {availablePaymentMethods.map((method) => (
                         <SelectItem key={method.id} value={method.id}>
                           <div className="flex items-center space-x-2">
-                            {method.id === 'cash' && <DollarSign className="h-4 w-4" />}
-                            {(method.id === 'credit-card' || method.id === 'debit-card') && <CreditCard className="h-4 w-4" />}
+                            <PaymentMethodIcon id={method.id} />
                             <span>{method.name}</span>
                           </div>
                         </SelectItem>
