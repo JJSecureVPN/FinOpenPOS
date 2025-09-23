@@ -22,8 +22,6 @@ export interface CurrentUser {
 
 export interface UserFilters {
   role: "all" | "admin" | "cajero";
-  status: "all" | "verified" | "unverified";
-  activity: "all" | "active" | "inactive";
 }
 
 export interface UserStats {

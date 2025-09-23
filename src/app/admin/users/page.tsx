@@ -25,9 +25,7 @@ export default function UsersManagement() {
   // Search and filter state
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<UserFilters>({
-    role: "all",
-    status: "all",
-    activity: "all"
+    role: "all"
   });
 
   // Dialog states
@@ -83,9 +81,6 @@ export default function UsersManagement() {
 
   // Filter users
   const filteredUsers = useMemo(() => {
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
     return users.filter((user) => {
       // Text search
       const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -93,18 +88,7 @@ export default function UsersManagement() {
       // Role filter
       const matchesRole = filters.role === "all" || user.role === filters.role;
       
-      // Status filter (verification)
-      const matchesStatus = filters.status === "all" || 
-        (filters.status === "verified" && user.email_confirmed_at) ||
-        (filters.status === "unverified" && !user.email_confirmed_at);
-      
-      // Activity filter
-      const isActive = user.last_sign_in_at && new Date(user.last_sign_in_at) > thirtyDaysAgo;
-      const matchesActivity = filters.activity === "all" ||
-        (filters.activity === "active" && isActive) ||
-        (filters.activity === "inactive" && !isActive);
-      
-      return matchesSearch && matchesRole && matchesStatus && matchesActivity;
+      return matchesSearch && matchesRole;
     });
   }, [users, searchTerm, filters]);
 
@@ -205,9 +189,7 @@ export default function UsersManagement() {
   const onClearFilters = () => {
     setSearchTerm("");
     setFilters({
-      role: "all",
-      status: "all",
-      activity: "all"
+      role: "all"
     });
   };
 

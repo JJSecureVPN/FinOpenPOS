@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ResponsiveContainer, ResponsiveShow } from "@/components/responsive";
-import { Search, Filter, X, Shield, ShieldCheck, CheckCircle, AlertTriangle, Clock, Users } from "lucide-react";
+import { Search, Filter, X, Shield, ShieldCheck, Users } from "lucide-react";
 import type { UserFilters } from "./types";
 
 interface UserSearchFiltersProps {
@@ -31,8 +31,6 @@ export default function UserSearchFilters({
 
   const hasActiveFilters = 
     filters.role !== "all" || 
-    filters.status !== "all" || 
-    filters.activity !== "all" || 
     searchTerm.trim() !== "";
 
   return (
@@ -40,7 +38,7 @@ export default function UserSearchFilters({
       <Card>
         <CardContent className="p-4">
           <ResponsiveShow on="mobile">
-            {/* Mobile Layout: Compact */}
+            {/* Mobile Layout: Search + Role Filter */}
             <div className="space-y-3">
               {/* Search Bar */}
               <div className="relative">
@@ -53,7 +51,7 @@ export default function UserSearchFilters({
                 />
               </div>
 
-              {/* Filters Row - Single Row */}
+              {/* Role Filter Only */}
               <div className="flex gap-2">
                 <Select
                   value={filters.role}
@@ -61,45 +59,13 @@ export default function UserSearchFilters({
                     onFiltersChange({ ...filters, role: value })
                   }
                 >
-                  <SelectTrigger className="text-sm">
-                    <SelectValue placeholder="Rol" />
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filtrar por rol" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="cajero">Cajero</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select
-                  value={filters.status}
-                  onValueChange={(value: "all" | "verified" | "unverified") => 
-                    onFiltersChange({ ...filters, status: value })
-                  }
-                >
-                  <SelectTrigger className="text-sm">
-                    <SelectValue placeholder="Estado" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="verified">Verificado</SelectItem>
-                    <SelectItem value="unverified">Sin verificar</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select
-                  value={filters.activity}
-                  onValueChange={(value: "all" | "active" | "inactive") => 
-                    onFiltersChange({ ...filters, activity: value })
-                  }
-                >
-                  <SelectTrigger className="text-sm">
-                    <SelectValue placeholder="Actividad" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="active">Activo</SelectItem>
-                    <SelectItem value="inactive">Inactivo</SelectItem>
+                    <SelectItem value="all">Todos los usuarios</SelectItem>
+                    <SelectItem value="admin">Solo Administradores</SelectItem>
+                    <SelectItem value="cajero">Solo Cajeros</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -125,7 +91,7 @@ export default function UserSearchFilters({
           </ResponsiveShow>
 
           <ResponsiveShow on="tablet-desktop">
-            {/* Desktop Layout: Horizontal */}
+            {/* Desktop Layout: Search + Role Filter */}
             <div className="space-y-4">
               <div className="flex gap-4 items-center">
                 {/* Search Bar */}
@@ -139,8 +105,8 @@ export default function UserSearchFilters({
                   />
                 </div>
 
-                {/* Role Filter */}
-                <div className="w-44">
+                {/* Role Filter Only */}
+                <div className="w-48">
                   <Select
                     value={filters.role}
                     onValueChange={(value: "all" | "admin" | "cajero") => 
@@ -150,82 +116,28 @@ export default function UserSearchFilters({
                     <SelectTrigger>
                       <div className="flex items-center gap-2">
                         <Shield className="w-4 h-4" />
-                        <SelectValue />
+                        <SelectValue placeholder="Filtrar por rol" />
                       </div>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">
                         <div className="flex items-center gap-2">
                           <Users className="w-4 h-4" />
-                          Todos los Roles
+                          Todos los usuarios
                         </div>
                       </SelectItem>
                       <SelectItem value="admin">
                         <div className="flex items-center gap-2">
                           <ShieldCheck className="w-4 h-4 text-purple-600" />
-                          Administradores
+                          Solo Administradores
                         </div>
                       </SelectItem>
                       <SelectItem value="cajero">
                         <div className="flex items-center gap-2">
                           <Shield className="w-4 h-4 text-blue-600" />
-                          Cajeros
+                          Solo Cajeros
                         </div>
                       </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Status Filter */}
-                <div className="w-40">
-                  <Select
-                    value={filters.status}
-                    onValueChange={(value: "all" | "verified" | "unverified") => 
-                      onFiltersChange({ ...filters, status: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4" />
-                        <SelectValue />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos</SelectItem>
-                      <SelectItem value="verified">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                          Verificados
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="unverified">
-                        <div className="flex items-center gap-2">
-                          <AlertTriangle className="w-4 h-4 text-red-600" />
-                          Sin Verificar
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Activity Filter */}
-                <div className="w-36">
-                  <Select
-                    value={filters.activity}
-                    onValueChange={(value: "all" | "active" | "inactive") => 
-                      onFiltersChange({ ...filters, activity: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        <SelectValue />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos</SelectItem>
-                      <SelectItem value="active">Activos</SelectItem>
-                      <SelectItem value="inactive">Inactivos</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
