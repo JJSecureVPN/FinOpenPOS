@@ -355,8 +355,8 @@ export default function POSPage() {
         </div>
       </div>
 
-      {/* Footer fijo */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-40">
+      {/* Footer fijo dentro del área de contenido */}
+      <div className="fixed bottom-0 left-16 right-0 bg-white border-t shadow-lg z-40">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Contador de productos */}
