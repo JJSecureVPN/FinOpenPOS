@@ -204,16 +204,20 @@ export default function Cashier() {
     <ResponsiveContainer>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Cajero</h1>
-            <p className="text-muted-foreground">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-bold">Cajero</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Gestiona las transacciones de ingresos y gastos
             </p>
           </div>
-          <Button onClick={handleNewTransaction} className="gap-2">
+          <Button 
+            onClick={handleNewTransaction} 
+            className="gap-2 w-full sm:w-auto flex-shrink-0"
+            size="default"
+          >
             <Plus className="w-4 h-4" />
-            Nueva Transacción
+            <span className="sm:inline">Nueva Transacción</span>
           </Button>
         </div>
 
