@@ -417,7 +417,7 @@ export default function POSPage() {
         </div>
       
   {/* Footer fijo dentro del área de contenido (respeta sidebar en todas las vistas) */}
-      <div className="fixed bottom-0 left-16 right-0 h-[56px] border-t shadow-lg z-40">
+      <div className="fixed bottom-0 left-16 right-0 h-[56px] border-t shadow-lg z-40 bg-background">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Contador de productos */}
@@ -475,7 +475,7 @@ export default function POSPage() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header del carrito */}
-            <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center justify-between p-4 border-b bg-background">
               <Typography variant="h3">Carrito de Compras</Typography>
               <Button
                 variant="ghost"
