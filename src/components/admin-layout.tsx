@@ -73,6 +73,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { href: "/admin/customers", icon: UsersIcon, label: "Clientes" },
     { href: "/admin/credit-sales", icon: CreditCardIcon, label: "Ventas al Fiado" },
     { href: "/admin/pos", icon: ShoppingCartIcon, label: "Punto de Venta" },
+    { href: "/admin/reports", icon: LayoutDashboardIcon, label: "Reportes" },
   ];
 
   // Agregar gestión de usuarios solo para admins
