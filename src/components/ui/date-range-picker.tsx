@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { DateRangePicker as ReactDateRangePicker, Range } from "react-date-range";
+import { Calendar as ReactCalendar, Range } from "react-date-range";
 import { MobileAdaptive, useResponsiveBreakpoint } from "@/components/responsive";
 // Importar estilos en globals.css en su lugar
 
@@ -161,10 +161,10 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
         
         <div className="calendar-container-responsive">
           {mounted ? (
-            <ReactDateRangePicker
+            <ReactCalendar
+              date={selection.startDate}
               ranges={[selection]}
               onChange={handleSelect}
-              moveRangeOnFirstSelection={false}
               months={breakpoint === "mobile" ? 1 : 2}
               direction="horizontal"
               rangeColors={["hsl(var(--primary))"]}
