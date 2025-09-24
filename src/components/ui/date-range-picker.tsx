@@ -1,12 +1,9 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { DateRangePicker as ReactDateRangePicker, Range } from "react-date-range";
-import { MobileAdaptive, useResponsiveBreakpoint } from "@/components/responsive";
-// Importar estilos en globals.css en su lugar
 
 type Props = {
   from?: string; // ISO yyyy-mm-dd
@@ -28,10 +25,6 @@ function parseISO(s?: string): Date | undefined {
 
 export function DateRangePicker({ from, to, onChange, className }: Props) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const [mode, setMode] = useState<"menu" | "custom">("menu");
-
-  useEffect(() => setMounted(true), []);
 
   const fromDate = useMemo(() => parseISO(from), [from]);
   const toDate = useMemo(() => parseISO(to), [to]);
@@ -62,7 +55,6 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
   const applyRange = (startDate: Date, endDate: Date) => {
     onChange({ from: toISO(startDate), to: toISO(endDate) });
     setOpen(false);
-    setMode("menu");
   };
 
   // Presets estilo MercadoPago
@@ -116,99 +108,14 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
             <div className="text-xs text-muted-foreground">{preset.description}</div>
           </button>
         ))}
-        <div className="border-t my-1" />
-        <button
-          className="text-left px-3 py-2 hover:bg-muted rounded-md"
-          onClick={() => setMode("custom")}
-        >
-          <div className="font-medium">Fecha personalizada</div>
-          <div className="text-xs text-muted-foreground">Calendario profesional</div>
-        </button>
       </div>
     </div>
   );
 
-  const CustomView = () => {
-    const breakpoint = useResponsiveBreakpoint();
-    const [selection, setSelection] = useState<Range>({
-      startDate: fromDate || today,
-      endDate: toDate || today,
-      key: "selection",
-    });
 
-    // Reset selection when props change
-    useEffect(() => {
-      setSelection({
-        startDate: fromDate || today,
-        endDate: toDate || today,
-        key: "selection",
-      });
-    }, [fromDate, toDate]);
-
-    const handleSelect = (ranges: any) => {
-      if (ranges && ranges.selection) {
-        const range = ranges.selection;
-        setSelection({
-          startDate: range.startDate,
-          endDate: range.endDate,
-          key: "selection",
-        });
-      }
-    };
-
-    const handleApply = () => {
-      if (selection?.startDate && selection?.endDate) {
-        applyRange(selection.startDate, selection.endDate);
-      }
-    };
-
-    return (
-      <div className="flex flex-col gap-3 w-fit">
-        <div className="flex items-center justify-between px-2">
-          <button 
-            className="text-sm text-muted-foreground hover:underline" 
-            onClick={() => setMode("menu")}
-          >
-            ← Volver
-          </button>
-          <div className="text-sm font-medium">Seleccionar rango</div>
-        </div>
-        
-        <div className="calendar-container-responsive">
-          {mounted ? (
-            <ReactDateRangePicker
-              ranges={selection ? [selection] : []}
-              onChange={handleSelect}
-              months={breakpoint === "mobile" ? 1 : 2}
-              direction="horizontal"
-              rangeColors={["hsl(var(--primary))"]}
-              weekStartsOn={1}
-              moveRangeOnFirstSelection={false}
-              editableDateInputs={false}
-            />
-          ) : (
-            <div className="w-full h-[280px] sm:h-[315px] bg-muted/20 rounded animate-pulse" />
-          )}
-        </div>
-
-        <div className="flex justify-between px-2">
-          <Button variant="ghost" size="sm" onClick={() => setMode("menu")}>
-            Cancelar
-          </Button>
-          <Button 
-            size="sm" 
-            onClick={handleApply}
-            disabled={!selection?.startDate || !selection?.endDate}
-          >
-            Aplicar rango
-          </Button>
-        </div>
-      </div>
-    );
-  };
 
   return (
-    <Popover open={open} onOpenChange={(v) => { setOpen(v); if (!v) setMode("menu"); }}>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" className={`gap-2 ${className ?? ""}`}>
           <CalendarIcon className="w-4 h-4" />
@@ -216,7 +123,7 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="p-2 w-auto">
-        {mode === "menu" ? <MenuView /> : <CustomView />}
+        <MenuView />
       </PopoverContent>
     </Popover>
   );
