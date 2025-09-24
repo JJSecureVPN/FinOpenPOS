@@ -20,13 +20,13 @@ type SalesDay = {
   creditOrders: number
 }
 
-type Movement = {
+type DebtPayment = {
   id: number
-  description: string
-  type: 'income' | 'expense'
-  category: string | null
+  customerId: number
+  customerName: string | null
   amount: number
   created_at: string
+  description?: string
 }
 
 export default function ReportsPage() {
@@ -39,20 +39,10 @@ export default function ReportsPage() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [dayDetails, setDayDetails] = useState<Record<string, { orders: any[] }>>({})
 
-  // Movements state
-  const [movementsLoading, setMovementsLoading] = useState(false)
-  const [movements, setMovements] = useState<Movement[]>([])
-  const [typeFilter, setTypeFilter] = useState<'all'|'income'|'expense'>('all')
-  const [categoryFilter, setCategoryFilter] = useState<string>('all')
-
-  const movementTotals = useMemo(() => {
-    const base = movements.reduce((acc, m) => {
-      if (m.type === 'income') acc.income += Number(m.amount) || 0
-      if (m.type === 'expense') acc.expense += Number(m.amount) || 0
-      return acc
-    }, { income: 0, expense: 0 })
-    return { ...base, net: base.income - base.expense }
-  }, [movements])
+  // Debt payments state
+  const [paymentsLoading, setPaymentsLoading] = useState(false)
+  const [payments, setPayments] = useState<DebtPayment[]>([])
+  const paymentsTotal = useMemo(() => payments.reduce((s, p) => s + (Number(p.amount) || 0), 0), [payments])
 
   useEffect(() => {
     const fetchSales = async () => {
@@ -67,23 +57,22 @@ export default function ReportsPage() {
         setSalesLoading(false)
       }
     }
-    const fetchMovements = async () => {
-      setMovementsLoading(true)
+    const fetchDebtPayments = async () => {
+      setPaymentsLoading(true)
       try {
-        const params = new URLSearchParams({ from, to, type: typeFilter, category: categoryFilter })
-        const res = await fetch(`/api/reports/movements?${params.toString()}`)
+        const res = await fetch(`/api/reports/debt-payments?from=${from}&to=${to}`)
         if (res.ok) {
           const json = await res.json()
-          setMovements(json.items || [])
+          setPayments(json.items || [])
         }
       } finally {
-        setMovementsLoading(false)
+        setPaymentsLoading(false)
       }
     }
     fetchSales()
-    fetchMovements()
+    fetchDebtPayments()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [from, to, typeFilter, categoryFilter])
+  }, [from, to])
 
   const totals = useMemo(() => {
     return sales.reduce((acc, d) => {
@@ -111,7 +100,7 @@ export default function ReportsPage() {
         <ResponsiveLayout className="w-full" direction="col" gap="md">
           <div>
             <Typography variant="h1">Reportes</Typography>
-            <Typography variant="body" className="text-muted-foreground">Ventas por día (Pagado o Fiado) y movimientos</Typography>
+            <Typography variant="body" className="text-muted-foreground">Ventas por día (Pagado o Fiado) y pagos de deudas</Typography>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-center">
             <div className="flex items-center gap-2 w-full">
@@ -128,7 +117,6 @@ export default function ReportsPage() {
         <Tabs defaultValue="sales">
           <TabsList>
             <TabsTrigger value="sales">Ventas por día</TabsTrigger>
-            <TabsTrigger value="movements">Movimientos</TabsTrigger>
           </TabsList>
 
           <TabsContent value="sales" className="mt-4 space-y-4">
@@ -324,55 +312,21 @@ export default function ReportsPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="movements" className="mt-4 space-y-4">
-            <Card>
-              <CardContent className="p-4">
-                <Typography variant="body-sm" className="text-muted-foreground">
-                  Nota: En esta sección NO se muestran las ventas (se reportan en la pestaña "Ventas por día"). Aquí sólo verás otros movimientos como gastos, ingresos varios y pagos de deuda.
-                </Typography>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex flex-col sm:flex-row gap-3 items-end">
-                  <div className="flex gap-2 items-center">
-                    <label className="text-sm">Tipo</label>
-                    <select className="border rounded px-2 py-1 h-9" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as any)}>
-                      <option value="all">Todos</option>
-                      <option value="income">Ingresos</option>
-                      <option value="expense">Gastos</option>
-                    </select>
-                  </div>
-                  <div className="flex gap-2 items-center">
-                    <label className="text-sm">Categoría</label>
-                    <Input placeholder="all o nombre exacto" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value || 'all')} />
-                  </div>
-                  <div className="flex-1" />
-                  <Button variant="outline" className="gap-2"><Filter className="w-4 h-4" />Filtrar</Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Resumen rápido de ingresos/gastos */}
+          {/* Sección de pagos de deudas */}
+          <div className="mt-6 space-y-3">
+            <Typography variant="h2">Pagos de deudas</Typography>
             <ResponsiveGrid autoFit minItemWidth="220px" gap="md">
               <ResponsiveCard
-                title="Ingresos"
-                headerActions={<span className="text-lg font-semibold">${movementTotals.income.toFixed(2)}</span>}
+                title="Total pagos"
+                headerActions={<span className="text-lg font-semibold">${paymentsTotal.toFixed(2)}</span>}
               >
-                <Typography variant="body-sm" className="text-muted-foreground">Sin incluir ventas</Typography>
+                <Typography variant="body-sm" className="text-muted-foreground">Suma de pagos de deuda en el rango</Typography>
               </ResponsiveCard>
               <ResponsiveCard
-                title="Gastos"
-                headerActions={<span className="text-lg font-semibold text-red-600">${movementTotals.expense.toFixed(2)}</span>}
+                title="Cantidad de pagos"
+                headerActions={<span className="text-lg font-semibold">{payments.length}</span>}
               >
-                <Typography variant="body-sm" className="text-muted-foreground">Gastos operativos u otros egresos</Typography>
-              </ResponsiveCard>
-              <ResponsiveCard
-                title="Neto"
-                headerActions={<span className={`text-lg font-semibold ${movementTotals.net >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>${movementTotals.net.toFixed(2)}</span>}
-              >
-                <Typography variant="body-sm" className="text-muted-foreground">Ingresos - Gastos (sin ventas)</Typography>
+                <Typography variant="body-sm" className="text-muted-foreground">Número de registros</Typography>
               </ResponsiveCard>
             </ResponsiveGrid>
 
@@ -383,25 +337,23 @@ export default function ReportsPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Fecha</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Categoría</TableHead>
+                      <TableHead>Cliente</TableHead>
                       <TableHead className="hidden sm:table-cell">Descripción</TableHead>
                       <TableHead className="text-right">Monto</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {movementsLoading ? (
-                      <TableRow><TableCell colSpan={5} className="p-6">Cargando...</TableCell></TableRow>
-                    ) : movements.length === 0 ? (
-                      <TableRow><TableCell colSpan={5} className="p-6">Sin movimientos</TableCell></TableRow>
+                    {paymentsLoading ? (
+                      <TableRow><TableCell colSpan={4} className="p-6">Cargando...</TableCell></TableRow>
+                    ) : payments.length === 0 ? (
+                      <TableRow><TableCell colSpan={4} className="p-6">Sin pagos</TableCell></TableRow>
                     ) : (
-                      movements.map((m) => (
-                        <TableRow key={m.id}>
-                          <TableCell>{new Date(m.created_at).toLocaleString()}</TableCell>
-                          <TableCell>{m.type === 'income' ? 'Ingreso' : 'Gasto'}</TableCell>
-                          <TableCell>{m.category || '-'}</TableCell>
-                          <TableCell className="hidden sm:table-cell">{m.description}</TableCell>
-                          <TableCell className="text-right">${m.amount.toFixed(2)}</TableCell>
+                      payments.map((p) => (
+                        <TableRow key={p.id}>
+                          <TableCell>{new Date(p.created_at).toLocaleString()}</TableCell>
+                          <TableCell>{p.customerName || '-'}</TableCell>
+                          <TableCell className="hidden sm:table-cell">{p.description || '-'}</TableCell>
+                          <TableCell className="text-right">${Number(p.amount).toFixed(2)}</TableCell>
                         </TableRow>
                       ))
                     )}
@@ -410,7 +362,7 @@ export default function ReportsPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </div>
         </Tabs>
       </div>
     </ResponsiveContainer>
