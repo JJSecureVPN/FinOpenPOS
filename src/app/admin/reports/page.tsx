@@ -143,8 +143,80 @@ export default function ReportsPage() {
                 <Typography variant="body-sm" className="text-muted-foreground">Ventas a crédito</Typography>
               </ResponsiveCard>
             </ResponsiveGrid>
+            {/* Vista móvil: lista compacta de días */}
+            <div className="sm:hidden">
+              <Card>
+                <CardContent className="p-0">
+                  {salesLoading ? (
+                    <div className="p-4">Cargando...</div>
+                  ) : sales.length === 0 ? (
+                    <div className="p-4">Sin datos</div>
+                  ) : (
+                    <ul className="divide-y">
+                      {sales.map((d) => (
+                        <li key={d.date}>
+                          <button
+                            type="button"
+                            className="w-full flex items-center justify-between p-4 text-left"
+                            onClick={() => toggleDay(d.date)}
+                          >
+                            <div className="flex items-start gap-2">
+                              {expanded[d.date] ? <ChevronDown className="w-4 h-4 mt-1" /> : <ChevronRight className="w-4 h-4 mt-1" />}
+                              <div>
+                                <div className="font-medium">{new Date(d.date).toLocaleDateString()}</div>
+                                <div className="text-xs text-muted-foreground">{d.totalOrders} pedidos · Contado ${d.cashAmount.toFixed(0)} · Fiado ${d.creditAmount.toFixed(0)}</div>
+                              </div>
+                            </div>
+                            <div className="text-right font-semibold">${d.totalAmount.toFixed(2)}</div>
+                          </button>
+                          {expanded[d.date] && (
+                            <div className="px-4 pb-4">
+                              <Typography variant="h3" className="mb-2">Ventas del día</Typography>
+                              <ResponsiveGrid autoFit minItemWidth="min(300px, 100%)" gap="md">
+                                {(dayDetails[d.date]?.orders || []).map((o: any) => (
+                                  <ResponsiveCard
+                                    key={o.id}
+                                    title={`Venta #${o.id}`}
+                                    description={`${new Date(o.created_at).toLocaleTimeString()} • ${o.is_credit_sale ? 'Fiado' : 'Contado'}`}
+                                    headerActions={<span className="font-semibold">${Number(o.total_amount || 0).toFixed(2)}</span>}
+                                  >
+                                    <div className="space-y-2">
+                                      <div className="text-sm text-muted-foreground">
+                                        Cliente: <span className="text-foreground">{o.customer?.name || '-'}</span>
+                                      </div>
+                                      {(o.items || []).length === 0 ? (
+                                        <div className="text-sm text-muted-foreground">Sin productos</div>
+                                      ) : (
+                                        <div className="space-y-2">
+                                          {o.items.map((it: any) => (
+                                            <div key={it.id} className="flex items-center justify-between border-b border-border/60 pb-1">
+                                              <span className="text-sm">{it.product?.name || 'Producto'}</span>
+                                              <span className="text-sm text-muted-foreground">x{it.quantity} — ${Number(it.price).toFixed(2)}</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </ResponsiveCard>
+                                ))}
+                                {(!dayDetails[d.date]?.orders || dayDetails[d.date]?.orders.length === 0) && (
+                                  <ResponsiveCard title="Sin ventas">
+                                    <Typography variant="body-sm" className="text-muted-foreground">No hay ventas registradas para este día.</Typography>
+                                  </ResponsiveCard>
+                                )}
+                              </ResponsiveGrid>
+                            </div>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
 
-            <Card>
+            {/* Vista de escritorio/tablet: tabla */}
+            <Card className="hidden sm:block">
               <CardContent className="p-0">
                 <div className="w-full overflow-x-auto">
                 <Table className="min-w-[560px] sm:min-w-0">
@@ -288,7 +360,7 @@ export default function ReportsPage() {
                       <TableHead>Fecha</TableHead>
                       <TableHead>Tipo</TableHead>
                       <TableHead>Categoría</TableHead>
-                      <TableHead>Descripción</TableHead>
+                      <TableHead className="hidden sm:table-cell">Descripción</TableHead>
                       <TableHead className="text-right">Monto</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -303,7 +375,7 @@ export default function ReportsPage() {
                           <TableCell>{new Date(m.created_at).toLocaleString()}</TableCell>
                           <TableCell>{m.type === 'income' ? 'Ingreso' : 'Gasto'}</TableCell>
                           <TableCell>{m.category || '-'}</TableCell>
-                          <TableCell>{m.description}</TableCell>
+                          <TableCell className="hidden sm:table-cell">{m.description}</TableCell>
                           <TableCell className="text-right">${m.amount.toFixed(2)}</TableCell>
                         </TableRow>
                       ))
