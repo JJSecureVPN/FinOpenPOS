@@ -149,13 +149,14 @@ export default function ReportsPage() {
 
             <Card>
               <CardContent className="p-0">
-                <Table>
+                <div className="w-full overflow-x-auto">
+                <Table className="min-w-[560px] sm:min-w-0">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Fecha</TableHead>
-                      <TableHead className="text-right">Pedidos</TableHead>
-                      <TableHead className="text-right">Contado</TableHead>
-                      <TableHead className="text-right">Fiado</TableHead>
+                      <TableHead className="text-right hidden sm:table-cell">Pedidos</TableHead>
+                      <TableHead className="text-right hidden sm:table-cell">Contado</TableHead>
+                      <TableHead className="text-right hidden sm:table-cell">Fiado</TableHead>
                       <TableHead className="text-right">Total</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -168,13 +169,18 @@ export default function ReportsPage() {
                       sales.map((d) => (
                         <React.Fragment key={d.date}>
                           <TableRow className="cursor-pointer hover:bg-muted/40" onClick={() => toggleDay(d.date)}>
-                            <TableCell className="flex items-center gap-2">
-                              {expanded[d.date] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                              {new Date(d.date).toLocaleDateString()}
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                {expanded[d.date] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                                <div className="flex flex-col">
+                                  <span>{new Date(d.date).toLocaleDateString()}</span>
+                                  <span className="sm:hidden text-xs text-muted-foreground">{d.totalOrders} pedidos · Contado ${d.cashAmount.toFixed(0)} · Fiado ${d.creditAmount.toFixed(0)}</span>
+                                </div>
+                              </div>
                             </TableCell>
-                            <TableCell className="text-right">{d.totalOrders}</TableCell>
-                            <TableCell className="text-right">${d.cashAmount.toFixed(2)}</TableCell>
-                            <TableCell className="text-right">${d.creditAmount.toFixed(2)}</TableCell>
+                            <TableCell className="text-right hidden sm:table-cell">{d.totalOrders}</TableCell>
+                            <TableCell className="text-right hidden sm:table-cell">${d.cashAmount.toFixed(2)}</TableCell>
+                            <TableCell className="text-right hidden sm:table-cell">${d.creditAmount.toFixed(2)}</TableCell>
                             <TableCell className="text-right">${d.totalAmount.toFixed(2)}</TableCell>
                           </TableRow>
                           {expanded[d.date] && (
@@ -182,7 +188,7 @@ export default function ReportsPage() {
                               <TableCell colSpan={5} className="bg-muted/20 p-0">
                                 <div className="p-4">
                                   <Typography variant="h3" className="mb-3">Ventas del día</Typography>
-                                  <ResponsiveGrid autoFit minItemWidth="320px" gap="md">
+                                  <ResponsiveGrid autoFit minItemWidth="min(300px, 100%)" gap="md">
                                     {(dayDetails[d.date]?.orders || []).map((o: any) => (
                                       <ResponsiveCard
                                         key={o.id}
@@ -198,13 +204,13 @@ export default function ReportsPage() {
                                           {(o.items || []).length === 0 ? (
                                             <div className="text-sm text-muted-foreground">Sin productos</div>
                                           ) : (
-                                            <div className="overflow-hidden rounded-md border">
-                                              <Table>
+                                            <div className="overflow-x-auto rounded-md border">
+                                              <Table className="min-w-[360px] sm:min-w-0">
                                                 <TableHeader>
                                                   <TableRow>
                                                     <TableHead>Producto</TableHead>
                                                     <TableHead className="w-16 text-right">Cant.</TableHead>
-                                                    <TableHead className="w-28 text-right">Precio</TableHead>
+                                                    <TableHead className="w-24 sm:w-28 text-right">Precio</TableHead>
                                                   </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
@@ -237,6 +243,7 @@ export default function ReportsPage() {
                     )}
                   </TableBody>
                 </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -265,7 +272,8 @@ export default function ReportsPage() {
 
             <Card>
               <CardContent className="p-0">
-                <Table>
+                <div className="w-full overflow-x-auto">
+                <Table className="min-w-[560px] sm:min-w-0">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Fecha</TableHead>
@@ -293,6 +301,7 @@ export default function ReportsPage() {
                     )}
                   </TableBody>
                 </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
