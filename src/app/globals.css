@@ -201,6 +201,15 @@
     border-color: transparent transparent transparent hsl(var(--foreground)) !important;
   }
   
+  /* Ocultar la columna de presets (Today, Yesterday, etc.) */
+  .calendar-container-responsive .rdrDefinedRangesWrapper {
+    display: none !important;
+  }
+  
+  .calendar-container-responsive .rdrDateRangeWrapper {
+    width: 100% !important;
+  }
+
   /* Responsive adjustments */
   @media (max-width: 767px) {
     .calendar-container-responsive .rdrCalendarWrapper {
