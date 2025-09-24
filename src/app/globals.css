@@ -130,9 +130,13 @@
   }
   
   .calendar-container-responsive .rdrDayNumber {
-    color: hsl(var(--card-foreground)) !important;
-    font-weight: 400 !important;
+    color: hsl(var(--foreground)) !important;
+    font-weight: 500 !important;
     background: transparent !important;
+  }
+  
+  .calendar-container-responsive .rdrDayNumber span {
+    color: hsl(var(--foreground)) !important;
   }
   
   .calendar-container-responsive .rdrDayPassive {
@@ -149,7 +153,12 @@
   
   .calendar-container-responsive .rdrDayHovered .rdrDayNumber {
     background: hsl(var(--muted)) !important;
-    color: hsl(var(--card-foreground)) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  .calendar-container-responsive .rdrDay:hover .rdrDayNumber {
+    color: hsl(var(--foreground)) !important;
+    background: hsl(var(--muted)) !important;
   }
   
   .calendar-container-responsive .rdrDayStartOfRange .rdrDayNumber,
@@ -162,7 +171,14 @@
   .calendar-container-responsive .rdrDayInRange .rdrDayNumber {
     background: hsl(var(--primary) / 0.2) !important;
     color: hsl(var(--primary)) !important;
-    font-weight: 500 !important;
+    font-weight: 600 !important;
+  }
+  
+  /* Forzar visibilidad en todos los estados */
+  .calendar-container-responsive .rdrDay .rdrDayNumber,
+  .calendar-container-responsive .rdrDayNumber * {
+    color: hsl(var(--foreground)) !important;
+    opacity: 1 !important;
   }
   
   .calendar-container-responsive .rdrNextPrevButton {
