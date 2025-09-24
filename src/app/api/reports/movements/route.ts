@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 // GET /api/reports/movements?type=income|expense|all&category=<cat|all>&from=YYYY-MM-DD&to=YYYY-MM-DD
+// Nota: Este endpoint EXCLUYE las ventas registradas (categoría 'Ventas') porque las ventas
+// se reportan por separado en "Ventas por día".
 export async function GET(request: Request) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -27,6 +29,10 @@ export async function GET(request: Request) {
     .select('id, description, type, category, amount, status, created_at')
     .eq('user_uid', user.id)
     .eq('status', 'completed')
+    // Excluir ventas: no queremos mostrar pagos de órdenes aquí
+    .neq('category', 'Ventas')
+    // Refuerzo: cualquier transacción ligada a una orden (order_id) se considera venta
+    .is('order_id', null)
     .gte('created_at', fromISO)
     .lt('created_at', toISO)
     .order('created_at', { ascending: false })

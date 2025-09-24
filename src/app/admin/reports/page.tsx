@@ -45,6 +45,15 @@ export default function ReportsPage() {
   const [typeFilter, setTypeFilter] = useState<'all'|'income'|'expense'>('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
 
+  const movementTotals = useMemo(() => {
+    const base = movements.reduce((acc, m) => {
+      if (m.type === 'income') acc.income += Number(m.amount) || 0
+      if (m.type === 'expense') acc.expense += Number(m.amount) || 0
+      return acc
+    }, { income: 0, expense: 0 })
+    return { ...base, net: base.income - base.expense }
+  }, [movements])
+
   useEffect(() => {
     const fetchSales = async () => {
       setSalesLoading(true)
@@ -318,6 +327,14 @@ export default function ReportsPage() {
           <TabsContent value="movements" className="mt-4 space-y-4">
             <Card>
               <CardContent className="p-4">
+                <Typography variant="body-sm" className="text-muted-foreground">
+                  Nota: En esta sección NO se muestran las ventas (se reportan en la pestaña "Ventas por día"). Aquí sólo verás otros movimientos como gastos, ingresos varios y pagos de deuda.
+                </Typography>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
                 <div className="flex flex-col sm:flex-row gap-3 items-end">
                   <div className="flex gap-2 items-center">
                     <label className="text-sm">Tipo</label>
@@ -336,6 +353,28 @@ export default function ReportsPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Resumen rápido de ingresos/gastos */}
+            <ResponsiveGrid autoFit minItemWidth="220px" gap="md">
+              <ResponsiveCard
+                title="Ingresos"
+                headerActions={<span className="text-lg font-semibold">${movementTotals.income.toFixed(2)}</span>}
+              >
+                <Typography variant="body-sm" className="text-muted-foreground">Sin incluir ventas</Typography>
+              </ResponsiveCard>
+              <ResponsiveCard
+                title="Gastos"
+                headerActions={<span className="text-lg font-semibold text-red-600">${movementTotals.expense.toFixed(2)}</span>}
+              >
+                <Typography variant="body-sm" className="text-muted-foreground">Gastos operativos u otros egresos</Typography>
+              </ResponsiveCard>
+              <ResponsiveCard
+                title="Neto"
+                headerActions={<span className={`text-lg font-semibold ${movementTotals.net >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>${movementTotals.net.toFixed(2)}</span>}
+              >
+                <Typography variant="body-sm" className="text-muted-foreground">Ingresos - Gastos (sin ventas)</Typography>
+              </ResponsiveCard>
+            </ResponsiveGrid>
 
             <Card>
               <CardContent className="p-0">
