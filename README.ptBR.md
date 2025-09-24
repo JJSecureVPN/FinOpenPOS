@@ -11,7 +11,7 @@ Esta iteração específica abraça o espírito do desenvolvimento de código ab
 - **Dashboard**: Visão geral de métricas e gráficos principais
 - **Gerenciamento de Produtos**: Adicionar, editar, excluir e visualizar produtos
 - **Gerenciamento de Clientes**: Gerenciar informações e status dos clientes
-- **Gerenciamento de Pedidos**: Criar e gerenciar pedidos
+- **Relatórios**: Vendas por dia e movimentos financeiros
 - **Ponto de Venda (PDV)**: Processamento de vendas rápido e fácil
 - **Autenticação de Usuários**: Sistema de login seguro
 
@@ -49,15 +49,14 @@ Esta iteração específica abraça o espírito do desenvolvimento de código ab
 - `src/app/`: Páginas do roteador Next.js
 - `src/components/`: Componentes reutilizáveis do React
 - `src/lib/`: Funções utilitárias e cliente Supabase
-- `schema.sql`: Esquema do banco de dados
 
 ## Principais Páginas
 
 - `/admin`: Dashboard principal
 - `/admin/products`: Gerenciamento de produtos
 - `/admin/customers`: Gerenciamento de clientes
-- `/admin/orders`: Gerenciamento de pedidos
 - `/admin/pos`: Interface do Ponto de Venda
+- `/admin/reports`: Relatórios (Vendas por dia e Movimentos)
 
 ## Esquema do Banco de Dados
 
@@ -70,7 +69,7 @@ O projeto utiliza um banco de dados PostgreSQL com as seguintes tabelas principa
 - `transactions`: Transações financeiras
 - `payment_methods`: Métodos de pagamento disponíveis
 
-Para o esquema completo, consulte `schema.sql`.
+Observação: O esquema do banco é gerenciado diretamente no Supabase (tabelas principais: `products`, `customers`, `orders`, `order_items`, `transactions`, `payment_methods`).
 
 ## Autenticação
 
