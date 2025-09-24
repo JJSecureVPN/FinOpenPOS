@@ -137,12 +137,14 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
     });
 
     const handleSelect = (ranges: any) => {
-      const range = ranges.selection;
-      setSelection(range);
+      if (ranges && ranges.selection) {
+        const range = ranges.selection;
+        setSelection(range);
+      }
     };
 
     const handleApply = () => {
-      if (selection.startDate && selection.endDate) {
+      if (selection?.startDate && selection?.endDate) {
         applyRange(selection.startDate, selection.endDate);
       }
     };
@@ -162,8 +164,8 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
         <div className="calendar-container-responsive">
           {mounted ? (
             <ReactCalendar
-              date={selection.startDate}
-              ranges={[selection]}
+              date={selection?.startDate || today}
+              ranges={selection ? [selection] : []}
               onChange={handleSelect}
               months={breakpoint === "mobile" ? 1 : 2}
               direction="horizontal"
@@ -179,7 +181,11 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
           <Button variant="ghost" size="sm" onClick={() => setMode("menu")}>
             Cancelar
           </Button>
-          <Button size="sm" onClick={handleApply}>
+          <Button 
+            size="sm" 
+            onClick={handleApply}
+            disabled={!selection?.startDate || !selection?.endDate}
+          >
             Aplicar rango
           </Button>
         </div>
