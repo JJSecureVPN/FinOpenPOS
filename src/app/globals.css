@@ -78,6 +78,20 @@
   /* React Date Range Calendar Styles - importar CSS base */
   @import 'react-date-range/dist/styles.css';
   @import 'react-date-range/dist/theme/default.css';
+
+  /* Ajustes de inputs de fecha: icono del calendario visible en tema oscuro */
+  .dark input[type="date"] {
+    color-scheme: dark; /* Pide al navegador usar UI oscura para controles nativos */
+  }
+  .dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(1.2) contrast(1.05);
+    opacity: 0.9;
+  }
+  /* Mejora accesibilidad al enfocar */
+  input[type="date"]:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--ring));
+  }
   
   /* Tema personalizado para react-date-range */
   .calendar-container-responsive .rdrCalendarWrapper {
