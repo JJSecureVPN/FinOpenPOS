@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { ResponsiveContainer } from "@/components/responsive";
 import { Plus } from "lucide-react";
@@ -251,6 +252,11 @@ export default function Cashier() {
                   {transactionToEdit ? "Editar Transacción" : "Nueva Transacción"}
                 </Typography>
               </DialogTitle>
+              <DialogDescription>
+                {transactionToEdit
+                  ? 'Modifica los datos de la transacción seleccionada.'
+                  : 'Ingresa un ingreso o gasto. Los campos marcados son obligatorios.'}
+              </DialogDescription>
             </DialogHeader>
             <TransactionForm
               onSubmit={handleFormSubmit}
