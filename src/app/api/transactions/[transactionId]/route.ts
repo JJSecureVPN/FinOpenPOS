@@ -15,7 +15,7 @@ export async function PUT(
 
   const rawBody = await request.json();
   const transactionId = params.transactionId;
-  const { id: _ignoreId, amount, type, status, ...rest } = rawBody || {};
+  const { id: _ignoreId, date: _ignoreDate, amount, type, status, ...rest } = rawBody || {};
   const parsedAmount = Number(amount);
   if (!isNaN(parsedAmount) && parsedAmount < 0) {
     // Permitimos negativos? Actualmente no; se podría permitir para ajustes. Por ahora validar > 0
@@ -43,7 +43,16 @@ export async function PUT(
     return NextResponse.json({ error: 'Transaction not found or not authorized' }, { status: 404 })
   }
 
-  return NextResponse.json(data[0])
+  const row = data[0];
+  const mapped = {
+    id: row.id,
+    description: row.description ?? '',
+    type: row.type,
+    category: row.category ?? '',
+    amount: typeof row.amount === 'number' ? row.amount : Number(row.amount),
+    date: row.created_at
+  };
+  return NextResponse.json(mapped)
 }
 
 export async function DELETE(
