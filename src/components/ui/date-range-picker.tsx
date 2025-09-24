@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { Calendar as ReactCalendar, Range } from "react-date-range";
+import { DateRangePicker as ReactDateRangePicker, Range } from "react-date-range";
 import { MobileAdaptive, useResponsiveBreakpoint } from "@/components/responsive";
 // Importar estilos en globals.css en su lugar
 
@@ -136,10 +136,23 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
       key: "selection",
     });
 
+    // Reset selection when props change
+    useEffect(() => {
+      setSelection({
+        startDate: fromDate || today,
+        endDate: toDate || today,
+        key: "selection",
+      });
+    }, [fromDate, toDate]);
+
     const handleSelect = (ranges: any) => {
       if (ranges && ranges.selection) {
         const range = ranges.selection;
-        setSelection(range);
+        setSelection({
+          startDate: range.startDate,
+          endDate: range.endDate,
+          key: "selection",
+        });
       }
     };
 
@@ -163,14 +176,15 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
         
         <div className="calendar-container-responsive">
           {mounted ? (
-            <ReactCalendar
-              date={selection?.startDate || today}
+            <ReactDateRangePicker
               ranges={selection ? [selection] : []}
               onChange={handleSelect}
               months={breakpoint === "mobile" ? 1 : 2}
               direction="horizontal"
               rangeColors={["hsl(var(--primary))"]}
               weekStartsOn={1}
+              moveRangeOnFirstSelection={false}
+              editableDateInputs={false}
             />
           ) : (
             <div className="w-full h-[280px] sm:h-[315px] bg-muted/20 rounded animate-pulse" />
