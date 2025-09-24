@@ -28,7 +28,13 @@ export async function GET(request: Request) {
       is_credit_sale,
       status,
       created_at,
-      customer:customer_id ( name )
+      customer:customer_id ( name ),
+      items:order_items (
+        id,
+        quantity,
+        price,
+        product:product_id ( name )
+      )
     `)
     .eq('user_uid', user.id)
     .gte('created_at', fromISO)

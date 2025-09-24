@@ -37,7 +37,7 @@ export default function ReportsPage() {
   const [salesLoading, setSalesLoading] = useState(false)
   const [sales, setSales] = useState<SalesDay[]>([])
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
-  const [dayDetails, setDayDetails] = useState<Record<string, { movements: Movement[]; orders: any[] }>>({})
+  const [dayDetails, setDayDetails] = useState<Record<string, { orders: any[] }>>({})
 
   // Movements state
   const [movementsLoading, setMovementsLoading] = useState(false)
@@ -89,16 +89,10 @@ export default function ReportsPage() {
   const toggleDay = async (date: string) => {
     setExpanded(prev => ({ ...prev, [date]: !prev[date] }))
     if (!dayDetails[date]) {
-      // cargar movimientos y órdenes del día en paralelo
-      const [movRes, ordRes] = await Promise.all([
-        fetch(`/api/reports/movements?from=${date}&to=${date}`),
-        fetch(`/api/reports/orders-by-day?date=${date}`)
-      ])
-      const [movJson, ordJson] = await Promise.all([
-        movRes.ok ? movRes.json() : Promise.resolve({ items: [] }),
-        ordRes.ok ? ordRes.json() : Promise.resolve({ orders: [] })
-      ])
-      setDayDetails(prev => ({ ...prev, [date]: { movements: movJson.items || [], orders: ordJson.orders || [] } }))
+      // cargar solo las órdenes del día
+      const ordRes = await fetch(`/api/reports/orders-by-day?date=${date}`)
+      const ordJson = ordRes.ok ? await ordRes.json() : { orders: [] }
+      setDayDetails(prev => ({ ...prev, [date]: { orders: ordJson.orders || [] } }))
     }
   }
 
@@ -186,7 +180,7 @@ export default function ReportsPage() {
                           {expanded[d.date] && (
                             <TableRow>
                               <TableCell colSpan={5} className="bg-muted/20 p-0">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                                <div className="p-4">
                                   <Card>
                                     <CardHeader><CardTitle>Ventas del día</CardTitle></CardHeader>
                                     <CardContent className="p-0">
@@ -196,48 +190,36 @@ export default function ReportsPage() {
                                             <TableHead>Hora</TableHead>
                                             <TableHead>Cliente</TableHead>
                                             <TableHead>Tipo</TableHead>
+                                            <TableHead>Productos</TableHead>
                                             <TableHead className="text-right">Total</TableHead>
                                           </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                           {(dayDetails[d.date]?.orders || []).map((o: any) => (
-                                            <TableRow key={o.id}>
-                                              <TableCell>{new Date(o.created_at).toLocaleTimeString()}</TableCell>
-                                              <TableCell>{o.customer?.name || '-'}</TableCell>
-                                              <TableCell>{o.is_credit_sale ? 'Fiado' : 'Contado'}</TableCell>
-                                              <TableCell className="text-right">${Number(o.total_amount || 0).toFixed(2)}</TableCell>
-                                            </TableRow>
+                                            <React.Fragment key={o.id}>
+                                              <TableRow>
+                                                <TableCell>{new Date(o.created_at).toLocaleTimeString()}</TableCell>
+                                                <TableCell>{o.customer?.name || '-'}</TableCell>
+                                                <TableCell>{o.is_credit_sale ? 'Fiado' : 'Contado'}</TableCell>
+                                                <TableCell>
+                                                  {(o.items || []).length === 0 ? (
+                                                    <span className="text-muted-foreground">-</span>
+                                                  ) : (
+                                                    <ul className="list-disc pl-5 space-y-1">
+                                                      {o.items.map((it: any) => (
+                                                        <li key={it.id}>
+                                                          {it.product?.name || 'Producto'} x{it.quantity} @ ${Number(it.price).toFixed(2)}
+                                                        </li>
+                                                      ))}
+                                                    </ul>
+                                                  )}
+                                                </TableCell>
+                                                <TableCell className="text-right">${Number(o.total_amount || 0).toFixed(2)}</TableCell>
+                                              </TableRow>
+                                            </React.Fragment>
                                           ))}
                                           {(!dayDetails[d.date]?.orders || dayDetails[d.date]?.orders.length === 0) && (
-                                            <TableRow><TableCell colSpan={4} className="p-3 text-muted-foreground">Sin ventas</TableCell></TableRow>
-                                          )}
-                                        </TableBody>
-                                      </Table>
-                                    </CardContent>
-                                  </Card>
-                                  <Card>
-                                    <CardHeader><CardTitle>Movimientos del día</CardTitle></CardHeader>
-                                    <CardContent className="p-0">
-                                      <Table>
-                                        <TableHeader>
-                                          <TableRow>
-                                            <TableHead>Hora</TableHead>
-                                            <TableHead>Tipo</TableHead>
-                                            <TableHead>Categoria</TableHead>
-                                            <TableHead className="text-right">Monto</TableHead>
-                                          </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                          {(dayDetails[d.date]?.movements || []).map((m) => (
-                                            <TableRow key={m.id}>
-                                              <TableCell>{new Date(m.created_at).toLocaleTimeString()}</TableCell>
-                                              <TableCell>{m.type === 'income' ? 'Ingreso' : 'Gasto'}</TableCell>
-                                              <TableCell>{m.category || '-'}</TableCell>
-                                              <TableCell className="text-right">${m.amount.toFixed(2)}</TableCell>
-                                            </TableRow>
-                                          ))}
-                                          {(!dayDetails[d.date]?.movements || dayDetails[d.date]?.movements.length === 0) && (
-                                            <TableRow><TableCell colSpan={4} className="p-3 text-muted-foreground">Sin movimientos</TableCell></TableRow>
+                                            <TableRow><TableCell colSpan={5} className="p-3 text-muted-foreground">Sin ventas</TableCell></TableRow>
                                           )}
                                         </TableBody>
                                       </Table>
