@@ -8,10 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { ChevronDown, ChevronRight, Calendar as CalendarIcon } from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { DayPicker } from 'react-day-picker'
-import { es } from 'date-fns/locale'
+import { ChevronDown, ChevronRight } from 'lucide-react'
+import DateRangePicker from '@/components/ui/date-range-picker'
 
 type SalesDay = {
   date: string
@@ -38,24 +36,6 @@ export default function ReportsPage() {
 
   const fromDate = useMemo(() => (from ? new Date(from) : undefined), [from])
   const toDate = useMemo(() => (to ? new Date(to) : undefined), [to])
-  const formatDay = (d?: Date) => (d ? d.toLocaleDateString('es-ES') : 'Seleccionar')
-  const yearNow = useMemo(() => new Date().getFullYear(), [])
-  const handleSelectFrom = (d?: Date) => {
-    if (!d) return
-    const iso = new Date(d).toISOString().slice(0,10)
-    setFrom(iso)
-    if (to && new Date(iso) > new Date(to)) {
-      setTo(iso)
-    }
-  }
-  const handleSelectTo = (d?: Date) => {
-    if (!d) return
-    const iso = new Date(d).toISOString().slice(0,10)
-    setTo(iso)
-    if (from && new Date(iso) < new Date(from)) {
-      setFrom(iso)
-    }
-  }
 
   // Helpers para presets
   const setToday = () => {
@@ -169,60 +149,11 @@ export default function ReportsPage() {
             <Typography variant="body" className="text-muted-foreground">Ventas por día (Pagado o Fiado) y pagos de deudas</Typography>
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <CalendarIcon className="w-4 h-4" />
-                  <span className="text-sm">Desde: {formatDay(fromDate)}</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="start" className="p-2 w-auto">
-                <DayPicker
-                  mode="single"
-                  selected={fromDate}
-                  onSelect={handleSelectFrom}
-                  weekStartsOn={1}
-                  locale={es}
-                  showOutsideDays
-                  captionLayout="dropdown"
-                  fromYear={yearNow - 5}
-                  toYear={yearNow + 5}
-                  defaultMonth={fromDate || toDate || new Date()}
-                  disabled={toDate ? { after: toDate } : undefined}
-                />
-              </PopoverContent>
-            </Popover>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <CalendarIcon className="w-4 h-4" />
-                  <span className="text-sm">Hasta: {formatDay(toDate)}</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="start" className="p-2 w-auto">
-                <DayPicker
-                  mode="single"
-                  selected={toDate}
-                  onSelect={handleSelectTo}
-                  weekStartsOn={1}
-                  locale={es}
-                  showOutsideDays
-                  captionLayout="dropdown"
-                  fromYear={yearNow - 5}
-                  toYear={yearNow + 5}
-                  defaultMonth={toDate || fromDate || new Date()}
-                  disabled={fromDate ? { before: fromDate } : undefined}
-                />
-              </PopoverContent>
-            </Popover>
-            <div className="flex flex-wrap gap-1">
-              <Button variant="ghost" onClick={setToday}>Hoy</Button>
-              <Button variant="ghost" onClick={setLast7Days}>Últimos 7 días</Button>
-              <Button variant="ghost" onClick={setThisWeek}>Esta semana</Button>
-              <Button variant="ghost" onClick={setThisMonth}>Este mes</Button>
-              <Button variant="ghost" onClick={setLastMonth}>Mes pasado</Button>
-              <Button variant="ghost" onClick={setLast30Days}>Últimos 30 días</Button>
-            </div>
+            <DateRangePicker
+              from={from}
+              to={to}
+              onChange={(r) => { setFrom(r.from); setTo(r.to); }}
+            />
           </div>
         </ResponsiveLayout>
 
