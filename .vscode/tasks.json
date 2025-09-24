@@ -48,6 +48,18 @@
 			"type": "shell",
 			"command": "npm run build",
 			"group": "build"
+		},
+		{
+			"label": "Build FinOpenPOS",
+			"type": "shell",
+			"command": "npm run build",
+			"group": "build"
+		},
+		{
+			"label": "Build FinOpenPOS",
+			"type": "shell",
+			"command": "npm run build",
+			"group": "build"
 		}
 	]
 }

@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { ChevronDown, ChevronRight, Calendar as CalendarIcon } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { DayPicker, DateRange } from 'react-day-picker'
+import { DayPicker } from 'react-day-picker'
+import { es } from 'date-fns/locale'
 
 type SalesDay = {
   date: string
@@ -35,22 +36,25 @@ export default function ReportsPage() {
   const [from, setFrom] = useState<string>(() => new Date(Date.now() - 29 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10))
   const [to, setTo] = useState<string>(() => new Date().toISOString().slice(0, 10))
 
-  const selectedRange: DateRange | undefined = React.useMemo(() => {
-    try {
-      const f = from ? new Date(from) : undefined
-      const t = to ? new Date(to) : undefined
-      return { from: f, to: t }
-    } catch {
-      return undefined
+  const fromDate = useMemo(() => (from ? new Date(from) : undefined), [from])
+  const toDate = useMemo(() => (to ? new Date(to) : undefined), [to])
+  const formatDay = (d?: Date) => (d ? d.toLocaleDateString('es-ES') : 'Seleccionar')
+  const yearNow = useMemo(() => new Date().getFullYear(), [])
+  const handleSelectFrom = (d?: Date) => {
+    if (!d) return
+    const iso = new Date(d).toISOString().slice(0,10)
+    setFrom(iso)
+    if (to && new Date(iso) > new Date(to)) {
+      setTo(iso)
     }
-  }, [from, to])
-
-  const handleRangeChange = (range?: DateRange) => {
-    if (!range || !range.from) return
-    const f = range.from
-    const t = range.to ?? range.from
-    setFrom(new Date(f).toISOString().slice(0, 10))
-    setTo(new Date(t).toISOString().slice(0, 10))
+  }
+  const handleSelectTo = (d?: Date) => {
+    if (!d) return
+    const iso = new Date(d).toISOString().slice(0,10)
+    setTo(iso)
+    if (from && new Date(iso) < new Date(from)) {
+      setFrom(iso)
+    }
   }
 
   // Helpers para presets
@@ -169,20 +173,45 @@ export default function ReportsPage() {
               <PopoverTrigger asChild>
                 <Button variant="outline" className="gap-2">
                   <CalendarIcon className="w-4 h-4" />
-                  <span className="text-sm">
-                    {from && to
-                      ? `${new Date(from).toLocaleDateString()} — ${new Date(to).toLocaleDateString()}`
-                      : 'Elegir rango de fechas'}
-                  </span>
+                  <span className="text-sm">Desde: {formatDay(fromDate)}</span>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent align="start" className="p-2">
+              <PopoverContent align="start" className="p-2 w-auto">
                 <DayPicker
-                  mode="range"
-                  selected={selectedRange}
-                  onSelect={handleRangeChange}
-                  numberOfMonths={2}
+                  mode="single"
+                  selected={fromDate}
+                  onSelect={handleSelectFrom}
                   weekStartsOn={1}
+                  locale={es}
+                  showOutsideDays
+                  captionLayout="dropdown"
+                  fromYear={yearNow - 5}
+                  toYear={yearNow + 5}
+                  defaultMonth={fromDate || toDate || new Date()}
+                  disabled={toDate ? { after: toDate } : undefined}
+                />
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <CalendarIcon className="w-4 h-4" />
+                  <span className="text-sm">Hasta: {formatDay(toDate)}</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="p-2 w-auto">
+                <DayPicker
+                  mode="single"
+                  selected={toDate}
+                  onSelect={handleSelectTo}
+                  weekStartsOn={1}
+                  locale={es}
+                  showOutsideDays
+                  captionLayout="dropdown"
+                  fromYear={yearNow - 5}
+                  toYear={yearNow + 5}
+                  defaultMonth={toDate || fromDate || new Date()}
+                  disabled={fromDate ? { before: fromDate } : undefined}
                 />
               </PopoverContent>
             </Popover>
