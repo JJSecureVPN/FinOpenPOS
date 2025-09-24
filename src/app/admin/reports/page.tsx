@@ -102,7 +102,7 @@ export default function ReportsPage() {
         <ResponsiveLayout className="w-full" direction="col" gap="md">
           <div>
             <Typography variant="h1">Reportes</Typography>
-            <Typography variant="body" className="text-muted-foreground">Ventas por día y movimientos</Typography>
+            <Typography variant="body" className="text-muted-foreground">Ventas por día (Pagado o Fiado) y movimientos</Typography>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-center">
             <div className="flex items-center gap-2 w-full">
@@ -125,13 +125,7 @@ export default function ReportsPage() {
           <TabsContent value="sales" className="mt-4 space-y-4">
             <ResponsiveGrid autoFit minItemWidth="220px" gap="md">
               <ResponsiveCard
-                title="Ventas Totales"
-                headerActions={<span className="text-lg font-semibold">${totals.total.toFixed(2)}</span>}
-              >
-                <Typography variant="body-sm" className="text-muted-foreground">Pedidos: {totals.orders}</Typography>
-              </ResponsiveCard>
-              <ResponsiveCard
-                title="Contado"
+                title="Pagado"
                 headerActions={<span className="text-lg font-semibold">${totals.cash.toFixed(2)}</span>}
               >
                 <Typography variant="body-sm" className="text-muted-foreground">Ventas cobradas</Typography>
@@ -164,7 +158,7 @@ export default function ReportsPage() {
                               {expanded[d.date] ? <ChevronDown className="w-4 h-4 mt-1" /> : <ChevronRight className="w-4 h-4 mt-1" />}
                               <div>
                                 <div className="font-medium">{new Date(d.date).toLocaleDateString()}</div>
-                                <div className="text-xs text-muted-foreground">{d.totalOrders} pedidos · Contado ${d.cashAmount.toFixed(0)} · Fiado ${d.creditAmount.toFixed(0)}</div>
+                                <div className="text-xs text-muted-foreground">{d.totalOrders} ventas</div>
                               </div>
                             </div>
                             <div className="text-right font-semibold">${d.totalAmount.toFixed(2)}</div>
@@ -177,7 +171,7 @@ export default function ReportsPage() {
                                   <ResponsiveCard
                                     key={o.id}
                                     title={`Venta #${o.id}`}
-                                    description={`${new Date(o.created_at).toLocaleTimeString()} • ${o.is_credit_sale ? 'Fiado' : 'Contado'}`}
+                                    description={`${new Date(o.created_at).toLocaleTimeString()} • ${o.is_credit_sale ? 'Fiado' : 'Pagado'}`}
                                     headerActions={<span className="font-semibold">${Number(o.total_amount || 0).toFixed(2)}</span>}
                                   >
                                     <div className="space-y-2">
@@ -223,9 +217,7 @@ export default function ReportsPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Fecha</TableHead>
-                      <TableHead className="text-right hidden sm:table-cell">Pedidos</TableHead>
-                      <TableHead className="text-right hidden sm:table-cell">Contado</TableHead>
-                      <TableHead className="text-right hidden sm:table-cell">Fiado</TableHead>
+                      {/* Simplificado: solo mostramos Total por día */}
                       <TableHead className="text-right">Total</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -241,15 +233,9 @@ export default function ReportsPage() {
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 {expanded[d.date] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                                <div className="flex flex-col">
-                                  <span>{new Date(d.date).toLocaleDateString()}</span>
-                                  <span className="sm:hidden text-xs text-muted-foreground">{d.totalOrders} pedidos · Contado ${d.cashAmount.toFixed(0)} · Fiado ${d.creditAmount.toFixed(0)}</span>
-                                </div>
+                                <span>{new Date(d.date).toLocaleDateString()}</span>
                               </div>
                             </TableCell>
-                            <TableCell className="text-right hidden sm:table-cell">{d.totalOrders}</TableCell>
-                            <TableCell className="text-right hidden sm:table-cell">${d.cashAmount.toFixed(2)}</TableCell>
-                            <TableCell className="text-right hidden sm:table-cell">${d.creditAmount.toFixed(2)}</TableCell>
                             <TableCell className="text-right">${d.totalAmount.toFixed(2)}</TableCell>
                           </TableRow>
                           {expanded[d.date] && (
@@ -262,7 +248,7 @@ export default function ReportsPage() {
                                       <ResponsiveCard
                                         key={o.id}
                                         title={`Venta #${o.id}`}
-                                        description={`${new Date(o.created_at).toLocaleTimeString()} • ${o.is_credit_sale ? 'Fiado' : 'Contado'}`}
+                                        description={`${new Date(o.created_at).toLocaleTimeString()} • ${o.is_credit_sale ? 'Fiado' : 'Pagado'}`}
                                         headerActions={<span className="font-semibold">${Number(o.total_amount || 0).toFixed(2)}</span>}
                                         fullHeight
                                       >

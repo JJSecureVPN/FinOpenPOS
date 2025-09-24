@@ -1,17 +1,17 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Search, ShoppingCart, X, Plus, Minus, Trash2, CreditCard, DollarSign } from "lucide-react";
-import { getEnabledPaymentMethods, type PaymentMethod } from "@/lib/config";
+import { Search, ShoppingCart, X, Plus, Minus, Trash2, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Typography } from "@/components/ui";
 import FiltersDropdown from "../products/FiltersDropdown";
 import type { Filters } from "../products/types";
 import type { Product, CartItem } from "./types";
+import { Switch } from "@/components/ui/switch";
 
 export default function POSPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -20,33 +20,19 @@ export default function POSPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<Filters>({ category: "all", inStock: "all" });
   const [paymentReceived, setPaymentReceived] = useState<string>("");
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
+  const [isCreditSale, setIsCreditSale] = useState<boolean>(false);
   const [showCart, setShowCart] = useState(false);
   // const [showPayment, setShowPayment] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [availablePaymentMethods, setAvailablePaymentMethods] = useState<PaymentMethod[]>([]);
   const [dbPaymentMethods, setDbPaymentMethods] = useState<Array<{ id: number; name: string }>>([]);
 
   useEffect(() => {
     fetchProducts();
-    loadPaymentMethods();
-    // Cargar métodos de pago desde la base de datos para mapear IDs
+    // Cargar métodos de pago desde la base de datos (para obtener 'Efectivo')
     fetchPaymentMethodsFromDB();
   }, []);
 
   
-
-  // Cargar métodos de pago desde la configuración
-  const loadPaymentMethods = () => {
-    const methods = getEnabledPaymentMethods();
-    setAvailablePaymentMethods(methods);
-    // Seleccionar efectivo por defecto si está disponible
-    if (methods.length > 0) {
-      const cashMethod = methods.find(m => m.id === 'cash');
-      setSelectedPaymentMethod(cashMethod ? cashMethod.id : methods[0].id);
-    }
-  };
-
   // Cargar métodos de pago reales desde la API (ids de Supabase)
   const fetchPaymentMethodsFromDB = async () => {
     try {
@@ -63,18 +49,6 @@ export default function POSPage() {
       console.error('No se pudieron cargar métodos de pago desde DB', e);
     }
   };
-
-  // Escuchar cambios en la configuración
-  useEffect(() => {
-    const handleConfigChange = () => {
-      loadPaymentMethods();
-    };
-
-    window.addEventListener('configChanged', handleConfigChange);
-    return () => {
-      window.removeEventListener('configChanged', handleConfigChange);
-    };
-  }, []);
 
   const fetchProducts = async () => {
     try {
@@ -195,32 +169,22 @@ export default function POSPage() {
       return;
     }
 
-    if (!selectedPaymentMethod) {
-      alert("❌ Selecciona un método de pago");
-      return;
-    }
-
     const total = cart.reduce((sum, item) => sum + item.subtotal, 0);
     const received = parseFloat(paymentReceived) || 0;
     
-    if (selectedPaymentMethod === 'cash' && received < total) {
+    if (!isCreditSale && received < total) {
       alert("❌ El monto recibido es insuficiente");
       return;
     }
 
     try {
-      // Mapear método seleccionado a ID en DB
-      const paymentMethodId = (() => {
-        const map: Record<string, string> = {
-          'cash': 'Efectivo',
-          'credit-card': 'Tarjeta de Crédito',
-          'debit-card': 'Tarjeta de Débito',
-          'transfer': 'Transferencia Bancaria',
-        };
-        const targetName = map[selectedPaymentMethod] || '';
-        const pm = dbPaymentMethods.find(m => m.name === targetName);
-        return pm?.id ?? null;
-      })();
+      // Determinar método de pago: si es contado, usar 'Efectivo' desde DB
+      const efectivo = dbPaymentMethods.find(m => m.name === 'Efectivo');
+      const paymentMethodId = isCreditSale ? null : (efectivo?.id ?? null);
+      if (!isCreditSale && paymentMethodId == null) {
+        alert("❌ No se encontró el método de pago 'Efectivo' en la base de datos. Créalo en Configuración.");
+        return;
+      }
 
       const productsPayload = cart.map(item => ({ id: item.id, quantity: item.quantity, price: item.price }));
 
@@ -233,7 +197,7 @@ export default function POSPage() {
           products: productsPayload,
           total,
           paymentMethodId: paymentMethodId,
-          isCreditSale: false,
+          isCreditSale: isCreditSale,
         }),
       });
 
@@ -250,13 +214,11 @@ export default function POSPage() {
 
       await fetchProducts();
 
-      const paymentMethodName = availablePaymentMethods.find(m => m.id === selectedPaymentMethod)?.name || selectedPaymentMethod;
-      
-      if (selectedPaymentMethod === 'cash') {
+      if (!isCreditSale) {
         const change = Math.max(0, received - total);
-        alert(`✅ Venta procesada exitosamente!\n\nTotal: $${total.toFixed(2)}\nRecibido: $${received.toFixed(2)}\nCambio: $${change.toFixed(2)}\nMétodo: ${paymentMethodName}\nVenta #${saleData.id}`);
+        alert(`✅ Venta procesada exitosamente!\n\nTotal: $${total.toFixed(2)}\nRecibido: $${received.toFixed(2)}\nCambio: $${change.toFixed(2)}\nMétodo: Efectivo\nVenta #${saleData.id}`);
       } else {
-        alert(`✅ Venta procesada exitosamente!\n\nTotal: $${total.toFixed(2)}\nMétodo: ${paymentMethodName}\nVenta #${saleData.id}`);
+        alert(`✅ Venta fiada registrada!\n\nTotal: $${total.toFixed(2)}\nVenta #${saleData.id}`);
       }
       
       clearCart();
@@ -281,11 +243,8 @@ export default function POSPage() {
   }
 
   // Subcomponentes internos para reducir duplicación
-  const PaymentMethodIcon = ({ id }: { id: string }) => {
-    if (id === 'cash') return <DollarSign className="h-4 w-4" />;
-    if (id === 'credit-card' || id === 'debit-card' || id === 'transfer') return <CreditCard className="h-4 w-4" />;
-    return null;
-  };
+  // Icono para efectivo (solo visual)
+  const PaymentMethodIcon = () => <DollarSign className="h-4 w-4" />;
 
   const EmptyState = ({ title, subtitle }: { title: string; subtitle?: string }) => (
     <div className="text-center py-12 text-gray-500">
@@ -415,25 +374,11 @@ export default function POSPage() {
               </Typography>
             </div>
             <div className="space-y-3">
-              <Typography variant="body-sm" className="text-gray-600">
-                Método de pago:
-              </Typography>
-              <Select value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar método de pago" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availablePaymentMethods.map((method) => (
-                    <SelectItem key={method.id} value={method.id}>
-                      <div className="flex items-center space-x-2">
-                        <PaymentMethodIcon id={method.id} />
-                        <span>{method.name}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {selectedPaymentMethod === 'cash' && (
+              <div className="flex items-center justify-between">
+                <Typography variant="body-sm" className="text-gray-600">Venta fiada</Typography>
+                <Switch checked={isCreditSale} onCheckedChange={setIsCreditSale} />
+              </div>
+              {!isCreditSale && (
                 <div className="space-y-2">
                   <Typography variant="body-sm" className="text-gray-600">
                     Monto recibido:
@@ -459,7 +404,7 @@ export default function POSPage() {
                 <Button
                   onClick={handleSale}
                   className="flex-1"
-                  disabled={!selectedPaymentMethod || (selectedPaymentMethod === 'cash' && parseFloat(paymentReceived || '0') < totalAmount)}
+                  disabled={(!isCreditSale && parseFloat(paymentReceived || '0') < totalAmount)}
                 >
                   Procesar Venta
                 </Button>
@@ -625,27 +570,13 @@ export default function POSPage() {
                 
                 {/* Métodos de pago */}
                 <div className="space-y-3">
-                  <Typography variant="body-sm" className="text-gray-600">
-                    Método de pago:
-                  </Typography>
-                  <Select value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar método de pago" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availablePaymentMethods.map((method) => (
-                        <SelectItem key={method.id} value={method.id}>
-                          <div className="flex items-center space-x-2">
-                            <PaymentMethodIcon id={method.id} />
-                            <span>{method.name}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center justify-between">
+                    <Typography variant="body-sm" className="text-gray-600">Venta fiada</Typography>
+                    <Switch checked={isCreditSale} onCheckedChange={setIsCreditSale} />
+                  </div>
 
                   {/* Input para efectivo */}
-                  {selectedPaymentMethod === 'cash' && (
+                  {!isCreditSale && (
                     <div className="space-y-2">
                       <Typography variant="body-sm" className="text-gray-600">
                         Monto recibido:
@@ -677,7 +608,7 @@ export default function POSPage() {
                     <Button
                       onClick={handleSale}
                       className="flex-1"
-                      disabled={!selectedPaymentMethod || (selectedPaymentMethod === 'cash' && parseFloat(paymentReceived || '0') < totalAmount)}
+                      disabled={(!isCreditSale && parseFloat(paymentReceived || '0') < totalAmount)}
                     >
                       Procesar Venta
                     </Button>
