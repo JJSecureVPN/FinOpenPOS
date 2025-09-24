@@ -148,7 +148,7 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
     };
 
     return (
-      <MobileAdaptive className="gap-3 w-full max-w-[95vw]">
+      <div className="flex flex-col gap-3 w-fit">
         <div className="flex items-center justify-between px-2">
           <button 
             className="text-sm text-muted-foreground hover:underline" 
@@ -159,7 +159,7 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
           <div className="text-sm font-medium">Seleccionar rango</div>
         </div>
         
-        <div className="calendar-container-responsive overflow-hidden">
+        <div className="calendar-container-responsive">
           {mounted ? (
             <ReactDateRangePicker
               ranges={[selection]}
@@ -183,7 +183,7 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
             Aplicar rango
           </Button>
         </div>
-      </MobileAdaptive>
+      </div>
     );
   };
 
