@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { DateRangePicker as ReactDateRangePicker, Range } from "react-date-range";
+import { MobileAdaptive, useResponsiveBreakpoint } from "@/components/responsive";
 // Importar estilos en globals.css en su lugar
 
 type Props = {
@@ -128,6 +129,7 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
   );
 
   const CustomView = () => {
+    const breakpoint = useResponsiveBreakpoint();
     const [selection, setSelection] = useState<Range>({
       startDate: fromDate || today,
       endDate: toDate || today,
@@ -146,7 +148,7 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
     };
 
     return (
-      <div className="flex flex-col gap-3">
+      <MobileAdaptive className="gap-3 w-full max-w-[95vw]">
         <div className="flex items-center justify-between px-2">
           <button 
             className="text-sm text-muted-foreground hover:underline" 
@@ -157,19 +159,19 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
           <div className="text-sm font-medium">Seleccionar rango</div>
         </div>
         
-        <div className="calendar-container">
+        <div className="calendar-container-responsive overflow-hidden">
           {mounted ? (
             <ReactDateRangePicker
               ranges={[selection]}
               onChange={handleSelect}
               moveRangeOnFirstSelection={false}
-              months={2}
+              months={breakpoint === "mobile" ? 1 : 2}
               direction="horizontal"
               rangeColors={["hsl(var(--primary))"]}
               weekStartsOn={1}
             />
           ) : (
-            <div className="w-[664px] h-[315px] bg-muted/20 rounded animate-pulse" />
+            <div className="w-full h-[280px] sm:h-[315px] bg-muted/20 rounded animate-pulse" />
           )}
         </div>
 
@@ -181,7 +183,7 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
             Aplicar rango
           </Button>
         </div>
-      </div>
+      </MobileAdaptive>
     );
   };
 
