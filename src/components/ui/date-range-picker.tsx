@@ -130,27 +130,33 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
   );
 
   const CustomView = () => (
-    <div className="flex flex-col gap-2 w-[700px] max-w-[95vw]">
-      <div className="flex items-center justify-between px-1">
+    <div className="flex flex-col gap-3 w-fit">
+      <div className="flex items-center justify-between">
         <button className="text-sm text-muted-foreground hover:underline" onClick={() => setMode("menu")}>
           ← Volver
         </button>
         <div className="text-sm font-medium">Fecha personalizada</div>
       </div>
-      <div className="px-1 text-xs text-muted-foreground">
-        1) Elige fecha de inicio • 2) Elige fecha de fin
+      <div className="text-xs text-muted-foreground text-center">
+        Selecciona fecha de inicio y fin en el calendario
       </div>
-      <div className="flex items-center gap-2 px-1 text-xs">
-        <span className="rounded-full border px-2 py-1 bg-muted/30">
-          <span className="text-muted-foreground">Desde: </span>
-          {tempRange?.from ? fmtShort(tempRange.from, true) : "—"}
-        </span>
-        <span className="rounded-full border px-2 py-1 bg-muted/30">
-          <span className="text-muted-foreground">Hasta: </span>
-          {tempRange?.to ? fmtShort(tempRange.to, true) : "—"}
-        </span>
+      <div className="flex items-center justify-center gap-3 text-xs">
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-3 rounded-full bg-primary/20 border border-primary/40"></div>
+          <span className="text-muted-foreground">Desde:</span>
+          <span className="font-medium">
+            {tempRange?.from ? fmtShort(tempRange.from, true) : "—"}
+          </span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-3 rounded-full bg-primary/20 border border-primary/40"></div>
+          <span className="text-muted-foreground">Hasta:</span>
+          <span className="font-medium">
+            {tempRange?.to ? fmtShort(tempRange.to, true) : "—"}
+          </span>
+        </div>
       </div>
-      <div className="p-1">
+      <div className="flex justify-center">
         {mounted ? (
           <DayPicker
             mode="range"
@@ -159,23 +165,27 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
             weekStartsOn={1}
             numberOfMonths={2}
             locale={es}
-            showOutsideDays
+            showOutsideDays={true}
             captionLayout="buttons"
             fromYear={yearNow - 5}
             toYear={yearNow + 5}
             defaultMonth={tempRange?.from || fromDate || new Date()}
+            className="rdp-compact"
           />
         ) : (
-          <div className="w-[640px] h-[320px]" />
+          <div className="w-[580px] h-[280px] bg-muted/20 rounded animate-pulse" />
         )}
       </div>
-      <div className="flex justify-end gap-2 px-1">
-        <Button variant="ghost" onClick={() => setTempRange(undefined)}>Limpiar</Button>
+      <div className="flex justify-between">
+        <Button variant="ghost" size="sm" onClick={() => setTempRange(undefined)}>
+          Limpiar
+        </Button>
         <Button
+          size="sm"
           onClick={() => apply(tempRange)}
           disabled={!tempRange?.from || !tempRange?.to}
         >
-          Aplicar
+          Aplicar rango
         </Button>
       </div>
     </div>

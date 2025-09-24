@@ -84,6 +84,22 @@
     color: hsl(var(--primary-foreground));
     background: hsl(var(--primary));
   }
+  /* Calendario compacto */
+  .rdp-compact {
+    margin: 0;
+  }
+  .rdp-compact .rdp-months {
+    gap: 1rem;
+  }
+  .rdp-compact .rdp-month {
+    margin: 0;
+  }
+  .rdp-compact .rdp-caption {
+    margin-bottom: 0.5rem;
+  }
+  .rdp-compact .rdp-table {
+    margin: 0;
+  }
   
   /* Ocultar scrollbars pero mantener funcionalidad */
   * {
