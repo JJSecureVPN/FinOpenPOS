@@ -68,6 +68,22 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Estilos de react-day-picker */
+  .rdp {
+    --rdp-accent-color: hsl(var(--primary));
+    --rdp-background-color: hsl(var(--muted));
+    --rdp-outline: 2px solid hsl(var(--ring));
+    --rdp-outline-selected: 2px solid hsl(var(--primary));
+  }
+  .rdp-button:hover {
+    background: hsl(var(--muted));
+  }
+  .rdp-day_selected,
+  .rdp-day_selected:focus-visible,
+  .rdp-day_selected:hover {
+    color: hsl(var(--primary-foreground));
+    background: hsl(var(--primary));
+  }
   
   /* Ocultar scrollbars pero mantener funcionalidad */
   * {

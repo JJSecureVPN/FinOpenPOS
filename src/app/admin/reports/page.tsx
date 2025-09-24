@@ -8,7 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { ChevronDown, ChevronRight, Filter } from 'lucide-react'
+import { ChevronDown, ChevronRight, Calendar as CalendarIcon } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { DayPicker, DateRange } from 'react-day-picker'
 
 type SalesDay = {
   date: string
@@ -32,6 +34,66 @@ type DebtPayment = {
 export default function ReportsPage() {
   const [from, setFrom] = useState<string>(() => new Date(Date.now() - 29 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10))
   const [to, setTo] = useState<string>(() => new Date().toISOString().slice(0, 10))
+
+  const selectedRange: DateRange | undefined = React.useMemo(() => {
+    try {
+      const f = from ? new Date(from) : undefined
+      const t = to ? new Date(to) : undefined
+      return { from: f, to: t }
+    } catch {
+      return undefined
+    }
+  }, [from, to])
+
+  const handleRangeChange = (range?: DateRange) => {
+    if (!range || !range.from) return
+    const f = range.from
+    const t = range.to ?? range.from
+    setFrom(new Date(f).toISOString().slice(0, 10))
+    setTo(new Date(t).toISOString().slice(0, 10))
+  }
+
+  // Helpers para presets
+  const setToday = () => {
+    const today = new Date()
+    setFrom(today.toISOString().slice(0,10))
+    setTo(today.toISOString().slice(0,10))
+  }
+  const setLast7Days = () => {
+    const end = new Date()
+    const start = new Date()
+    start.setDate(end.getDate() - 6)
+    setFrom(start.toISOString().slice(0,10))
+    setTo(end.toISOString().slice(0,10))
+  }
+  const setThisWeek = () => {
+    const end = new Date()
+    const dow = (end.getDay() + 6) % 7 // Lunes=0
+    const start = new Date(end)
+    start.setDate(end.getDate() - dow)
+    setFrom(start.toISOString().slice(0,10))
+    setTo(end.toISOString().slice(0,10))
+  }
+  const setThisMonth = () => {
+    const end = new Date()
+    const start = new Date(end.getFullYear(), end.getMonth(), 1)
+    setFrom(start.toISOString().slice(0,10))
+    setTo(end.toISOString().slice(0,10))
+  }
+  const setLastMonth = () => {
+    const now = new Date()
+    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const lastDay = new Date(now.getFullYear(), now.getMonth(), 0) // día 0 => último del mes anterior
+    setFrom(start.toISOString().slice(0,10))
+    setTo(lastDay.toISOString().slice(0,10))
+  }
+  const setLast30Days = () => {
+    const end = new Date()
+    const start = new Date()
+    start.setDate(end.getDate() - 29)
+    setFrom(start.toISOString().slice(0,10))
+    setTo(end.toISOString().slice(0,10))
+  }
 
   // Sales by day state
   const [salesLoading, setSalesLoading] = useState(false)
@@ -102,14 +164,35 @@ export default function ReportsPage() {
             <Typography variant="h1">Reportes</Typography>
             <Typography variant="body" className="text-muted-foreground">Ventas por día (Pagado o Fiado) y pagos de deudas</Typography>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-center">
-            <div className="flex items-center gap-2 w-full">
-              <Typography variant="body-sm">Desde</Typography>
-              <Input className="flex-1" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
-            </div>
-            <div className="flex items-center gap-2 w-full">
-              <Typography variant="body-sm">Hasta</Typography>
-              <Input className="flex-1" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <CalendarIcon className="w-4 h-4" />
+                  <span className="text-sm">
+                    {from && to
+                      ? `${new Date(from).toLocaleDateString()} — ${new Date(to).toLocaleDateString()}`
+                      : 'Elegir rango de fechas'}
+                  </span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="p-2">
+                <DayPicker
+                  mode="range"
+                  selected={selectedRange}
+                  onSelect={handleRangeChange}
+                  numberOfMonths={2}
+                  weekStartsOn={1}
+                />
+              </PopoverContent>
+            </Popover>
+            <div className="flex flex-wrap gap-1">
+              <Button variant="ghost" onClick={setToday}>Hoy</Button>
+              <Button variant="ghost" onClick={setLast7Days}>Últimos 7 días</Button>
+              <Button variant="ghost" onClick={setThisWeek}>Esta semana</Button>
+              <Button variant="ghost" onClick={setThisMonth}>Este mes</Button>
+              <Button variant="ghost" onClick={setLastMonth}>Mes pasado</Button>
+              <Button variant="ghost" onClick={setLast30Days}>Últimos 30 días</Button>
             </div>
           </div>
         </ResponsiveLayout>
