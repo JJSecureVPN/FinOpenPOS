@@ -1,58 +1,54 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Search, ShoppingCart, X, Plus, Minus, Trash2, CreditCard, DollarSign } from "lucide-react";
-import { configService, getEnabledPaymentMethods, type PaymentMethod } from "@/lib/config";
+import React, { useState, useEffect, useMemo } from "react";
+import { Search, ShoppingCart, X, Plus, Minus, Trash2, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card } from "@/components/ui/card";
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Typography } from "@/components/ui";
+import FiltersDropdown from "../products/FiltersDropdown";
+import type { Filters } from "../products/types";
 import type { Product, CartItem } from "./types";
+import { Switch } from "@/components/ui/switch";
 
 export default function POSPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [filters, setFilters] = useState<Filters>({ category: "all", inStock: "all" });
   const [paymentReceived, setPaymentReceived] = useState<string>("");
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
+  const [isCreditSale, setIsCreditSale] = useState<boolean>(false);
   const [showCart, setShowCart] = useState(false);
-  const [showPayment, setShowPayment] = useState(false);
+  // const [showPayment, setShowPayment] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [availablePaymentMethods, setAvailablePaymentMethods] = useState<PaymentMethod[]>([]);
+  const [dbPaymentMethods, setDbPaymentMethods] = useState<Array<{ id: number; name: string }>>([]);
 
   useEffect(() => {
     fetchProducts();
-    loadPaymentMethods();
+    // Cargar métodos de pago desde la base de datos (para obtener 'Efectivo')
+    fetchPaymentMethodsFromDB();
   }, []);
 
   
-
-  // Cargar métodos de pago desde la configuración
-  const loadPaymentMethods = () => {
-    const methods = getEnabledPaymentMethods();
-    setAvailablePaymentMethods(methods);
-    // Seleccionar efectivo por defecto si está disponible
-    if (methods.length > 0) {
-      const cashMethod = methods.find(m => m.id === 'cash');
-      setSelectedPaymentMethod(cashMethod ? cashMethod.id : methods[0].id);
+  // Cargar métodos de pago reales desde la API (ids de Supabase)
+  const fetchPaymentMethodsFromDB = async () => {
+    try {
+      const res = await fetch('/api/payment-methods');
+      if (res.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
+      if (res.ok) {
+        const data = await res.json();
+        setDbPaymentMethods(Array.isArray(data) ? data : []);
+      }
+    } catch (e) {
+      console.error('No se pudieron cargar métodos de pago desde DB', e);
     }
   };
-
-  // Escuchar cambios en la configuración
-  useEffect(() => {
-    const handleConfigChange = () => {
-      loadPaymentMethods();
-    };
-
-    window.addEventListener('configChanged', handleConfigChange);
-    return () => {
-      window.removeEventListener('configChanged', handleConfigChange);
-    };
-  }, []);
 
   const fetchProducts = async () => {
     try {
@@ -75,7 +71,7 @@ export default function POSPage() {
 
   // Búsqueda y filtrado de productos
   useEffect(() => {
-    if (searchTerm.trim() === "" && selectedCategory === "all") {
+    if (searchTerm.trim() === "" && filters.category === "all" && filters.inStock === "all") {
       setSearchResults([]);
       return;
     }
@@ -83,10 +79,17 @@ export default function POSPage() {
     let filtered = products;
     
     // Filtrar por categoría
-    if (selectedCategory !== "all") {
+    if (filters.category !== "all") {
       filtered = filtered.filter(product => 
-        product.category.toLowerCase() === selectedCategory.toLowerCase()
+        product.category.toLowerCase() === filters.category.toLowerCase()
       );
+    }
+    // Filtrar por stock
+    if (filters.inStock === "in-stock") {
+      filtered = filtered.filter(product => (product.in_stock ?? 0) > 0);
+    }
+    if (filters.inStock === "out-of-stock") {
+      filtered = filtered.filter(product => (product.in_stock ?? 0) <= 0);
     }
     
     // Filtrar por término de búsqueda
@@ -98,10 +101,13 @@ export default function POSPage() {
     }
     
     setSearchResults(filtered);
-  }, [products, searchTerm, selectedCategory]);
+  }, [products, searchTerm, filters]);
 
-  // Obtener categorías únicas
-  const categories = Array.from(new Set(products.map(p => p.category))).sort();
+  // Obtener categorías únicas (memoizado)
+  const categories = useMemo(
+    () => Array.from(new Set(products.map(p => p.category))).sort(),
+    [products]
+  );
 
   const addToCart = (product: Product) => {
     if (product.in_stock === 0) {
@@ -154,8 +160,7 @@ export default function POSPage() {
 
   const clearCart = () => {
     setCart([]);
-    setPaymentReceived("");
-    setShowPayment(false);
+  setPaymentReceived("");
   };
 
   const handleSale = async () => {
@@ -164,71 +169,56 @@ export default function POSPage() {
       return;
     }
 
-    if (!selectedPaymentMethod) {
-      alert("❌ Selecciona un método de pago");
-      return;
-    }
-
     const total = cart.reduce((sum, item) => sum + item.subtotal, 0);
     const received = parseFloat(paymentReceived) || 0;
     
-    if (selectedPaymentMethod === 'cash' && received < total) {
+    if (!isCreditSale && received < total) {
       alert("❌ El monto recibido es insuficiente");
       return;
     }
 
     try {
-      const saleResponse = await fetch("/api/sales", {
+      // Determinar método de pago: si es contado, usar 'Efectivo' desde DB
+      const efectivo = dbPaymentMethods.find(m => m.name === 'Efectivo');
+      const paymentMethodId = isCreditSale ? null : (efectivo?.id ?? null);
+      if (!isCreditSale && paymentMethodId == null) {
+        alert("❌ No se encontró el método de pago 'Efectivo' en la base de datos. Créalo en Configuración.");
+        return;
+      }
+
+      const productsPayload = cart.map(item => ({ id: item.id, quantity: item.quantity, price: item.price }));
+
+      const saleResponse = await fetch("/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          items: cart.map(item => ({
-            product_id: item.id,
-            quantity: item.quantity,
-            unit_price: item.price,
-            subtotal: item.subtotal
-          })),
-          total_amount: total,
-          payment_method: selectedPaymentMethod,
-          payment_received: selectedPaymentMethod === 'cash' ? received : total,
-          change_given: selectedPaymentMethod === 'cash' ? Math.max(0, received - total) : 0
+          products: productsPayload,
+          total,
+          paymentMethodId: paymentMethodId,
+          isCreditSale: isCreditSale,
         }),
       });
 
       if (!saleResponse.ok) {
-        const errorData = await saleResponse.json();
-        throw new Error(errorData.error || "Error al procesar la venta");
+        let message = 'Error al procesar la venta';
+        try {
+          const errorData = await saleResponse.json();
+          message = errorData?.error || message;
+        } catch {}
+        throw new Error(message);
       }
 
       const saleData = await saleResponse.json();
 
-      for (const item of cart) {
-        const updateResponse = await fetch(`/api/products/${item.id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            in_stock: item.in_stock - item.quantity
-          }),
-        });
-
-        if (!updateResponse.ok) {
-          console.error(`Error actualizando stock del producto ${item.id}`);
-        }
-      }
-
       await fetchProducts();
 
-      const paymentMethodName = availablePaymentMethods.find(m => m.id === selectedPaymentMethod)?.name || selectedPaymentMethod;
-      
-      if (selectedPaymentMethod === 'cash') {
+      if (!isCreditSale) {
         const change = Math.max(0, received - total);
-        alert(`✅ Venta procesada exitosamente!\n\nTotal: $${total.toFixed(2)}\nRecibido: $${received.toFixed(2)}\nCambio: $${change.toFixed(2)}\nMétodo: ${paymentMethodName}\nVenta #${saleData.id}`);
+        alert(`✅ Venta procesada exitosamente!\n\nTotal: $${total.toFixed(2)}\nRecibido: $${received.toFixed(2)}\nCambio: $${change.toFixed(2)}\nMétodo: Efectivo\nVenta #${saleData.id}`);
       } else {
-        alert(`✅ Venta procesada exitosamente!\n\nTotal: $${total.toFixed(2)}\nMétodo: ${paymentMethodName}\nVenta #${saleData.id}`);
+        alert(`✅ Venta fiada registrada!\n\nTotal: $${total.toFixed(2)}\nVenta #${saleData.id}`);
       }
       
       clearCart();
@@ -237,6 +227,9 @@ export default function POSPage() {
       alert(`❌ Error al procesar la venta:\n${error instanceof Error ? error.message : 'Error desconocido'}\n\nRevisa la consola para más detalles.`);
     }
   };
+
+  const totalItems = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
+  const totalAmount = useMemo(() => cart.reduce((sum, item) => sum + item.subtotal, 0), [cart]);
 
   if (isLoading) {
     return (
@@ -249,114 +242,235 @@ export default function POSPage() {
     );
   }
 
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const totalAmount = cart.reduce((sum, item) => sum + item.subtotal, 0);
+  // Subcomponentes internos para reducir duplicación
+  // Icono para efectivo (solo visual)
+  const PaymentMethodIcon = () => <DollarSign className="h-4 w-4" />;
 
-  return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      {/* Header con título */}
-      <div className="bg-white shadow-sm border-b px-4 py-3">
-        <div className="flex items-center">
-          <ShoppingCart className="h-6 w-6 text-primary mr-2" />
-          <Typography variant="h2">Punto de Venta</Typography>
+  const EmptyState = ({ title, subtitle }: { title: string; subtitle?: string }) => (
+    <div className="text-center py-12 text-gray-500">
+      <Search className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+      <Typography variant="body">{title}</Typography>
+      {subtitle && (
+        <Typography variant="body-sm" className="mt-2">{subtitle}</Typography>
+      )}
+    </div>
+  );
+
+  const ProductCard = ({ product, onAdd }: { product: Product; onAdd: (p: Product) => void }) => (
+    <Card className="p-4 hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <Typography variant="body" className="font-medium">
+            {product.name}
+          </Typography>
+          <div className="flex items-center gap-2 mt-1">
+            <Badge variant="secondary" className="text-xs">
+              {product.category}
+            </Badge>
+            <Typography variant="body-sm" className="text-gray-500">
+              Stock: {product.in_stock}
+            </Typography>
+          </div>
+          <Typography variant="body" className="font-semibold text-primary mt-1">
+            ${product.price.toFixed(2)}
+          </Typography>
+        </div>
+        <Button
+          onClick={() => onAdd(product)}
+          disabled={product.in_stock === 0}
+          size="sm"
+          className="ml-4"
+        >
+          Agregar
+        </Button>
+      </div>
+    </Card>
+  );
+
+  const CartItemRow = ({ item }: { item: CartItem }) => (
+    <Card className="p-3">
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <Typography variant="body" className="font-medium">
+            {item.name}
+          </Typography>
+          <Typography variant="body-sm" className="text-gray-500">
+            ${item.price.toFixed(2)} c/u
+          </Typography>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+            className="h-8 w-8 p-0"
+          >
+            <Minus className="h-3 w-3" />
+          </Button>
+          <Typography variant="body" className="w-8 text-center">
+            {item.quantity}
+          </Typography>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+            className="h-8 w-8 p-0"
+          >
+            <Plus className="h-3 w-3" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => removeFromCart(item.id)}
+            className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
         </div>
       </div>
+      <div className="mt-2 text-right">
+        <Typography variant="body" className="font-semibold">
+          ${item.subtotal.toFixed(2)}
+        </Typography>
+      </div>
+    </Card>
+  );
 
-      {/* Área principal de búsqueda */}
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full p-4 pb-24">
-          {/* Buscador y filtros */}
-          <div className="space-y-4 mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Buscar productos por nombre..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-12 text-base"
-              />
+  // Cart sidebar para desktop
+  const CartSidebar = () => (
+    <aside className="hidden lg:block lg:col-span-4 xl:col-span-3">
+      <div className="bg-card border rounded-lg shadow-sm sticky top-14 max-h-[calc(100vh-72px)] flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b bg-background rounded-t-lg">
+          <div className="flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5" />
+            <Typography variant="h3">Carrito</Typography>
+          </div>
+          {totalItems > 0 && (
+            <Badge variant="destructive">{totalItems}</Badge>
+          )}
+        </div>
+        <div className="flex-1 overflow-y-auto p-4">
+          {cart.length === 0 ? (
+            <div className="text-center py-8">
+              <ShoppingCart className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <Typography variant="body" className="text-gray-500">
+                El carrito está vacío
+              </Typography>
             </div>
-            
-            {/* Selector de categorías */}
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant={selectedCategory === "all" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory("all")}
-                className="rounded-full"
-              >
-                Todas
-              </Button>
-              {categories.map((category) => (
-                <Button
-                  key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category)}
-                  className="rounded-full"
-                >
-                  {category}
-                </Button>
+          ) : (
+            <div className="space-y-3">
+              {cart.map((item) => (
+                <CartItemRow key={item.id} item={item} />
               ))}
             </div>
-          </div>
-
-          {/* Resultados de búsqueda */}
-          <div className="space-y-2">
-            {searchResults.length === 0 && (searchTerm.trim() !== "" || selectedCategory !== "all") && (
-              <div className="text-center py-12 text-gray-500">
-                <Search className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <Typography variant="body">No se encontraron productos</Typography>
-              </div>
-            )}
-            
-            {searchResults.length === 0 && searchTerm.trim() === "" && selectedCategory === "all" && (
-              <div className="text-center py-12 text-gray-500">
-                <Search className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <Typography variant="body">Busca productos por nombre o categoría</Typography>
-                <Typography variant="body-sm" className="mt-2">
-                  Usa la barra de búsqueda o selecciona una categoría para comenzar
-                </Typography>
-              </div>
-            )}
-
-            {searchResults.map((product) => (
-              <Card key={product.id} className="p-4 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <Typography variant="body" className="font-medium">
-                      {product.name}
-                    </Typography>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="secondary" className="text-xs">
-                        {product.category}
-                      </Badge>
-                      <Typography variant="body-sm" className="text-gray-500">
-                        Stock: {product.in_stock}
-                      </Typography>
-                    </div>
-                    <Typography variant="body" className="font-semibold text-primary mt-1">
-                      ${product.price.toFixed(2)}
-                    </Typography>
-                  </div>
-                  <Button
-                    onClick={() => addToCart(product)}
-                    disabled={product.in_stock === 0}
-                    size="sm"
-                    className="ml-4"
-                  >
-                    Agregar
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
+          )}
         </div>
+        {cart.length > 0 && (
+          <div className="border-t p-4 space-y-4 bg-background rounded-b-lg">
+            <div className="flex justify-between items-center">
+              <Typography variant="h3">Total:</Typography>
+              <Typography variant="h3" className="text-primary">
+                ${totalAmount.toFixed(2)}
+              </Typography>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Typography variant="body-sm" className="text-gray-600">Venta fiada</Typography>
+                <Switch checked={isCreditSale} onCheckedChange={setIsCreditSale} />
+              </div>
+              {!isCreditSale && (
+                <div className="space-y-2">
+                  <Typography variant="body-sm" className="text-gray-600">
+                    Monto recibido:
+                  </Typography>
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    value={paymentReceived}
+                    onChange={(e) => setPaymentReceived(e.target.value)}
+                    className="text-base"
+                  />
+                  {paymentReceived && parseFloat(paymentReceived) >= totalAmount && (
+                    <Typography variant="body-sm" className="text-green-600">
+                      Cambio: ${(parseFloat(paymentReceived) - totalAmount).toFixed(2)}
+                    </Typography>
+                  )}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={clearCart} className="flex-1">
+                  Limpiar
+                </Button>
+                <Button
+                  onClick={handleSale}
+                  className="flex-1"
+                  disabled={(!isCreditSale && parseFloat(paymentReceived || '0') < totalAmount)}
+                >
+                  Procesar Venta
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+
+  return (
+    <div className="relative">
+      {/* Header del POS con altura fija (56px) */}
+      <div className="h-14 px-4 border-b sticky top-0 z-20 flex items-center">
+        <ShoppingCart className="h-6 w-6 text-primary mr-2" />
+        <Typography variant="h2">Punto de Venta</Typography>
       </div>
 
-      {/* Footer fijo */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-40">
+  {/* Área principal de búsqueda (sin contenedor oscuro, sin scroll extra) */}
+  {/* min-h = 100vh - header global (56) - header POS (56) - footer (56) = 100vh - 168px */}
+  <div className="px-4 pt-4 pb-[56px] lg:pb-6 min-h-[calc(100vh-168px)]">
+          {/* Buscador + Filtros (dropdown) */}
+          <div className="space-y-4 mb-6">
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Buscar productos por nombre..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 h-12 text-base"
+                />
+              </div>
+              <FiltersDropdown
+                categories={categories}
+                filters={filters}
+                onChange={(next) => setFilters(next)}
+              />
+            </div>
+          </div>
+
+          {/* Layout responsive: móvil 1 columna, desktop 2 columnas (izq: búsqueda, der: carrito) */}
+          <div className="lg:grid lg:grid-cols-12 lg:gap-6">
+            <div className="space-y-2 lg:col-span-8 xl:col-span-9">
+            {searchResults.length === 0 && (searchTerm.trim() !== "" || filters.category !== "all" || filters.inStock !== "all") && (
+              <EmptyState title="No se encontraron productos" />
+            )}
+            {searchResults.length === 0 && searchTerm.trim() === "" && filters.category === "all" && filters.inStock === "all" && (
+              <EmptyState
+                title="Busca productos por nombre o categoría"
+                subtitle="Usa la barra de búsqueda o selecciona una categoría para comenzar"
+              />
+            )}
+            {searchResults.map((product) => (
+              <ProductCard key={product.id} product={product} onAdd={addToCart} />
+            ))}
+            </div>
+            {/* Carrito lateral solo desktop */}
+            <CartSidebar />
+          </div>
+        </div>
+      
+  {/* Footer fijo dentro del área de contenido (respeta sidebar en todas las vistas) */}
+      <div className="fixed bottom-0 left-16 right-0 h-[56px] border-t shadow-lg z-40 bg-background lg:hidden">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Contador de productos */}
@@ -406,15 +520,15 @@ export default function POSPage() {
         </div>
       </div>
 
-      {/* Panel deslizante del carrito */}
+      {/* Carrito como bottom sheet desde el footer (respeta sidebar) */}
       {showCart && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50" onClick={() => setShowCart(false)}>
-          <div 
-            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-lg shadow-xl max-h-[80vh] overflow-hidden"
+        <div className="fixed inset-y-0 left-16 right-0 z-40 lg:hidden" onClick={() => setShowCart(false)}>
+          <div
+            className="fixed bottom-0 left-16 right-0 bg-card rounded-t-lg shadow-xl border overflow-hidden max-h-[75vh]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header del carrito */}
-            <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center justify-between p-4 border-b bg-background">
               <Typography variant="h3">Carrito de Compras</Typography>
               <Button
                 variant="ghost"
@@ -427,7 +541,7 @@ export default function POSPage() {
             </div>
 
             {/* Lista de productos */}
-            <div className="flex-1 overflow-y-auto p-4 max-h-[50vh]">
+            <div className="flex-1 overflow-y-auto p-4">
               {cart.length === 0 ? (
                 <div className="text-center py-8">
                   <ShoppingCart className="h-12 w-12 mx-auto mb-4 text-gray-300" />
@@ -438,52 +552,7 @@ export default function POSPage() {
               ) : (
                 <div className="space-y-3">
                   {cart.map((item) => (
-                    <Card key={item.id} className="p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <Typography variant="body" className="font-medium">
-                            {item.name}
-                          </Typography>
-                          <Typography variant="body-sm" className="text-gray-500">
-                            ${item.price.toFixed(2)} c/u
-                          </Typography>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Minus className="h-3 w-3" />
-                          </Button>
-                          <Typography variant="body" className="w-8 text-center">
-                            {item.quantity}
-                          </Typography>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeFromCart(item.id)}
-                            className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="mt-2 text-right">
-                        <Typography variant="body" className="font-semibold">
-                          ${item.subtotal.toFixed(2)}
-                        </Typography>
-                      </div>
-                    </Card>
+                    <CartItemRow key={item.id} item={item} />
                   ))}
                 </div>
               )}
@@ -491,7 +560,7 @@ export default function POSPage() {
 
             {/* Footer del carrito con total y pago */}
             {cart.length > 0 && (
-              <div className="border-t p-4 space-y-4">
+              <div className="border-t p-4 space-y-4 bg-background">
                 <div className="flex justify-between items-center">
                   <Typography variant="h3">Total:</Typography>
                   <Typography variant="h3" className="text-primary">
@@ -501,28 +570,13 @@ export default function POSPage() {
                 
                 {/* Métodos de pago */}
                 <div className="space-y-3">
-                  <Typography variant="body-sm" className="text-gray-600">
-                    Método de pago:
-                  </Typography>
-                  <Select value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar método de pago" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availablePaymentMethods.map((method) => (
-                        <SelectItem key={method.id} value={method.id}>
-                          <div className="flex items-center space-x-2">
-                            {method.id === 'cash' && <DollarSign className="h-4 w-4" />}
-                            {(method.id === 'credit-card' || method.id === 'debit-card') && <CreditCard className="h-4 w-4" />}
-                            <span>{method.name}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center justify-between">
+                    <Typography variant="body-sm" className="text-gray-600">Venta fiada</Typography>
+                    <Switch checked={isCreditSale} onCheckedChange={setIsCreditSale} />
+                  </div>
 
                   {/* Input para efectivo */}
-                  {selectedPaymentMethod === 'cash' && (
+                  {!isCreditSale && (
                     <div className="space-y-2">
                       <Typography variant="body-sm" className="text-gray-600">
                         Monto recibido:
@@ -554,7 +608,7 @@ export default function POSPage() {
                     <Button
                       onClick={handleSale}
                       className="flex-1"
-                      disabled={!selectedPaymentMethod || (selectedPaymentMethod === 'cash' && parseFloat(paymentReceived || '0') < totalAmount)}
+                      disabled={(!isCreditSale && parseFloat(paymentReceived || '0') < totalAmount)}
                     >
                       Procesar Venta
                     </Button>
