@@ -87,6 +87,10 @@
     filter: invert(1) brightness(1.2) contrast(1.05);
     opacity: 0.9;
   }
+  /* Dentro del DateRangePicker usamos nuestro icono y ocultamos el nativo */
+  .drp input[type="date"]::-webkit-calendar-picker-indicator {
+    display: none;
+  }
   /* Mejora accesibilidad al enfocar */
   input[type="date"]:focus-visible {
     outline: none;

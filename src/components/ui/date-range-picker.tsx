@@ -140,30 +140,81 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
     const toVal = draftTo ?? to ?? toISO(new Date());
     const canApply = isValidISO(fromVal) && isValidISO(toVal) && parseISO(fromVal)! <= parseISO(toVal)!;
 
+    // Input de fecha con icono visible y botón para abrir el picker nativo
+    const DateInput = ({
+      label,
+      value,
+      onChange,
+      min,
+      max,
+      ariaLabel,
+    }: {
+      label: string;
+      value: string;
+      onChange: (v: string) => void;
+      min?: string;
+      max?: string;
+      ariaLabel: string;
+    }) => {
+      const ref = React.useRef<HTMLInputElement>(null);
+      return (
+        <div className="grid grid-cols-1 gap-2">
+          <label className="text-xs text-muted-foreground">{label}</label>
+          <div className="relative">
+            <Input
+              ref={ref}
+              type="date"
+              aria-label={ariaLabel}
+              value={value}
+              min={min}
+              max={max}
+              onChange={(e) => onChange(e.target.value)}
+              className="pr-10"
+            />
+            <button
+              type="button"
+              aria-label={`Abrir calendario de ${label.toLowerCase()}`}
+              onClick={() => {
+                const el = ref.current;
+                if (!el) return;
+                // Abrir picker nativo si está disponible
+                // @ts-ignore - showPicker no está tipado en TS estable
+                if (typeof el.showPicker === "function") {
+                  // @ts-ignore
+                  el.showPicker();
+                } else {
+                  el.focus();
+                }
+              }}
+              className="absolute inset-y-0 right-2 my-auto h-6 w-6 flex items-center justify-center rounded hover:bg-muted text-foreground"
+            >
+              <CalendarIcon className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      );
+    };
+
     return (
-      <div className="min-w-[280px] max-w-[320px]">
+      <div className="min-w-[280px] max-w-[320px] drp">
         <div className="flex items-center justify-between px-1 pb-2">
           <button className="text-sm text-muted-foreground hover:underline" onClick={() => setMode("menu")}>← Volver</button>
           <div className="text-sm font-medium">Personalizado</div>
         </div>
         <div className="space-y-2">
-          <div className="grid grid-cols-1 gap-2">
-            <label className="text-xs text-muted-foreground">Inicio</label>
-            <Input
-              type="date"
-              value={fromVal}
-              onChange={(e) => setDraftFrom(e.target.value)}
-            />
-          </div>
-          <div className="grid grid-cols-1 gap-2">
-            <label className="text-xs text-muted-foreground">Fin</label>
-            <Input
-              type="date"
-              value={toVal}
-              min={fromVal}
-              onChange={(e) => setDraftTo(e.target.value)}
-            />
-          </div>
+          <DateInput
+            label="Inicio"
+            ariaLabel="Fecha de inicio"
+            value={fromVal}
+            onChange={setDraftFrom}
+          />
+          <DateInput
+            label="Fin"
+            ariaLabel="Fecha de fin"
+            value={toVal}
+            min={fromVal}
+            onChange={setDraftTo}
+          />
         </div>
         <div className="flex justify-between items-center mt-3">
           <Button variant="ghost" size="sm" onClick={() => { setMode("menu"); }}>
