@@ -104,19 +104,16 @@ export default function ReportsPage() {
             <Typography variant="h1">Reportes</Typography>
             <Typography variant="body" className="text-muted-foreground">Ventas por día y movimientos</Typography>
           </div>
-          <ResponsiveLayout className="w-full" direction="row" gap="sm" wrap justify="between" align="center">
-            <ResponsiveLayout direction="row" gap="sm" align="center">
-              <div className="flex items-center gap-2">
-                <Typography variant="body-sm">Desde</Typography>
-                <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
-              </div>
-              <div className="flex items-center gap-2">
-                <Typography variant="body-sm">Hasta</Typography>
-                <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
-              </div>
-            </ResponsiveLayout>
-            <div className="flex-1" />
-          </ResponsiveLayout>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-center">
+            <div className="flex items-center gap-2 w-full">
+              <Typography variant="body-sm">Desde</Typography>
+              <Input className="flex-1" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            </div>
+            <div className="flex items-center gap-2 w-full">
+              <Typography variant="body-sm">Hasta</Typography>
+              <Input className="flex-1" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+            </div>
+          </div>
         </ResponsiveLayout>
 
         <Tabs defaultValue="sales">
@@ -204,26 +201,38 @@ export default function ReportsPage() {
                                           {(o.items || []).length === 0 ? (
                                             <div className="text-sm text-muted-foreground">Sin productos</div>
                                           ) : (
-                                            <div className="overflow-x-auto rounded-md border">
-                                              <Table className="min-w-[360px] sm:min-w-0">
-                                                <TableHeader>
-                                                  <TableRow>
-                                                    <TableHead>Producto</TableHead>
-                                                    <TableHead className="w-16 text-right">Cant.</TableHead>
-                                                    <TableHead className="w-24 sm:w-28 text-right">Precio</TableHead>
-                                                  </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                  {o.items.map((it: any) => (
-                                                    <TableRow key={it.id}>
-                                                      <TableCell>{it.product?.name || 'Producto'}</TableCell>
-                                                      <TableCell className="text-right">{it.quantity}</TableCell>
-                                                      <TableCell className="text-right">${Number(it.price).toFixed(2)}</TableCell>
+                                            <>
+                                              {/* Lista compacta para móvil */}
+                                              <div className="sm:hidden space-y-2">
+                                                {o.items.map((it: any) => (
+                                                  <div key={it.id} className="flex items-center justify-between border-b border-border/60 pb-1">
+                                                    <span className="text-sm">{it.product?.name || 'Producto'}</span>
+                                                    <span className="text-sm text-muted-foreground">x{it.quantity} — ${Number(it.price).toFixed(2)}</span>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                              {/* Tabla para pantallas medianas en adelante */}
+                                              <div className="hidden sm:block overflow-x-auto rounded-md border">
+                                                <Table className="min-w-[360px] sm:min-w-0">
+                                                  <TableHeader>
+                                                    <TableRow>
+                                                      <TableHead>Producto</TableHead>
+                                                      <TableHead className="w-16 text-right">Cant.</TableHead>
+                                                      <TableHead className="w-24 sm:w-28 text-right">Precio</TableHead>
                                                     </TableRow>
-                                                  ))}
-                                                </TableBody>
-                                              </Table>
-                                            </div>
+                                                  </TableHeader>
+                                                  <TableBody>
+                                                    {o.items.map((it: any) => (
+                                                      <TableRow key={it.id}>
+                                                        <TableCell>{it.product?.name || 'Producto'}</TableCell>
+                                                        <TableCell className="text-right">{it.quantity}</TableCell>
+                                                        <TableCell className="text-right">${Number(it.price).toFixed(2)}</TableCell>
+                                                      </TableRow>
+                                                    ))}
+                                                  </TableBody>
+                                                </Table>
+                                              </div>
+                                            </>
                                           )}
                                         </div>
                                       </ResponsiveCard>
