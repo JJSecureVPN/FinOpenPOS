@@ -18,7 +18,7 @@ export async function PUT(
 
   const { data, error } = await supabase
     .from('transactions')
-    .update({ ...updatedTransaction, user_uid: user.id })
+    .update({ ...updatedTransaction, user_uid: user.id, status: updatedTransaction.status || 'completed' })
     .eq('id', transactionId)
     .eq('user_uid', user.id)
     .select()

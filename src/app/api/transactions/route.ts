@@ -33,10 +33,12 @@ export async function POST(request: Request) {
 
   const newTransaction = await request.json();
 
+  // Aseguramos que las nuevas transacciones tengan status 'completed' para que sean consideradas
+  // en las métricas de ingresos, gastos y ganancia.
   const { data, error } = await supabase
     .from('transactions')
     .insert([
-      { ...newTransaction, user_uid: user.id }
+      { ...newTransaction, user_uid: user.id, status: newTransaction.status || 'completed' }
     ])
     .select()
 
