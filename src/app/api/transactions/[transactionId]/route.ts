@@ -13,12 +13,24 @@ export async function PUT(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const updatedTransaction = await request.json();
+  const rawBody = await request.json();
   const transactionId = params.transactionId;
+  const { id: _ignoreId, amount, type, status, ...rest } = rawBody || {};
+  const parsedAmount = Number(amount);
+  if (!isNaN(parsedAmount) && parsedAmount < 0) {
+    // Permitimos negativos? Actualmente no; se podría permitir para ajustes. Por ahora validar > 0
+  }
+  const updatePayload: any = {
+    ...rest,
+    user_uid: user.id,
+    status: status || 'completed'
+  };
+  if (!isNaN(parsedAmount)) updatePayload.amount = parsedAmount;
+  if (type === 'income' || type === 'expense') updatePayload.type = type;
 
   const { data, error } = await supabase
     .from('transactions')
-    .update({ ...updatedTransaction, user_uid: user.id, status: updatedTransaction.status || 'completed' })
+    .update(updatePayload)
     .eq('id', transactionId)
     .eq('user_uid', user.id)
     .select()
