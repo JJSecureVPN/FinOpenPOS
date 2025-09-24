@@ -135,9 +135,12 @@
     background: transparent !important;
   }
   
+  .calendar-container-responsive .rdrDayPassive {
+    display: none !important;
+  }
+  
   .calendar-container-responsive .rdrDayPassive .rdrDayNumber {
-    color: hsl(var(--muted-foreground)) !important;
-    opacity: 0.3 !important;
+    display: none !important;
   }
   
   .calendar-container-responsive .rdrDayToday .rdrDayNumber:after {
