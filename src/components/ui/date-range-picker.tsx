@@ -30,6 +30,8 @@ function parseISO(s?: string): Date | undefined {
 export function DateRangePicker({ from, to, onChange, className }: Props) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [mode, setMode] = useState<"menu" | "custom">("menu");
+  const [tempRange, setTempRange] = useState<DateRange | undefined>(undefined);
 
   useEffect(() => setMounted(true), []);
 
@@ -40,11 +42,25 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
     return { from: fromDate, to: toDate };
   }, [fromDate, toDate]);
 
+  const fmtShort = (d: Date, withYear = false) => {
+    const s = d.toLocaleDateString("es-AR", {
+      day: "numeric",
+      month: "short",
+      year: withYear ? "numeric" : undefined,
+    });
+    return s.replaceAll(".", "");
+  };
+  const fmtRangeShort = (a: Date, b: Date) => {
+    if (a.getFullYear() === b.getFullYear()) {
+      return `${fmtShort(a)} al ${fmtShort(b, true)}`;
+    }
+    return `${fmtShort(a, true)} al ${fmtShort(b, true)}`;
+  };
+
   const label = useMemo(() => {
-    const fmt = (d?: Date) => (d ? d.toLocaleDateString("es-ES") : "");
-    if (fromDate && toDate) return `${fmt(fromDate)} — ${fmt(toDate)}`;
-    if (fromDate) return `Desde ${fmt(fromDate)}`;
-    if (toDate) return `Hasta ${fmt(toDate)}`;
+    if (fromDate && toDate) return fmtRangeShort(fromDate, toDate);
+    if (fromDate) return `Desde ${fmtShort(fromDate, true)}`;
+    if (toDate) return `Hasta ${fmtShort(toDate, true)}`;
     return "Seleccionar rango";
   }, [fromDate, toDate]);
 
@@ -53,79 +69,111 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
   const apply = (range?: DateRange) => {
     if (!range?.from || !range?.to) return;
     onChange({ from: toISO(range.from), to: toISO(range.to) });
+    setOpen(false);
+    setMode("menu");
   };
 
-  // Presets helpers
-  const now = new Date();
-  const presets = [
-    {
-      key: "today",
-      label: "Hoy",
-      run: () => {
-        const d = new Date();
-        onChange({ from: toISO(d), to: toISO(d) });
-        setOpen(false);
-      },
-    },
-    {
-      key: "last7",
-      label: "Últimos 7 días",
-      run: () => {
-        const end = new Date();
-        const start = new Date();
-        start.setDate(end.getDate() - 6);
-        onChange({ from: toISO(start), to: toISO(end) });
-        setOpen(false);
-      },
-    },
-    {
-      key: "thisWeek",
-      label: "Esta semana",
-      run: () => {
-        const end = new Date();
-        const dow = (end.getDay() + 6) % 7; // Lunes=0
-        const start = new Date(end);
-        start.setDate(end.getDate() - dow);
-        onChange({ from: toISO(start), to: toISO(end) });
-        setOpen(false);
-      },
-    },
-    {
-      key: "thisMonth",
-      label: "Este mes",
-      run: () => {
-        const end = new Date();
-        const start = new Date(end.getFullYear(), end.getMonth(), 1);
-        onChange({ from: toISO(start), to: toISO(end) });
-        setOpen(false);
-      },
-    },
-    {
-      key: "lastMonth",
-      label: "Mes pasado",
-      run: () => {
-        const now = new Date();
-        const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
-        onChange({ from: toISO(start), to: toISO(lastDay) });
-        setOpen(false);
-      },
-    },
-    {
-      key: "last30",
-      label: "Últimos 30 días",
-      run: () => {
-        const end = new Date();
-        const start = new Date();
-        start.setDate(end.getDate() - 29);
-        onChange({ from: toISO(start), to: toISO(end) });
-        setOpen(false);
-      },
-    },
-  ];
+  // Presets estilo MercadoPago
+  const today = new Date();
+  const makeRange = (start: Date, end: Date) => ({ from: start, to: end });
+  const ranges = {
+    today: makeRange(today, today),
+    last7: makeRange(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6), today),
+    last15: makeRange(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14), today),
+    last30: makeRange(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 29), today),
+  } as const;
+
+  const MenuView = () => (
+    <div className="min-w-[260px]">
+      <div className="flex flex-col">
+        <button
+          className="text-left px-3 py-2 hover:bg-muted rounded-md"
+          onClick={() => apply(ranges.today)}
+        >
+          <div className="font-medium">Hoy</div>
+          <div className="text-xs text-muted-foreground">{fmtShort(today, true)}</div>
+        </button>
+        <button
+          className="text-left px-3 py-2 hover:bg-muted rounded-md"
+          onClick={() => apply(ranges.last7)}
+        >
+          <div className="font-medium">Últimos 7 días</div>
+          <div className="text-xs text-muted-foreground">{fmtRangeShort(ranges.last7.from, ranges.last7.to)}</div>
+        </button>
+        <button
+          className="text-left px-3 py-2 hover:bg-muted rounded-md"
+          onClick={() => apply(ranges.last15)}
+        >
+          <div className="font-medium">Últimos 15 días</div>
+          <div className="text-xs text-muted-foreground">{fmtRangeShort(ranges.last15.from, ranges.last15.to)}</div>
+        </button>
+        <button
+          className="text-left px-3 py-2 hover:bg-muted rounded-md"
+          onClick={() => apply(ranges.last30)}
+        >
+          <div className="font-medium">Últimos 30 días</div>
+          <div className="text-xs text-muted-foreground">{fmtRangeShort(ranges.last30.from, ranges.last30.to)}</div>
+        </button>
+        <div className="border-t my-1" />
+        <button
+          className="text-left px-3 py-2 hover:bg-muted rounded-md"
+          onClick={() => {
+            setMode("custom");
+            setTempRange(selected ?? { from: today, to: today });
+          }}
+        >
+          <div className="font-medium">Fecha personalizada</div>
+          <div className="text-xs text-muted-foreground">Selecciona un rango en el calendario</div>
+        </button>
+      </div>
+    </div>
+  );
+
+  const CustomView = () => (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between px-1">
+        <button className="text-sm text-muted-foreground hover:underline" onClick={() => setMode("menu")}>
+          ← Volver
+        </button>
+        <div className="text-sm text-muted-foreground">
+          {tempRange?.from && tempRange?.to
+            ? fmtRangeShort(tempRange.from, tempRange.to)
+            : "Selecciona inicio y fin"}
+        </div>
+      </div>
+      <div className="p-1">
+        {mounted ? (
+          <DayPicker
+            mode="range"
+            selected={tempRange}
+            onSelect={(range) => setTempRange(range)}
+            weekStartsOn={1}
+            numberOfMonths={2}
+            locale={es}
+            showOutsideDays
+            captionLayout="dropdown"
+            fromYear={yearNow - 5}
+            toYear={yearNow + 5}
+            defaultMonth={tempRange?.from || fromDate || new Date()}
+          />
+        ) : (
+          <div className="w-[640px] h-[320px]" />
+        )}
+      </div>
+      <div className="flex justify-end gap-2 px-1">
+        <Button variant="ghost" onClick={() => setMode("menu")}>Cancelar</Button>
+        <Button
+          onClick={() => apply(tempRange)}
+          disabled={!tempRange?.from || !tempRange?.to}
+        >
+          Aplicar
+        </Button>
+      </div>
+    </div>
+  );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={(v) => { setOpen(v); if (!v) setMode("menu"); }}>
       <PopoverTrigger asChild>
         <Button variant="outline" className={`gap-2 ${className ?? ""}`}>
           <CalendarIcon className="w-4 h-4" />
@@ -133,52 +181,7 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="p-2 w-auto">
-        <div className="flex flex-col sm:flex-row gap-2">
-          {/* Presets */}
-          <div className="flex sm:flex-col gap-1 sm:min-w-[150px]">
-            {presets.map((p) => (
-              <Button key={p.key} variant="ghost" size="sm" onClick={p.run}>
-                {p.label}
-              </Button>
-            ))}
-            {(fromDate || toDate) && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  // Reset al último 30 por defecto
-                  const end = new Date();
-                  const start = new Date();
-                  start.setDate(end.getDate() - 29);
-                  onChange({ from: toISO(start), to: toISO(end) });
-                }}
-              >
-                Reiniciar
-              </Button>
-            )}
-          </div>
-
-          {/* Calendario doble */}
-          <div className="p-1">
-            {mounted ? (
-              <DayPicker
-                mode="range"
-                selected={selected}
-                onSelect={(range) => apply(range)}
-                weekStartsOn={1}
-                numberOfMonths={2}
-                locale={es}
-                showOutsideDays
-                captionLayout="dropdown"
-                fromYear={yearNow - 5}
-                toYear={yearNow + 5}
-                defaultMonth={fromDate || toDate || new Date()}
-              />
-            ) : (
-              <div className="w-[640px] h-[320px]" />
-            )}
-          </div>
-        </div>
+        {mode === "menu" ? <MenuView /> : <CustomView />}
       </PopoverContent>
     </Popover>
   );
