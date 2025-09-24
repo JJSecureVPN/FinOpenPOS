@@ -130,16 +130,25 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
   );
 
   const CustomView = () => (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 w-[700px] max-w-[95vw]">
       <div className="flex items-center justify-between px-1">
         <button className="text-sm text-muted-foreground hover:underline" onClick={() => setMode("menu")}>
           ← Volver
         </button>
-        <div className="text-sm text-muted-foreground">
-          {tempRange?.from && tempRange?.to
-            ? fmtRangeShort(tempRange.from, tempRange.to)
-            : "Selecciona inicio y fin"}
-        </div>
+        <div className="text-sm font-medium">Fecha personalizada</div>
+      </div>
+      <div className="px-1 text-xs text-muted-foreground">
+        1) Elige fecha de inicio • 2) Elige fecha de fin
+      </div>
+      <div className="flex items-center gap-2 px-1 text-xs">
+        <span className="rounded-full border px-2 py-1 bg-muted/30">
+          <span className="text-muted-foreground">Desde: </span>
+          {tempRange?.from ? fmtShort(tempRange.from, true) : "—"}
+        </span>
+        <span className="rounded-full border px-2 py-1 bg-muted/30">
+          <span className="text-muted-foreground">Hasta: </span>
+          {tempRange?.to ? fmtShort(tempRange.to, true) : "—"}
+        </span>
       </div>
       <div className="p-1">
         {mounted ? (
@@ -151,7 +160,7 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
             numberOfMonths={2}
             locale={es}
             showOutsideDays
-            captionLayout="dropdown"
+            captionLayout="buttons"
             fromYear={yearNow - 5}
             toYear={yearNow + 5}
             defaultMonth={tempRange?.from || fromDate || new Date()}
@@ -161,7 +170,7 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
         )}
       </div>
       <div className="flex justify-end gap-2 px-1">
-        <Button variant="ghost" onClick={() => setMode("menu")}>Cancelar</Button>
+        <Button variant="ghost" onClick={() => setTempRange(undefined)}>Limpiar</Button>
         <Button
           onClick={() => apply(tempRange)}
           disabled={!tempRange?.from || !tempRange?.to}
