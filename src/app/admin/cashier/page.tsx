@@ -234,7 +234,17 @@ export default function Cashier() {
 
         {/* Form Dialog */}
         <Dialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent
+            className="max-w-2xl"
+            // Evita que un clic incidental en el overlay mientras haces focus dentro del formulario
+            // provoque pérdida de foco o cierre anticipado.
+            onInteractOutside={(e) => {
+              const target = e.target as HTMLElement;
+              if (target.closest('form')) {
+                e.preventDefault();
+              }
+            }}
+          >
             <DialogHeader>
               <DialogTitle>
                 <Typography variant="h3">

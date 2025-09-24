@@ -43,8 +43,11 @@ export default function TransactionForm({ onSubmit, onCancel, isCompact = false 
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const FormContent = () => (
-    <form onSubmit={handleSubmit} className="space-y-4">
+  // IMPORTANTE: No definir un componente (function) dentro y luego usarlo como <Componente />
+  // porque React lo considera un nuevo tipo en cada render y desmonta/remonta el árbol,
+  // provocando pérdida de foco al teclear. En su lugar usamos JSX directo (formContent).
+  const formContent = (
+    <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
       <ResponsiveShow on="mobile">
         <div className="space-y-4">
           {/* Mobile: Stack all fields vertically */}
@@ -58,6 +61,7 @@ export default function TransactionForm({ onSubmit, onCancel, isCompact = false 
               onChange={(e) => handleInputChange("amount", e.target.value)}
               required
               className="text-lg"
+              autoFocus
             />
           </div>
 
@@ -130,6 +134,7 @@ export default function TransactionForm({ onSubmit, onCancel, isCompact = false 
                   value={formData.amount}
                   onChange={(e) => handleInputChange("amount", e.target.value)}
                   required
+                  autoFocus
                 />
               </div>
 
@@ -196,6 +201,7 @@ export default function TransactionForm({ onSubmit, onCancel, isCompact = false 
                   onChange={(e) => handleInputChange("amount", e.target.value)}
                   required
                   className="text-lg"
+                  autoFocus
                 />
               </div>
 
@@ -258,7 +264,7 @@ export default function TransactionForm({ onSubmit, onCancel, isCompact = false 
   );
 
   if (isCompact) {
-    return <FormContent />;
+    return formContent;
   }
 
   return (
@@ -268,7 +274,7 @@ export default function TransactionForm({ onSubmit, onCancel, isCompact = false 
           <CardTitle>Nueva Transacción</CardTitle>
         </CardHeader>
         <CardContent>
-          <FormContent />
+          {formContent}
         </CardContent>
       </Card>
     </ResponsiveContainer>
