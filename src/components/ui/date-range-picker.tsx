@@ -190,8 +190,12 @@ export function DateRangePicker({ from, to, onChange, className }: Props) {
   return (
     <Popover open={open} onOpenChange={(v) => { setOpen(v); if (!v) setMode("menu"); }}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className={`gap-2 ${className ?? ""}`}>
-          <CalendarIcon className="w-4 h-4" />
+        <Button
+          variant="outline"
+          aria-label="Seleccionar rango de fechas"
+          className={`gap-2 h-9 w-full sm:w-auto rounded-md border border-border bg-card text-foreground hover:bg-muted/70 focus-visible:ring-2 focus-visible:ring-ring ${className ?? ""}`}
+        >
+          <CalendarIcon className="w-4 h-4 text-foreground" />
           <span className="text-sm truncate max-w-[60vw] sm:max-w-[260px]">{label}</span>
         </Button>
       </PopoverTrigger>

@@ -68,6 +68,13 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Mejora de contraste para botones outline en tema oscuro */
+  .dark .btn-outline-contrast,
+  .dark button[variant="outline"] {
+    background-color: hsl(var(--card));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border));
+  }
   /* React Date Range Calendar Styles - importar CSS base */
   @import 'react-date-range/dist/styles.css';
   @import 'react-date-range/dist/theme/default.css';
