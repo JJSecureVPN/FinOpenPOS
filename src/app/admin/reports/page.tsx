@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from 'react'
-import { ResponsiveContainer, ResponsiveGrid } from '@/components/responsive'
+import { ResponsiveContainer, ResponsiveGrid, ResponsiveLayout, ResponsiveCard } from '@/components/responsive'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Typography } from '@/components/ui'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -99,13 +99,13 @@ export default function ReportsPage() {
   return (
     <ResponsiveContainer>
       <div className="space-y-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <ResponsiveLayout className="w-full" direction="col" gap="md">
           <div>
             <Typography variant="h1">Reportes</Typography>
             <Typography variant="body" className="text-muted-foreground">Ventas por día y movimientos</Typography>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 items-stretch">
-            <div className="flex items-center gap-2">
+          <ResponsiveLayout className="w-full" direction="row" gap="sm" wrap justify="between" align="center">
+            <ResponsiveLayout direction="row" gap="sm" align="center">
               <div className="flex items-center gap-2">
                 <Typography variant="body-sm">Desde</Typography>
                 <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
@@ -114,9 +114,10 @@ export default function ReportsPage() {
                 <Typography variant="body-sm">Hasta</Typography>
                 <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
               </div>
-            </div>
-          </div>
-        </div>
+            </ResponsiveLayout>
+            <div className="flex-1" />
+          </ResponsiveLayout>
+        </ResponsiveLayout>
 
         <Tabs defaultValue="sales">
           <TabsList>
@@ -125,26 +126,25 @@ export default function ReportsPage() {
           </TabsList>
 
           <TabsContent value="sales" className="mt-4 space-y-4">
-            <ResponsiveGrid cols={{ default: 1, md: 3 }} gap="md">
-              <Card>
-                <CardHeader><CardTitle>Ventas Totales</CardTitle></CardHeader>
-                <CardContent>
-                  <Typography variant="h2" weight="bold">${totals.total.toFixed(2)}</Typography>
-                  <Typography variant="body-sm" className="text-muted-foreground">Pedidos: {totals.orders}</Typography>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader><CardTitle>Contado</CardTitle></CardHeader>
-                <CardContent>
-                  <Typography variant="h2" weight="bold">${totals.cash.toFixed(2)}</Typography>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader><CardTitle>Fiado</CardTitle></CardHeader>
-                <CardContent>
-                  <Typography variant="h2" weight="bold" className="text-orange-600">${totals.credit.toFixed(2)}</Typography>
-                </CardContent>
-              </Card>
+            <ResponsiveGrid autoFit minItemWidth="220px" gap="md">
+              <ResponsiveCard
+                title="Ventas Totales"
+                headerActions={<span className="text-lg font-semibold">${totals.total.toFixed(2)}</span>}
+              >
+                <Typography variant="body-sm" className="text-muted-foreground">Pedidos: {totals.orders}</Typography>
+              </ResponsiveCard>
+              <ResponsiveCard
+                title="Contado"
+                headerActions={<span className="text-lg font-semibold">${totals.cash.toFixed(2)}</span>}
+              >
+                <Typography variant="body-sm" className="text-muted-foreground">Ventas cobradas</Typography>
+              </ResponsiveCard>
+              <ResponsiveCard
+                title="Fiado"
+                headerActions={<span className="text-lg font-semibold text-orange-600">${totals.credit.toFixed(2)}</span>}
+              >
+                <Typography variant="body-sm" className="text-muted-foreground">Ventas a crédito</Typography>
+              </ResponsiveCard>
             </ResponsiveGrid>
 
             <Card>
@@ -181,50 +181,53 @@ export default function ReportsPage() {
                             <TableRow>
                               <TableCell colSpan={5} className="bg-muted/20 p-0">
                                 <div className="p-4">
-                                  <Card>
-                                    <CardHeader><CardTitle>Ventas del día</CardTitle></CardHeader>
-                                    <CardContent className="p-0">
-                                      <Table>
-                                        <TableHeader>
-                                          <TableRow>
-                                            <TableHead>Hora</TableHead>
-                                            <TableHead>Cliente</TableHead>
-                                            <TableHead>Tipo</TableHead>
-                                            <TableHead>Productos</TableHead>
-                                            <TableHead className="text-right">Total</TableHead>
-                                          </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                          {(dayDetails[d.date]?.orders || []).map((o: any) => (
-                                            <React.Fragment key={o.id}>
-                                              <TableRow>
-                                                <TableCell>{new Date(o.created_at).toLocaleTimeString()}</TableCell>
-                                                <TableCell>{o.customer?.name || '-'}</TableCell>
-                                                <TableCell>{o.is_credit_sale ? 'Fiado' : 'Contado'}</TableCell>
-                                                <TableCell>
-                                                  {(o.items || []).length === 0 ? (
-                                                    <span className="text-muted-foreground">-</span>
-                                                  ) : (
-                                                    <ul className="list-disc pl-5 space-y-1">
-                                                      {o.items.map((it: any) => (
-                                                        <li key={it.id}>
-                                                          {it.product?.name || 'Producto'} x{it.quantity} @ ${Number(it.price).toFixed(2)}
-                                                        </li>
-                                                      ))}
-                                                    </ul>
-                                                  )}
-                                                </TableCell>
-                                                <TableCell className="text-right">${Number(o.total_amount || 0).toFixed(2)}</TableCell>
-                                              </TableRow>
-                                            </React.Fragment>
-                                          ))}
-                                          {(!dayDetails[d.date]?.orders || dayDetails[d.date]?.orders.length === 0) && (
-                                            <TableRow><TableCell colSpan={5} className="p-3 text-muted-foreground">Sin ventas</TableCell></TableRow>
+                                  <Typography variant="h3" className="mb-3">Ventas del día</Typography>
+                                  <ResponsiveGrid autoFit minItemWidth="320px" gap="md">
+                                    {(dayDetails[d.date]?.orders || []).map((o: any) => (
+                                      <ResponsiveCard
+                                        key={o.id}
+                                        title={`Venta #${o.id}`}
+                                        description={`${new Date(o.created_at).toLocaleTimeString()} • ${o.is_credit_sale ? 'Fiado' : 'Contado'}`}
+                                        headerActions={<span className="font-semibold">${Number(o.total_amount || 0).toFixed(2)}</span>}
+                                        fullHeight
+                                      >
+                                        <div className="space-y-2">
+                                          <div className="text-sm text-muted-foreground">
+                                            Cliente: <span className="text-foreground">{o.customer?.name || '-'}</span>
+                                          </div>
+                                          {(o.items || []).length === 0 ? (
+                                            <div className="text-sm text-muted-foreground">Sin productos</div>
+                                          ) : (
+                                            <div className="overflow-hidden rounded-md border">
+                                              <Table>
+                                                <TableHeader>
+                                                  <TableRow>
+                                                    <TableHead>Producto</TableHead>
+                                                    <TableHead className="w-16 text-right">Cant.</TableHead>
+                                                    <TableHead className="w-28 text-right">Precio</TableHead>
+                                                  </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                  {o.items.map((it: any) => (
+                                                    <TableRow key={it.id}>
+                                                      <TableCell>{it.product?.name || 'Producto'}</TableCell>
+                                                      <TableCell className="text-right">{it.quantity}</TableCell>
+                                                      <TableCell className="text-right">${Number(it.price).toFixed(2)}</TableCell>
+                                                    </TableRow>
+                                                  ))}
+                                                </TableBody>
+                                              </Table>
+                                            </div>
                                           )}
-                                        </TableBody>
-                                      </Table>
-                                    </CardContent>
-                                  </Card>
+                                        </div>
+                                      </ResponsiveCard>
+                                    ))}
+                                    {(!dayDetails[d.date]?.orders || dayDetails[d.date]?.orders.length === 0) && (
+                                      <ResponsiveCard title="Sin ventas">
+                                        <Typography variant="body-sm" className="text-muted-foreground">No hay ventas registradas para este día.</Typography>
+                                      </ResponsiveCard>
+                                    )}
+                                  </ResponsiveGrid>
                                 </div>
                               </TableCell>
                             </TableRow>
