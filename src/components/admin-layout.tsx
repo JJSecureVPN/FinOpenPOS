@@ -30,6 +30,7 @@ import {
   CreditCardIcon,
   Users2Icon,
   LogOutIcon,
+  PieChartIcon,
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { createClient } from "@/lib/supabase/client";
@@ -73,7 +74,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { href: "/admin/customers", icon: UsersIcon, label: "Clientes" },
     { href: "/admin/credit-sales", icon: CreditCardIcon, label: "Ventas al Fiado" },
     { href: "/admin/pos", icon: ShoppingCartIcon, label: "Punto de Venta" },
-    { href: "/admin/reports", icon: LayoutDashboardIcon, label: "Reportes" },
+    { href: "/admin/reports", icon: PieChartIcon, label: "Reportes" },
   ];
 
   // Agregar gestión de usuarios solo para admins
