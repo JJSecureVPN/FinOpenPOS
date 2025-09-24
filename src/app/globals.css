@@ -68,37 +68,108 @@
   body {
     @apply bg-background text-foreground;
   }
-  /* Estilos de react-day-picker */
-  .rdp {
-    --rdp-accent-color: hsl(var(--primary));
-    --rdp-background-color: hsl(var(--muted));
-    --rdp-outline: 2px solid hsl(var(--ring));
-    --rdp-outline-selected: 2px solid hsl(var(--primary));
+  /* React Date Range Calendar Styles - importar CSS base */
+  @import 'react-date-range/dist/styles.css';
+  @import 'react-date-range/dist/theme/default.css';
+  
+  /* Tema personalizado para react-date-range */
+  .calendar-container .rdrCalendarWrapper {
+    background: hsl(var(--card));
+    color: hsl(var(--card-foreground));
+    border-radius: 8px;
+    border: 1px solid hsl(var(--border));
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   }
-  .rdp-button:hover {
+  
+  .calendar-container .rdrMonth {
+    background: hsl(var(--card));
+  }
+  
+  .calendar-container .rdrMonthAndYearWrapper {
+    background: hsl(var(--card));
+    color: hsl(var(--card-foreground));
+    border-bottom: 1px solid hsl(var(--border));
+    padding: 10px;
+  }
+  
+  .calendar-container .rdrMonthAndYearPickers select {
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
+    border-radius: 4px;
+    padding: 4px 8px;
+  }
+  
+  .calendar-container .rdrWeekDays {
     background: hsl(var(--muted));
   }
-  .rdp-day_selected,
-  .rdp-day_selected:focus-visible,
-  .rdp-day_selected:hover {
-    color: hsl(var(--primary-foreground));
+  
+  .calendar-container .rdrWeekDay {
+    color: hsl(var(--muted-foreground));
+    font-weight: 500;
+    font-size: 12px;
+  }
+  
+  .calendar-container .rdrDay {
+    background: hsl(var(--card));
+  }
+  
+  .calendar-container .rdrDayNumber {
+    color: hsl(var(--card-foreground));
+    font-weight: 400;
+  }
+  
+  .calendar-container .rdrDayPassive .rdrDayNumber {
+    color: hsl(var(--muted-foreground));
+    opacity: 0.4;
+  }
+  
+  .calendar-container .rdrDayToday .rdrDayNumber:after {
     background: hsl(var(--primary));
   }
-  /* Calendario compacto */
-  .rdp-compact {
-    margin: 0;
+  
+  .calendar-container .rdrDayHovered {
+    background: hsl(var(--muted));
   }
-  .rdp-compact .rdp-months {
-    gap: 1rem;
+  
+  .calendar-container .rdrDayStartOfRange,
+  .calendar-container .rdrDayEndOfRange {
+    background: hsl(var(--primary)) !important;
   }
-  .rdp-compact .rdp-month {
-    margin: 0;
+  
+  .calendar-container .rdrDayStartOfRange .rdrDayNumber,
+  .calendar-container .rdrDayEndOfRange .rdrDayNumber {
+    color: hsl(var(--primary-foreground)) !important;
+    font-weight: 600;
   }
-  .rdp-compact .rdp-caption {
-    margin-bottom: 0.5rem;
+  
+  .calendar-container .rdrDayInRange {
+    background: hsl(var(--primary) / 0.15) !important;
   }
-  .rdp-compact .rdp-table {
-    margin: 0;
+  
+  .calendar-container .rdrDayInRange .rdrDayNumber {
+    color: hsl(var(--primary)) !important;
+    font-weight: 500;
+  }
+  
+  .calendar-container .rdrNextPrevButton {
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    color: hsl(var(--foreground));
+    border-radius: 4px;
+  }
+  
+  .calendar-container .rdrNextPrevButton:hover {
+    background: hsl(var(--muted));
+  }
+  
+  .calendar-container .rdrPprevButton i,
+  .calendar-container .rdrNextButton i {
+    border-color: transparent hsl(var(--foreground)) transparent transparent;
+  }
+  
+  .calendar-container .rdrPprevButton i {
+    border-color: transparent transparent transparent hsl(var(--foreground));
   }
   
   /* Ocultar scrollbars pero mantener funcionalidad */
