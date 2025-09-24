@@ -91,6 +91,12 @@
   @media (max-width: 767px) {
     .calendar-container-responsive .rdrMonths {
       flex-direction: column !important;
+      gap: 16px !important;
+    }
+    
+    .calendar-container-responsive .rdrMonth {
+      width: 100% !important;
+      max-width: 100% !important;
     }
   }
   
@@ -105,6 +111,18 @@
     color: hsl(var(--card-foreground)) !important;
     border-bottom: 1px solid hsl(var(--border)) !important;
     padding: 10px !important;
+  }
+  
+  .calendar-container-responsive .rdrMonthName {
+    color: hsl(var(--card-foreground)) !important;
+    font-weight: 600 !important;
+  }
+  
+  .calendar-container-responsive .rdrYearPicker,
+  .calendar-container-responsive .rdrMonthPicker {
+    background: hsl(var(--background)) !important;
+    color: hsl(var(--foreground)) !important;
+    border: 1px solid hsl(var(--border)) !important;
   }
   
   .calendar-container-responsive .rdrMonthAndYearPickers select {
@@ -217,10 +235,6 @@
       width: 100% !important;
     }
     
-    .calendar-container-responsive .rdrMonth {
-      width: 100% !important;
-    }
-    
     .calendar-container-responsive .rdrMonthAndYearWrapper {
       padding: 8px !important;
     }
@@ -232,6 +246,11 @@
     
     .calendar-container-responsive .rdrDayNumber {
       font-size: 14px !important;
+    }
+    
+    /* Mejorar espaciado en móvil */
+    .calendar-container-responsive .rdrMonthsVertical {
+      gap: 20px !important;
     }
   }
   
