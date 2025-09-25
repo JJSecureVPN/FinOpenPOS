@@ -33,31 +33,14 @@ export default function Cashier() {
       try {
         const response = await fetch("/api/transactions");
         if (!response.ok) {
-          throw new Error("Failed to fetch transactions");
+          throw new Error(`Failed to fetch transactions: ${response.status}`);
         }
         const data = await response.json();
-        setTransactions(data);
+        setTransactions(data || []);
       } catch (error) {
         console.error("Error fetching transactions:", error);
-        // Set demo data if API fails
-        setTransactions([
-          {
-            id: 1,
-            date: new Date().toISOString(),
-            type: "income",
-            amount: 1500.00,
-            description: "Venta de productos",
-            category: "Ventas"
-          },
-          {
-            id: 2,
-            date: new Date(Date.now() - 86400000).toISOString(),
-            type: "expense",
-            amount: 250.00,
-            description: "Compra de suministros",
-            category: "Suministros"
-          }
-        ]);
+        // No cargar datos demo automáticamente - mostrar lista vacía
+        setTransactions([]);
       } finally {
         setLoading(false);
       }
@@ -69,9 +52,7 @@ export default function Cashier() {
   // Handle form submission
   const handleFormSubmit = async (formData: NewTransactionForm) => {
     try {
-      const newTransaction: Transaction = {
-        id: Date.now(), // In a real app, this would come from the server
-        date: new Date().toISOString(),
+      const transactionData = {
         type: formData.type,
         amount: parseFloat(formData.amount),
         description: formData.description,
@@ -85,20 +66,21 @@ export default function Cashier() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(newTransaction),
+          body: JSON.stringify(transactionData),
         });
 
         if (response.ok) {
+          const updatedTransaction = await response.json();
           setTransactions(prev => 
-            prev.map(t => t.id === transactionToEdit.id ? { ...newTransaction, id: transactionToEdit.id } : t)
+            prev.map(t => t.id === transactionToEdit.id ? updatedTransaction : t)
           );
+          setIsFormDialogOpen(false);
+          setTransactionToEdit(null);
         } else {
-          // Fallback for demo
-          setTransactions(prev => 
-            prev.map(t => t.id === transactionToEdit.id ? { ...newTransaction, id: transactionToEdit.id } : t)
-          );
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          console.error("Failed to update transaction:", errorData.error);
+          alert(`Error al actualizar la transacción: ${errorData.error}`);
         }
-        setTransactionToEdit(null);
       } else {
         // Add new transaction
         const response = await fetch("/api/transactions", {
@@ -106,40 +88,22 @@ export default function Cashier() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(newTransaction),
+          body: JSON.stringify(transactionData),
         });
 
         if (response.ok) {
           const addedTransaction = await response.json();
           setTransactions(prev => [...prev, addedTransaction]);
+          setIsFormDialogOpen(false);
         } else {
-          // Fallback for demo
-          setTransactions(prev => [...prev, newTransaction]);
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          console.error("Failed to create transaction:", errorData.error);
+          alert(`Error al crear la transacción: ${errorData.error}`);
         }
       }
-
-      setIsFormDialogOpen(false);
     } catch (error) {
       console.error("Error saving transaction:", error);
-      // Still add to demo data
-      const newTransaction: Transaction = {
-        id: Date.now(),
-        date: new Date().toISOString(),
-        type: formData.type,
-        amount: parseFloat(formData.amount),
-        description: formData.description,
-        category: formData.category
-      };
-      
-      if (transactionToEdit) {
-        setTransactions(prev => 
-          prev.map(t => t.id === transactionToEdit.id ? { ...newTransaction, id: transactionToEdit.id } : t)
-        );
-        setTransactionToEdit(null);
-      } else {
-        setTransactions(prev => [...prev, newTransaction]);
-      }
-      setIsFormDialogOpen(false);
+      alert('Error de conexión al guardar la transacción. Inténtalo de nuevo.');
     }
   };
 
@@ -168,15 +132,20 @@ export default function Cashier() {
       });
 
       if (response.ok) {
+        // Solo eliminar del estado local si el servidor confirmó la eliminación
         setTransactions(prev => prev.filter(t => t.id !== transactionToDelete.id));
+        console.log('Transaction deleted successfully');
       } else {
-        // Fallback for demo
-        setTransactions(prev => prev.filter(t => t.id !== transactionToDelete.id));
+        // Mostrar error específico
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error("Failed to delete transaction:", errorData.error);
+        alert(`Error al eliminar la transacción: ${errorData.error}`);
+        return; // No cerrar el modal si hay error
       }
     } catch (error) {
       console.error("Error deleting transaction:", error);
-      // Still remove from demo data
-      setTransactions(prev => prev.filter(t => t.id !== transactionToDelete.id));
+      alert('Error de conexión al eliminar la transacción. Inténtalo de nuevo.');
+      return; // No cerrar el modal si hay error
     }
 
     setIsDeleteConfirmationOpen(false);
