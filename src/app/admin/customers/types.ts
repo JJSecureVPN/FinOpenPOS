@@ -5,10 +5,10 @@ export interface Customer {
   phone: string;
   status: "active" | "inactive";
   debt: number;
-  totalOrders: number;
+  totalTransactions: number;
   totalSpent: number;
   createdAt?: string;
-  lastOrder?: string;
+  lastTransaction?: string;
 }
 
 export interface NewCustomerForm {
@@ -32,30 +32,27 @@ export interface DebtPayment {
 
 export interface CustomerActivity {
   id: number;
-  type: "order" | "payment" | "credit";
+  type: "sale" | "payment" | "credit";
   description: string;
   amount?: number;
   created_at: string;
 }
 
-export interface CustomerOrder {
+export interface CustomerTransaction {
   id: number;
   created_at: string;
-  total: number;
-  is_credit: boolean;
-  items?: Array<{
-    quantity: number;
-    product_name: string;
-    subtotal: number;
-  }>;
+  amount: number;
+  type: "income" | "expense";
+  description: string;
+  payment_method?: string;
 }
 
 export interface CustomerHistory {
   customer: Customer;
   activities: CustomerActivity[];
-  orders: CustomerOrder[];
+  transactions: CustomerTransaction[];
   debtPayments: DebtPayment[];
-  totalOrders: number;
-  totalSpent: number;
+  totalTransactions: number;
+  totalIncomeFromCustomer: number;
   currentDebt: number;
 }

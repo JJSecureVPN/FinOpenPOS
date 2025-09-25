@@ -27,7 +27,6 @@ interface CustomersTableProps {
   onViewDetails: (customer: Customer) => void;
   onPayDebt: (customer: Customer) => void;
   onViewHistory: (customer: Customer) => void;
-  onViewOrders: (customer: Customer) => void;
 }
 
 export default function CustomersTable({ 
@@ -35,8 +34,7 @@ export default function CustomersTable({
   onEdit, 
   onViewDetails, 
   onPayDebt, 
-  onViewHistory, 
-  onViewOrders 
+  onViewHistory 
 }: CustomersTableProps) {
   
   const formatCurrency = (amount: number) => {
@@ -95,7 +93,7 @@ export default function CustomersTable({
         <div className="grid grid-cols-3 gap-3 py-3 border-t border-gray-100">
           <div className="text-center">
             <Typography variant="micro" className="text-gray-500">Órdenes</Typography>
-            <Typography variant="body-sm" weight="semibold">{customer.totalOrders}</Typography>
+            <Typography variant="body-sm" weight="semibold">{customer.totalTransactions}</Typography>
           </div>
           <div className="text-center">
             <Typography variant="micro" className="text-gray-500">Gastado</Typography>
@@ -142,7 +140,7 @@ export default function CustomersTable({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onViewOrders(customer)}
+            onClick={() => onViewHistory(customer)}
             className="flex-1"
           >
             <ShoppingCart className="w-4 h-4 mr-1" />
@@ -248,7 +246,7 @@ export default function CustomersTable({
                     </TableCell>
                     
                     <TableCell className="text-right">
-                      <Typography variant="body" weight="medium">{customer.totalOrders}</Typography>
+                      <Typography variant="body" weight="medium">{customer.totalTransactions}</Typography>
                     </TableCell>
                     
                     <TableCell className="text-right">
@@ -298,7 +296,7 @@ export default function CustomersTable({
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => onViewOrders(customer)}
+                          onClick={() => onViewHistory(customer)}
                         >
                           <ShoppingCart className="w-4 h-4" />
                         </Button>

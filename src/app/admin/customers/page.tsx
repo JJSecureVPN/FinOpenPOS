@@ -18,7 +18,7 @@ import CustomerStats from "./CustomerStats";
 import CustomerSearchFilters from "./CustomerSearchFilters";
 import CustomersTable from "./CustomersTable";
 import CustomerForm from "./CustomerForm";
-import type { Customer, NewCustomerForm, CustomerFilters, DebtPayment, CustomerActivity, CustomerOrder, CustomerHistory } from "./types";
+import type { Customer, NewCustomerForm, CustomerFilters, DebtPayment, CustomerActivity, CustomerTransaction, CustomerHistory } from "./types";
 
 export default function CustomersPage() {
   const router = useRouter();
@@ -40,7 +40,6 @@ export default function CustomersPage() {
   const [showDeleteConfirmationDialog, setShowDeleteConfirmationDialog] = useState(false);
   const [showDebtPaymentDialog, setShowDebtPaymentDialog] = useState(false);
   const [showHistoryDialog, setShowHistoryDialog] = useState(false);
-  const [showOrdersDialog, setShowOrdersDialog] = useState(false);
   
   // Selected customer states
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -68,7 +67,7 @@ export default function CustomersPage() {
         // Transform data to include required fields
         const transformedData = data.map((customer: any) => ({
           ...customer,
-          totalOrders: customer.totalOrders || 0,
+          totalTransactions: customer.totalTransactions || 0,
           totalSpent: customer.totalSpent || 0,
           debt: customer.debt || 0
         }));
@@ -131,7 +130,7 @@ export default function CustomersPage() {
       const newCustomer = await response.json();
       setCustomers(prev => [...prev, {
         ...newCustomer,
-        totalOrders: 0,
+        totalTransactions: 0,
         totalSpent: 0,
         debt: 0
       }]);
@@ -162,7 +161,7 @@ export default function CustomersPage() {
       setCustomers(prev => 
         prev.map(c => c.id === selectedCustomer.id ? {
           ...updatedCustomer,
-          totalOrders: c.totalOrders,
+          totalTransactions: c.totalTransactions,
           totalSpent: c.totalSpent,
           debt: c.debt
         } : c)
@@ -259,10 +258,10 @@ export default function CustomersPage() {
           amount: item.amount,
           created_at: item.date
         })) : [],
-        orders: Array.isArray(history.orders) ? history.orders : [],
+        transactions: Array.isArray(history.transactions) ? history.transactions : [],
         debtPayments: Array.isArray(history.debtPayments) ? history.debtPayments : [],
-        totalOrders: history.statistics?.totalOrders || 0,
-        totalSpent: history.statistics?.totalSpent || 0,
+        totalTransactions: history.statistics?.totalTransactions || 0,
+        totalIncomeFromCustomer: history.statistics?.totalIncomeFromCustomer || 0,
         currentDebt: history.statistics?.currentDebt || customer.debt || 0
       };
       
@@ -274,10 +273,10 @@ export default function CustomersPage() {
       setCustomerHistory({
         customer: customer,
         activities: [],
-        orders: [],
+        transactions: [],
         debtPayments: [],
-        totalOrders: 0,
-        totalSpent: 0,
+        totalTransactions: 0,
+        totalIncomeFromCustomer: 0,
         currentDebt: customer.debt || 0
       });
     } finally {
@@ -307,11 +306,6 @@ export default function CustomersPage() {
     setSelectedCustomer(customer);
     fetchCustomerHistory(customer);
     setShowHistoryDialog(true);
-  };
-
-  const onViewOrders = (customer: Customer) => {
-    setSelectedCustomer(customer);
-    setShowOrdersDialog(true);
   };
 
   const onClearFilters = () => {
@@ -390,7 +384,6 @@ export default function CustomersPage() {
           onViewDetails={onViewDetails}
           onPayDebt={onPayDebt}
           onViewHistory={onViewHistory}
-          onViewOrders={onViewOrders}
         />
 
         {/* New Customer Dialog */}
@@ -542,8 +535,8 @@ export default function CustomersPage() {
                   <TabsTrigger value="activities">
                     <Typography variant="body-sm">Actividades</Typography>
                   </TabsTrigger>
-                  <TabsTrigger value="orders">
-                    <Typography variant="body-sm">Órdenes</Typography>
+                  <TabsTrigger value="transactions">
+                    <Typography variant="body-sm">Transacciones</Typography>
                   </TabsTrigger>
                   <TabsTrigger value="payments">
                     <Typography variant="body-sm">Pagos</Typography>
@@ -568,9 +561,28 @@ export default function CustomersPage() {
                     </Card>
                   ))}
                 </TabsContent>
-                <TabsContent value="orders">
-                  {/* Orders content */}
-                  <Typography variant="body">Contenido de órdenes...</Typography>
+                <TabsContent value="transactions" className="space-y-4">
+                  {(customerHistory.transactions || []).map((transaction) => (
+                    <Card key={transaction.id}>
+                      <CardContent className="pt-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <Typography variant="body" weight="medium">{transaction.description}</Typography>
+                            <Typography variant="caption" className="text-gray-500">{transaction.created_at}</Typography>
+                            {transaction.payment_method && (
+                              <Typography variant="caption" className="text-gray-500">Método: {transaction.payment_method}</Typography>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <Badge variant={transaction.type === 'income' ? 'default' : 'secondary'}>
+                              <Typography variant="caption">${transaction.amount}</Typography>
+                            </Badge>
+                            <Typography variant="caption" className="text-gray-500 block">{transaction.type}</Typography>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </TabsContent>
                 <TabsContent value="payments">
                   {/* Payments content */}

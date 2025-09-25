@@ -32,32 +32,16 @@ export async function GET(
       return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
     }
 
-    // Obtener órdenes del cliente (tanto normales como al fiado)
-    const { data: orders, error: ordersError } = await supabase
-      .from('orders')
-      .select(`
-        id,
-        total_amount,
-        status,
-        is_credit_sale,
-        created_at,
-        order_items (
-          id,
-          quantity,
-          price,
-          product:product_id (
-            name
-          )
-        )
-      `)
-      .eq('customer_id', customerId)
+    // Obtener transacciones relacionadas con el cliente (ventas directas)
+    const { data: transactions, error: transactionsError } = await supabase
+      .from('transactions')
+      .select('*')
       .eq('user_uid', user.id)
+      .ilike('description', `%${customer.name}%`) // Buscar transacciones que mencionen al cliente
       .order('created_at', { ascending: false });
 
-    console.log('Orders fetched:', JSON.stringify(orders, null, 2));
-
-    if (ordersError) {
-      console.error('Error fetching orders:', ordersError);
+    if (transactionsError) {
+      console.error('Error fetching transactions:', transactionsError);
     }
 
     // Obtener pagos de deuda del cliente
@@ -72,12 +56,16 @@ export async function GET(
       console.error('Error fetching debt payments:', paymentsError);
     }
 
-    // Calcular estadísticas
-    const totalPurchases = orders?.length || 0;
-    const totalSpent = orders?.reduce((sum, order) => sum + order.total_amount, 0) || 0;
-    const totalCreditSales = orders?.filter(order => order.is_credit_sale).length || 0;
-    const totalCreditAmount = orders?.filter(order => order.is_credit_sale)
-      .reduce((sum, order) => sum + order.total_amount, 0) || 0;
+    // Calcular estadísticas basadas en transacciones
+    const customerTransactions = transactions?.filter(t => 
+      t.description?.toLowerCase().includes(customer.name.toLowerCase())
+    ) || [];
+    
+    const totalTransactions = customerTransactions.length;
+    const totalIncomeFromCustomer = customerTransactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + t.amount, 0);
+    
     const totalDebtPayments = debtPayments?.reduce((sum, payment) => sum + payment.amount, 0) || 0;
     const currentDebt = customer.debt || 0;
 
@@ -93,20 +81,18 @@ export async function GET(
       [key: string]: any;
     }> = [];
 
-    // Agregar órdenes al timeline
-    if (orders) {
-      orders.forEach(order => {
+    // Agregar transacciones al timeline
+    if (customerTransactions && customerTransactions.length > 0) {
+      customerTransactions.forEach(transaction => {
         timeline.push({
-          id: `order-${order.id}`,
-          type: 'order',
-          date: order.created_at,
-          amount: order.total_amount,
-          description: order.is_credit_sale 
-            ? `Venta al fiado #${order.id}` 
-            : `Compra #${order.id}`,
-          isCreditSale: order.is_credit_sale,
-          status: order.status,
-          items: order.order_items
+          id: `transaction-${transaction.id}`,
+          type: 'sale',
+          date: transaction.date || transaction.created_at,
+          amount: transaction.amount,
+          description: transaction.description || `Venta #${transaction.id}`,
+          transactionType: transaction.type,
+          status: transaction.status,
+          paymentMethod: transaction.payment_method
         });
       });
     }
@@ -128,51 +114,30 @@ export async function GET(
     // Ordenar timeline por fecha (más reciente primero)
     timeline.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-    const formattedOrders = orders?.map(order => ({
-      id: order.id,
-      total: order.total_amount,
-      status: order.status,
-      is_credit: order.is_credit_sale,
-      created_at: order.created_at,
-      items: order.order_items?.map((item: any) => {
-        let productName = 'Producto desconocido';
-        try {
-          if (item.product) {
-            if (Array.isArray(item.product) && item.product[0]) {
-              productName = item.product[0].name || productName;
-            } else if (item.product.name) {
-              productName = item.product.name;
-            }
-          }
-        } catch (e) {
-          console.error('Error getting product name:', e);
-        }
-        
-        return {
-          quantity: item.quantity,
-          price: item.price,
-          subtotal: item.quantity * item.price,
-          product_name: productName
-        };
-      }) || []
-    })) || [];
+    const formattedTransactions = customerTransactions.map(transaction => ({
+      id: transaction.id,
+      amount: transaction.amount,
+      type: transaction.type,
+      status: transaction.status,
+      created_at: transaction.date || transaction.created_at,
+      description: transaction.description,
+      payment_method: transaction.payment_method
+    }));
 
-    console.log('Formatted orders:', JSON.stringify(formattedOrders, null, 2));
+    console.log('Customer transactions:', JSON.stringify(formattedTransactions, null, 2));
 
     return NextResponse.json({
       customer,
-      orders: formattedOrders,
+      transactions: formattedTransactions,
       debtPayments: debtPayments || [],
       timeline,
       statistics: {
-        totalOrders: totalPurchases,
-        totalSpent,
+        totalTransactions,
+        totalIncomeFromCustomer,
         totalPayments: debtPayments?.length || 0,
-        totalCreditSales,
-        totalCreditAmount,
         totalDebtPayments,
         currentDebt,
-        averageOrderValue: totalPurchases > 0 ? totalSpent / totalPurchases : 0
+        averageTransactionValue: totalTransactions > 0 ? totalIncomeFromCustomer / totalTransactions : 0
       }
     });
 
