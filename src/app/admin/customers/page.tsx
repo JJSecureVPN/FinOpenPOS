@@ -366,7 +366,15 @@ export default function CustomersPage() {
 
         {/* New Customer Dialog */}
         <Dialog open={showNewCustomerDialog} onOpenChange={setShowNewCustomerDialog}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent 
+            className="max-w-2xl"
+            onInteractOutside={(e) => {
+              const target = e.target as HTMLElement;
+              if (target.closest('form')) {
+                e.preventDefault();
+              }
+            }}
+          >
             <DialogHeader>
               <DialogTitle>
                 <Typography variant="h3">Agregar Nuevo Cliente</Typography>
@@ -384,7 +392,15 @@ export default function CustomersPage() {
 
         {/* Edit Customer Dialog */}
         <Dialog open={showEditCustomerDialog} onOpenChange={setShowEditCustomerDialog}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent 
+            className="max-w-2xl"
+            onInteractOutside={(e) => {
+              const target = e.target as HTMLElement;
+              if (target.closest('form')) {
+                e.preventDefault();
+              }
+            }}
+          >
             <DialogHeader>
               <DialogTitle>
                 <Typography variant="h3">Editar Cliente</Typography>

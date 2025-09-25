@@ -43,8 +43,11 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const FormContent = () => (
-    <form onSubmit={handleSubmit} className="space-y-4">
+  // IMPORTANTE: No definir un componente (function) dentro y luego usarlo como <Componente />
+  // porque React lo considera un nuevo tipo en cada render y desmonta/remonta el árbol,
+  // provocando pérdida de foco al teclear. En su lugar usamos JSX directo (formContent).
+  const formContent = (
+    <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off" noValidate>
       <ResponsiveShow on="mobile">
         <div className="space-y-4">
           {/* Mobile: Stack all fields vertically */}
@@ -55,11 +58,13 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
             </Label>
             <Input
               id="name"
+              name="name"
               placeholder="Ej: Juan Pérez"
               value={formData.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
               required
               className="text-lg"
+              autoFocus
             />
           </div>
 
@@ -70,6 +75,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
             </Label>
             <Input
               id="email"
+              name="email"
               type="email"
               placeholder="juan@ejemplo.com"
               value={formData.email}
@@ -85,6 +91,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
             </Label>
             <Input
               id="phone"
+              name="phone"
               type="tel"
               placeholder="0999-999-999"
               value={formData.phone}
@@ -102,7 +109,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
               value={formData.status}
               onValueChange={(value: "active" | "inactive") => handleInputChange("status", value)}
             >
-              <SelectTrigger id="status">
+              <SelectTrigger id="status" name="status">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -141,10 +148,12 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
                 <Label htmlFor="name"><Typography variant="body-sm" weight="medium">Nombre</Typography></Label>
                 <Input
                   id="name"
+                  name="name"
                   placeholder="Nombre completo..."
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
                   required
+                  autoFocus
                 />
               </div>
 
@@ -152,6 +161,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
                 <Label htmlFor="email"><Typography variant="body-sm" weight="medium">Email</Typography></Label>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="email@ejemplo.com"
                   value={formData.email}
@@ -164,6 +174,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
                 <Label htmlFor="phone"><Typography variant="body-sm" weight="medium">Teléfono</Typography></Label>
                 <Input
                   id="phone"
+                  name="phone"
                   type="tel"
                   placeholder="0999-999-999"
                   value={formData.phone}
@@ -210,11 +221,13 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
                 </Label>
                 <Input
                   id="name"
+                  name="name"
                   placeholder="Ej: Juan Pérez"
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
                   required
                   className="text-lg"
+                  autoFocus
                 />
               </div>
 
@@ -227,7 +240,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
                   value={formData.status}
                   onValueChange={(value: "active" | "inactive") => handleInputChange("status", value)}
                 >
-                  <SelectTrigger id="status">
+                  <SelectTrigger id="status" name="status">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -244,6 +257,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
                 </Label>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="juan@ejemplo.com"
                   value={formData.email}
@@ -259,6 +273,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
                 </Label>
                 <Input
                   id="phone"
+                  name="phone"
                   type="tel"
                   placeholder="0999-999-999"
                   value={formData.phone}
@@ -287,7 +302,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
   );
 
   if (isCompact) {
-    return <FormContent />;
+    return formContent;
   }
 
   return (
@@ -299,7 +314,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData, isCompac
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <FormContent />
+          {formContent}
         </CardContent>
       </Card>
     </ResponsiveContainer>
