@@ -247,10 +247,39 @@ export default function CustomersPage() {
         throw new Error("Failed to fetch customer history");
       }
       const history = await response.json();
-      setCustomerHistory(history);
+      
+      // Normalizar la respuesta para asegurar que los arrays estén presentes
+      // La API devuelve 'timeline' pero esperamos 'activities'
+      const normalizedHistory: CustomerHistory = {
+        customer: customer,
+        activities: Array.isArray(history.timeline) ? history.timeline.map((item: any) => ({
+          id: item.id || `${item.type}-${Math.random()}`,
+          type: item.type,
+          description: item.description,
+          amount: item.amount,
+          created_at: item.date
+        })) : [],
+        orders: Array.isArray(history.orders) ? history.orders : [],
+        debtPayments: Array.isArray(history.debtPayments) ? history.debtPayments : [],
+        totalOrders: history.statistics?.totalOrders || 0,
+        totalSpent: history.statistics?.totalSpent || 0,
+        currentDebt: history.statistics?.currentDebt || customer.debt || 0
+      };
+      
+      setCustomerHistory(normalizedHistory);
     } catch (error) {
       console.error("Error fetching history:", error);
       setError("Error al cargar el historial");
+      // Crear historial vacío para evitar crashes
+      setCustomerHistory({
+        customer: customer,
+        activities: [],
+        orders: [],
+        debtPayments: [],
+        totalOrders: 0,
+        totalSpent: 0,
+        currentDebt: customer.debt || 0
+      });
     } finally {
       setLoadingHistory(false);
     }
@@ -521,7 +550,7 @@ export default function CustomersPage() {
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="activities" className="space-y-4">
-                  {customerHistory.activities.map((activity) => (
+                  {(customerHistory.activities || []).map((activity) => (
                     <Card key={activity.id}>
                       <CardContent className="pt-4">
                         <div className="flex justify-between items-start">
