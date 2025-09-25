@@ -152,6 +152,7 @@ BEGIN
   DROP POLICY IF EXISTS "Users can view own transactions" ON transactions;
   DROP POLICY IF EXISTS "Users can insert own transactions" ON transactions;
   DROP POLICY IF EXISTS "Users can update own transactions" ON transactions;
+  DROP POLICY IF EXISTS "Users can delete own transactions" ON transactions;
   
   -- debt_payments
   DROP POLICY IF EXISTS "Users can view own debt_payments" ON debt_payments;
@@ -201,6 +202,7 @@ CREATE POLICY "Users can insert own order_items" ON order_items
 CREATE POLICY "Users can view own transactions" ON transactions FOR SELECT USING (user_uid = auth.uid()::text);
 CREATE POLICY "Users can insert own transactions" ON transactions FOR INSERT WITH CHECK (user_uid = auth.uid()::text);
 CREATE POLICY "Users can update own transactions" ON transactions FOR UPDATE USING (user_uid = auth.uid()::text);
+CREATE POLICY "Users can delete own transactions" ON transactions FOR DELETE USING (user_uid = auth.uid()::text);
 
 -- debt_payments
 CREATE POLICY "Users can view own debt_payments" ON debt_payments FOR SELECT USING (user_uid = auth.uid()::text);

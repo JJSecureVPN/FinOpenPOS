@@ -242,6 +242,9 @@ export default function Cashier() {
               <DialogTitle>
                 <Typography variant="h3">Confirmar Eliminación</Typography>
               </DialogTitle>
+              <DialogDescription>
+                Esta acción no se puede deshacer. La transacción será eliminada permanentemente.
+              </DialogDescription>
             </DialogHeader>
             <div className="py-4">
               <Typography variant="body">¿Estás seguro de que deseas eliminar esta transacción?</Typography>
